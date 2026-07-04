@@ -1,3 +1,26 @@
 spring:
   application:
     name: teamup-platform
+
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/teamup
+    username: postgres
+    password: 23022011
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: never
+
+server:
+  port: 8080
