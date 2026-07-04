@@ -9,6 +9,9 @@ spring:
     password: 23022011
 
   jpa:
+
+    open-in-view: false
+
     hibernate:
       ddl-auto: update
 

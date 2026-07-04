@@ -14,26 +14,28 @@
 
 Хранит пользователей платформы.
 
-| Поле | Тип |
-|------|-----|
-| id | Long |
-| name | String |
-| email | String |
-| password | String |
-| university | String |
-| course | Integer |
-| about | String |
-| participationFormat | Enum |
-| role | Enum |
-| createdAt | LocalDateTime |
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | Long | Уникальный идентификатор |
+| firstName | String | Имя |
+| lastName | String | Фамилия |
+| email | String | Email (логин) |
+| password | String | Захешированный пароль |
+| university | String | Университет |
+| course | Integer | Курс |
+| about | String | Краткая информация о пользователе |
+| participationFormat | Enum | ONLINE / OFFLINE / BOTH |
+| role | Enum | USER / MENTOR / ADMIN |
+| telegram | String | Telegram для связи |
+| github | String | GitHub (необязательно) |
+| createdAt | LocalDateTime | Дата регистрации |
 
-Связи
+### Связи
 
-ManyToMany -> Skill
+- ManyToMany → Skill
+- OneToMany → Project (как владелец)
+- OneToMany → Application (как участник)
 
-OneToMany -> Project
-
-OneToMany -> Application
 
 ---
 
