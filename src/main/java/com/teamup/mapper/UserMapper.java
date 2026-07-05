@@ -2,10 +2,17 @@ package com.teamup.mapper;
 
 import com.teamup.dto.response.UserResponse;
 import com.teamup.entity.User;
+import com.teamup.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 @Component
+@RequiredArgsConstructor
 public class UserMapper {
+
+    private final SkillMapper skillMapper;
 
     public UserResponse toResponse(User user) {
         return UserResponse.builder()
@@ -21,6 +28,14 @@ public class UserMapper {
                 .avatarUrl(user.getAvatarUrl())
                 .participationFormat(user.getParticipationFormat())
                 .role(user.getRole())
+                .skills(
+                        user.getSkills()
+                                .stream()
+                                .map(skillMapper::toResponse)
+                                .collect(Collectors.toSet())
+                )
                 .build();
     }
 }
+
+
