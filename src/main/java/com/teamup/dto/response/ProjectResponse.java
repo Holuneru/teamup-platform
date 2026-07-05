@@ -16,4 +16,5 @@ public class ProjectResponse {
     private Long ownerId;
     private Set<String> requiredSkills;
     private LocalDateTime createdAt;
+    private Set<UserShortResponse> members;
 }

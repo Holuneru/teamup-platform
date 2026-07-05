@@ -18,47 +18,28 @@ export default function Projects() {
         axios.post(`http://localhost:8080/api/projects/${projectId}/apply`, {
             userId: 1
         })
-            .then(() => {
-                alert("Application sent!");
-            })
-            .catch(err => {
-                console.log(err);
-                alert("Error while applying");
-            });
+            .then(() => alert("Application sent!"))
+            .catch(err => console.log(err));
     };
 
     return (
         <div style={{ padding: "20px" }}>
             <h1>Projects</h1>
 
-            {projects.length === 0 ? (
-                <p>No projects yet</p>
-            ) : (
-                projects.map(p => (
-                    <div
-                        key={p.id}
-                        style={{
-                            border: "1px solid gray",
-                            margin: "10px",
-                            padding: "10px"
-                        }}
-                    >
-                        <h3>{p.title}</h3>
-                        <p>{p.description}</p>
+            {projects.map(p => (
+                <div key={p.id} style={{
+                    border: "1px solid gray",
+                    margin: "10px",
+                    padding: "10px"
+                }}>
+                    <h3>{p.title}</h3>
+                    <p>{p.description}</p>
 
-                        {p.requiredSkills && (
-                            <p>
-                                Skills:{" "}
-                                {p.requiredSkills.map(s => s.name).join(", ")}
-                            </p>
-                        )}
-
-                        <button onClick={() => apply(p.id)}>
-                            Apply
-                        </button>
-                    </div>
-                ))
-            )}
+                    <button onClick={() => apply(p.id)}>
+                        Apply
+                    </button>
+                </div>
+            ))}
         </div>
     );
 }

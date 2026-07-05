@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -24,18 +25,18 @@ public class Project {
     @Column(length = 2000)
     private String description;
 
+
     @ManyToOne
     private User owner;
 
     @ManyToMany
-    @JoinTable(
-            name = "project_required_skills",
-            joinColumns = @JoinColumn(name = "project_id"),
-            inverseJoinColumns = @JoinColumn(name = "skill_id")
-    )
-    private Set<Skill> requiredSkills;
+    private Set<User> members = new HashSet<>();
+
+    @ManyToMany
+    private Set<Skill> requiredSkills = new HashSet<>();
 
     private LocalDateTime createdAt;
+
 
     @PrePersist
     public void prePersist() {

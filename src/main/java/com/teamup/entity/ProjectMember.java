@@ -22,9 +22,8 @@ public class ProjectMember {
 
     private Long userId;
 
-    private String role; // later: OWNER / MEMBER
+    private String role; // OWNER / MEMBER
 
-    @Column(nullable = false, updatable = false)
     private LocalDateTime joinedAt;
 
     @PrePersist

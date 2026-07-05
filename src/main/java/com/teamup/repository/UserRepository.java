@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = "skills")
     List<User> findAll();
 
+    Optional<User> findById(Long id);
+
 }

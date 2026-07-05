@@ -53,4 +53,11 @@ public class ProjectService {
                 .map(projectMapper::toResponse)
                 .toList();
     }
+
+    public List<ProjectResponse> getByOwner(Long ownerId) {
+        return projectRepository.findByOwnerId(ownerId)
+                .stream()
+                .map(projectMapper::toResponse)
+                .toList();
+    }
 }

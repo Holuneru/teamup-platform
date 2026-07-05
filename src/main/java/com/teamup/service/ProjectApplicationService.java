@@ -19,16 +19,16 @@ public class ProjectApplicationService {
     private final ProjectApplicationRepository repository;
     private final ProjectMemberRepository projectMemberRepository;
 
+    // 📌 APPLY
     public ApplicationResponse apply(Long projectId, CreateApplicationRequest request) {
-
         repository.findByProjectIdAndUserId(projectId, request.getUserId())
                 .ifPresent(app -> {
                     throw new RuntimeException("Already applied");
                 });
 
         ProjectApplication app = ProjectApplication.builder()
-                .userId(request.getUserId())
                 .projectId(projectId)
+                .userId(request.getUserId())
                 .status(ApplicationStatus.PENDING)
                 .build();
 
@@ -37,6 +37,7 @@ public class ProjectApplicationService {
         return toResponse(app);
     }
 
+    // 📌 GET APPLICATIONS
     public List<ApplicationResponse> getByProject(Long projectId) {
         return repository.findByProjectId(projectId)
                 .stream()
@@ -44,39 +45,42 @@ public class ProjectApplicationService {
                 .toList();
     }
 
+    // 📌 ACCEPT
     public ApplicationResponse accept(Long id) {
 
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
 
+        if (app.getStatus() != ApplicationStatus.PENDING) {
+            throw new RuntimeException("Already processed");
+        }
+
         app.setStatus(ApplicationStatus.ACCEPTED);
         repository.save(app);
 
+        ProjectMember member = ProjectMember.builder()
+                .projectId(app.getProjectId())
+                .userId(app.getUserId())
+                .role("MEMBER")
+                .build();
 
-        if (!projectMemberRepository.existsByProjectIdAndUserId(
-                app.getProjectId(),
-                app.getUserId()
-        )) {
-            ProjectMember member = ProjectMember.builder()
-                    .projectId(app.getProjectId())
-                    .userId(app.getUserId())
-                    .role("MEMBER")
-                    .build();
-
-            projectMemberRepository.save(member);
-        }
+        projectMemberRepository.save(member);
 
         return toResponse(app);
     }
 
+    // 📌 REJECT
     public ApplicationResponse reject(Long id) {
 
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
 
+        if (app.getStatus() != ApplicationStatus.PENDING) {
+            throw new RuntimeException("Already processed");
+        }
+
         app.setStatus(ApplicationStatus.REJECTED);
         repository.save(app);
-
 
         projectMemberRepository
                 .findByProjectIdAndUserId(app.getProjectId(), app.getUserId())
@@ -85,6 +89,12 @@ public class ProjectApplicationService {
         return toResponse(app);
     }
 
+    // 📌 MEMBERS
+    public List<ProjectMember> getMembers(Long projectId) {
+        return projectMemberRepository.findByProjectId(projectId);
+    }
+
+    // 📌 mapper
     private ApplicationResponse toResponse(ProjectApplication app) {
         return ApplicationResponse.builder()
                 .id(app.getId())

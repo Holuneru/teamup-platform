@@ -4,11 +4,15 @@ export default function Home() {
     const navigate = useNavigate();
 
     return (
-        <div>
-            <h1>HOME WORKS</h1>
+        <div style={{ padding: "20px" }}>
+            <h1>Home</h1>
 
             <button onClick={() => navigate("/projects")}>
-                Go to Projects
+                All Projects
+            </button>
+
+            <button onClick={() => navigate("/my-projects")}>
+                My Projects
             </button>
         </div>
     );
