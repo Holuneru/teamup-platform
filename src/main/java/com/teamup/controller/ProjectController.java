@@ -5,14 +5,14 @@ import com.teamup.dto.response.ProjectResponse;
 import com.teamup.entity.Project;
 import com.teamup.service.ProjectService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -20,5 +20,9 @@ public class ProjectController {
     @PostMapping
     public ProjectResponse create(@RequestBody CreateProjectRequest request) {
         return projectService.createProject(request);
+    }
+    @GetMapping
+    public List<ProjectResponse> getAll() {
+        return projectService.getAllProjects();
     }
 }

@@ -28,12 +28,12 @@ public class UserMapper {
                 .avatarUrl(user.getAvatarUrl())
                 .participationFormat(user.getParticipationFormat())
                 .role(user.getRole())
-                .skills(
-                        user.getSkills()
-                                .stream()
-                                .map(skillMapper::toResponse)
-                                .collect(Collectors.toSet())
-                )
+//                .skills(
+//                        user.getSkills()
+//                                .stream()
+//                                .map(skillMapper::toResponse)
+//                                .collect(Collectors.toSet())
+//                )
                 .build();
     }
 }

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -44,5 +45,12 @@ public class ProjectService {
         Project saved = projectRepository.save(project);
 
         return projectMapper.toResponse(saved);
+    }
+
+    public List<ProjectResponse> getAllProjects() {
+        return projectRepository.findAll()
+                .stream()
+                .map(projectMapper::toResponse)
+                .toList();
     }
 }

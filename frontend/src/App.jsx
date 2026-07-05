@@ -1,7 +1,5 @@
-import Register from "./pages/Register";
+import AppRoutes from "./AppRoutes";
 
-function App() {
-    return <Register />;
+export default function App() {
+    return <AppRoutes />;
 }
-
-export default App;

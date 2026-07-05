@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class ProjectApplicationController {
 
     private final ProjectApplicationService service;
