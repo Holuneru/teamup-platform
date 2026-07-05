@@ -2,6 +2,8 @@ package com.teamup.controller;
 
 import com.teamup.dto.request.CreateApplicationRequest;
 import com.teamup.dto.response.ApplicationResponse;
+import com.teamup.entity.ProjectMember;
+import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.service.ProjectApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import java.util.List;
 public class ProjectApplicationController {
 
     private final ProjectApplicationService service;
+    private final ProjectMemberRepository projectMemberRepository;
 
     @PostMapping("/{projectId}/apply")
     public ApplicationResponse apply(
@@ -21,6 +24,11 @@ public class ProjectApplicationController {
             @RequestBody CreateApplicationRequest request
     ) {
         return service.apply(projectId, request);
+    }
+
+    @GetMapping("/{projectId}/members")
+    public List<ProjectMember> getMembers(@PathVariable Long projectId) {
+        return projectMemberRepository.findByProjectId(projectId);
     }
 
     @GetMapping("/{projectId}/applications")
