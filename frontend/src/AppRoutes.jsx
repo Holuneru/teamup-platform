@@ -5,6 +5,12 @@ import Home from "./pages/Home";
 import Projects from "./pages/Projects";
 import ProjectApplications from "./pages/ProjectApplications";
 import MyProjects from "./pages/MyProjects";
+import ProjectManage from "./pages/ProjectManage";
+
+
+
+
+
 export default function AppRoutes() {
     return (
         <BrowserRouter>
@@ -13,10 +19,15 @@ export default function AppRoutes() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/home" element={<Home />} />
+
                 <Route path="/projects" element={<Projects />} />
-                <Route path="/projects/:id/applications" element={<ProjectApplications />} />
-                <Route path="*" element={<h1>404 NOT FOUND</h1>} />
                 <Route path="/my-projects" element={<MyProjects />} />
+
+                <Route path="/projects/:id/applications" element={<ProjectApplications />} />
+                <Route path="/projects/:id/manage" element={<ProjectManage />} />
+
+                {/* 👇 ВСЕГДА В КОНЦЕ */}
+                <Route path="*" element={<h1>404 NOT FOUND</h1>} />
             </Routes>
         </BrowserRouter>
     );

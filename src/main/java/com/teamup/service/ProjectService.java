@@ -40,6 +40,7 @@ public class ProjectService {
                 .description(request.getDescription())
                 .owner(owner)
                 .requiredSkills(skills)
+                .members(new HashSet<>()) // 🔥 ВАЖНО: фикс инициализации
                 .build();
 
         Project saved = projectRepository.save(project);
@@ -48,15 +49,19 @@ public class ProjectService {
     }
 
     public List<ProjectResponse> getAllProjects() {
-        return projectRepository.findAll()
-                .stream()
+
+        List<Project> projects = projectRepository.findAllWithMembersAndSkills();
+
+        return projects.stream()
                 .map(projectMapper::toResponse)
                 .toList();
     }
 
     public List<ProjectResponse> getByOwner(Long ownerId) {
-        return projectRepository.findByOwnerId(ownerId)
-                .stream()
+
+        List<Project> projects = projectRepository.findByOwnerIdWithMembers(ownerId);
+
+        return projects.stream()
                 .map(projectMapper::toResponse)
                 .toList();
     }

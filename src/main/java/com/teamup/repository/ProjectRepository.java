@@ -18,7 +18,35 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Optional<Project> findById(Long id);
 
-    @Query("select p from Project p left join fetch p.members where p.id = :id")
+    @Query("""
+    select p from Project p
+    left join fetch p.members
+    left join fetch p.requiredSkills
+    where p.id = :id
+""")
     Optional<Project> findByIdWithMembers(Long id);
+
+
+    @Query("""
+    select distinct p from Project p
+    left join fetch p.members
+    left join fetch p.requiredSkills
+""")
+    List<Project> findAllWithMembers();
+
+    @Query("""
+    select distinct p from Project p
+    left join fetch p.members
+    left join fetch p.requiredSkills
+""")
+    List<Project> findAllWithMembersAndSkills();
+
+    @Query("""
+    select distinct p from Project p
+    left join fetch p.members
+    left join fetch p.requiredSkills
+    where p.owner.id = :ownerId
+""")
+    List<Project> findByOwnerIdWithMembers(Long ownerId);
 
 }
