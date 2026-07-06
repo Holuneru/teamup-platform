@@ -1,22 +1,31 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
 export default function MyProjects() {
+
     const [projects, setProjects] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get("http://localhost:8080/api/projects")
+
+        api.get("/projects/my")
             .then(res => {
-                const myProjects = res.data.filter(p => p.ownerId === 1);
-                setProjects(myProjects);
+                setProjects(res.data);
+            })
+            .catch(err => {
+                console.log("Error loading my projects:", err);
             });
+
     }, []);
 
     return (
         <div style={{ padding: "20px" }}>
             <h1>My Projects</h1>
+
+            {projects.length === 0 && (
+                <p>У тебя пока нет проектов</p>
+            )}
 
             {projects.map(p => (
                 <div key={p.id} style={{ border: "1px solid gray", margin: 10, padding: 10 }}>

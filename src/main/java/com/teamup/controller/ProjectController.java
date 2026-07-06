@@ -30,4 +30,9 @@ public class ProjectController {
     public List<ProjectResponse> getMyProjects(@PathVariable Long userId) {
         return projectService.getByOwner(userId);
     }
+
+    @GetMapping("/my")
+    public List<ProjectResponse> getMyProjects() {
+        return projectService.getMyProjects();
+    }
 }

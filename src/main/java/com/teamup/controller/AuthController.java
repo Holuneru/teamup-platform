@@ -2,10 +2,9 @@ package com.teamup.controller;
 
 import com.teamup.dto.request.LoginRequest;
 import com.teamup.dto.request.RegisterRequest;
-import com.teamup.dto.request.UpdateSkillsRequest;
+import com.teamup.dto.response.LoginResponse;
 import com.teamup.dto.response.UserResponse;
 import com.teamup.service.AuthService;
-import com.teamup.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public UserResponse login(@Valid @RequestBody LoginRequest request) {
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }
 }

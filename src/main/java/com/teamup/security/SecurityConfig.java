@@ -1,4 +1,4 @@
-package com.teamup.config;
+package com.teamup.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

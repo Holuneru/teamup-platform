@@ -11,6 +11,7 @@ import com.teamup.repository.ProjectRepository;
 import com.teamup.repository.SkillRepository;
 import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -28,8 +29,12 @@ public class ProjectService {
 
     public ProjectResponse createProject(CreateProjectRequest request) {
 
-        User owner = userRepository.findById(request.getOwnerId())
-                .orElseThrow(() -> new UserNotFoundException(request.getOwnerId()));
+        Long ownerId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> new UserNotFoundException(ownerId));
 
         Set<Skill> skills = new HashSet<>(
                 skillRepository.findAllById(request.getRequiredSkillIds())
@@ -40,7 +45,7 @@ public class ProjectService {
                 .description(request.getDescription())
                 .owner(owner)
                 .requiredSkills(skills)
-                .members(new HashSet<>()) // 🔥 ВАЖНО: фикс инициализации
+                .members(new HashSet<>())
                 .build();
 
         Project saved = projectRepository.save(project);
@@ -58,6 +63,19 @@ public class ProjectService {
     }
 
     public List<ProjectResponse> getByOwner(Long ownerId) {
+
+        List<Project> projects = projectRepository.findByOwnerIdWithMembers(ownerId);
+
+        return projects.stream()
+                .map(projectMapper::toResponse)
+                .toList();
+    }
+
+    public List<ProjectResponse> getMyProjects() {
+
+        Long ownerId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
 
         List<Project> projects = projectRepository.findByOwnerIdWithMembers(ownerId);
 

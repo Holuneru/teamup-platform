@@ -23,7 +23,11 @@ export default function Login() {
 
         try {
 
-            await login(form);
+            const response = await login(form);
+
+            // 🔥 ВОТ СЮДА ДОБАВЛЯЕШЬ
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
 
             alert("Успешный вход");
 
