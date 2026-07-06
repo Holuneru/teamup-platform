@@ -11,8 +11,12 @@ import java.time.LocalDateTime;
 public class ApplicationResponse {
 
     private Long id;
+
     private Long projectId;
-    private Long userId;
+
+    private UserShortResponse applicant;
+
     private ApplicationStatus status;
+
     private LocalDateTime createdAt;
 }

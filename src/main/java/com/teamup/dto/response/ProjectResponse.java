@@ -27,5 +27,5 @@ public class ProjectResponse {
 
     private LocalDateTime createdAt;
 
-    private Set<UserShortResponse> members;
+
 }

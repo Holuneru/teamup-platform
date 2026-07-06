@@ -2,7 +2,7 @@ package com.teamup.controller;
 
 import com.teamup.dto.request.CreateApplicationRequest;
 import com.teamup.dto.response.ApplicationResponse;
-import com.teamup.entity.ProjectMember;
+import com.teamup.dto.response.ProjectMemberResponse;
 import com.teamup.service.ProjectApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ public class ProjectApplicationController {
 
     private final ProjectApplicationService service;
 
-    // APPLY
+    // 📌 APPLY
     @PostMapping("/{projectId}/apply")
     public ApplicationResponse apply(
             @PathVariable Long projectId,
@@ -26,27 +26,31 @@ public class ProjectApplicationController {
         return service.apply(projectId, request);
     }
 
-    // APPLICATIONS
+    // 📌 APPLICATIONS
     @GetMapping("/{projectId}/applications")
-    public List<ApplicationResponse> getApplications(@PathVariable Long projectId) {
+    public List<ApplicationResponse> getApplications(
+            @PathVariable Long projectId
+    ) {
         return service.getByProject(projectId);
     }
 
-    // ACCEPT
+    // 📌 ACCEPT
     @PostMapping("/applications/{id}/accept")
     public ApplicationResponse accept(@PathVariable Long id) {
         return service.accept(id);
     }
 
-    // REJECT
+    // 📌 REJECT
     @PostMapping("/applications/{id}/reject")
     public ApplicationResponse reject(@PathVariable Long id) {
         return service.reject(id);
     }
 
-    // MEMBERS
+    // 📌 MEMBERS
     @GetMapping("/{projectId}/members")
-    public List<ProjectMember> getMembers(@PathVariable Long projectId) {
+    public List<ProjectMemberResponse> getMembers(
+            @PathVariable Long projectId
+    ) {
         return service.getMembers(projectId);
     }
 }

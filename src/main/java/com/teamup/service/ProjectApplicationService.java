@@ -2,11 +2,15 @@ package com.teamup.service;
 
 import com.teamup.dto.request.CreateApplicationRequest;
 import com.teamup.dto.response.ApplicationResponse;
+import com.teamup.dto.response.ProjectMemberResponse;
+import com.teamup.dto.response.UserShortResponse;
 import com.teamup.entity.ProjectApplication;
 import com.teamup.entity.ProjectMember;
+import com.teamup.entity.User;
 import com.teamup.enums.ApplicationStatus;
 import com.teamup.repository.ProjectApplicationRepository;
 import com.teamup.repository.ProjectMemberRepository;
+import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +22,11 @@ public class ProjectApplicationService {
 
     private final ProjectApplicationRepository repository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final UserRepository userRepository;
 
     // 📌 APPLY
     public ApplicationResponse apply(Long projectId, CreateApplicationRequest request) {
+
         repository.findByProjectIdAndUserId(projectId, request.getUserId())
                 .ifPresent(app -> {
                     throw new RuntimeException("Already applied");
@@ -39,6 +45,7 @@ public class ProjectApplicationService {
 
     // 📌 GET APPLICATIONS
     public List<ApplicationResponse> getByProject(Long projectId) {
+
         return repository.findByProjectId(projectId)
                 .stream()
                 .map(this::toResponse)
@@ -56,6 +63,7 @@ public class ProjectApplicationService {
         }
 
         app.setStatus(ApplicationStatus.ACCEPTED);
+
         repository.save(app);
 
         ProjectMember member = ProjectMember.builder()
@@ -80,6 +88,7 @@ public class ProjectApplicationService {
         }
 
         app.setStatus(ApplicationStatus.REJECTED);
+
         repository.save(app);
 
         projectMemberRepository
@@ -90,16 +99,43 @@ public class ProjectApplicationService {
     }
 
     // 📌 MEMBERS
-    public List<ProjectMember> getMembers(Long projectId) {
-        return projectMemberRepository.findByProjectId(projectId);
+    public List<ProjectMemberResponse> getMembers(Long projectId) {
+
+        return projectMemberRepository.findByProjectId(projectId)
+                .stream()
+                .map(member -> {
+
+                    User user = userRepository.findById(member.getUserId())
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+
+                    return ProjectMemberResponse.builder()
+                            .id(user.getId())
+                            .firstName(user.getFirstName())
+                            .lastName(user.getLastName())
+                            .avatarUrl(user.getAvatarUrl())
+                            .role(member.getRole())
+                            .build();
+                })
+                .toList();
     }
 
     // 📌 mapper
     private ApplicationResponse toResponse(ProjectApplication app) {
+
+        User user = userRepository.findById(app.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         return ApplicationResponse.builder()
                 .id(app.getId())
                 .projectId(app.getProjectId())
-                .userId(app.getUserId())
+                .applicant(
+                        UserShortResponse.builder()
+                                .id(user.getId())
+                                .firstName(user.getFirstName())
+                                .lastName(user.getLastName())
+                                .avatarUrl(user.getAvatarUrl())
+                                .build()
+                )
                 .status(app.getStatus())
                 .createdAt(app.getCreatedAt())
                 .build();

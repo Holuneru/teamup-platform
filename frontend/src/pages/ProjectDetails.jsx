@@ -7,6 +7,8 @@ export default function ProjectDetails() {
     const { id } = useParams();
 
     const [project, setProject] = useState(null);
+    const [members, setMembers] = useState([]);
+    const [applied, setApplied] = useState(false);
 
     useEffect(() => {
 
@@ -15,8 +17,10 @@ export default function ProjectDetails() {
             try {
 
                 const res = await api.get(`/projects/${id}`);
-
                 setProject(res.data);
+
+                const membersRes = await api.get(`/projects/${id}/members`);
+                setMembers(membersRes.data);
 
             } catch (err) {
 
@@ -29,6 +33,34 @@ export default function ProjectDetails() {
         fetchProject();
 
     }, [id]);
+
+    const handleApply = async () => {
+
+        try {
+
+            const user = JSON.parse(localStorage.getItem("user"));
+
+            await api.post(`/projects/${id}/apply`, {
+                userId: user.id
+            });
+
+            setApplied(true);
+
+            alert("Application sent!");
+
+        } catch (err) {
+
+            console.log(err);
+
+            if (err.response?.data?.message) {
+                alert(err.response.data.message);
+            } else {
+                alert("You have already applied or an error occurred.");
+            }
+
+        }
+
+    };
 
     if (!project) {
         return <h2>Loading...</h2>;
@@ -73,13 +105,17 @@ export default function ProjectDetails() {
 
             <h3>Members</h3>
 
-            {!project.members || project.members.length === 0 ? (
+            {members.length === 0 ? (
                 <p>No members yet.</p>
             ) : (
                 <ul>
-                    {project.members.map(member => (
+                    {members.map(member => (
                         <li key={member.id}>
                             {member.firstName} {member.lastName}
+                            {" "}
+                            <span style={{ color: "#666" }}>
+                                ({member.role})
+                            </span>
                         </li>
                     ))}
                 </ul>
@@ -87,8 +123,11 @@ export default function ProjectDetails() {
 
             <br />
 
-            <button>
-                Apply to project
+            <button
+                onClick={handleApply}
+                disabled={applied}
+            >
+                {applied ? "Application sent" : "Apply to project"}
             </button>
 
         </div>

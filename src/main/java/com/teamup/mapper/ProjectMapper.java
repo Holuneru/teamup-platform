@@ -48,23 +48,6 @@ public class ProjectMapper {
                                   .collect(Collectors.toSet())
                 )
 
-                // members
-                .members(
-                        project.getMembers() == null
-                                ? Set.of()
-                                : project.getMembers()
-                                  .stream()
-                                  .map(user ->
-                                          UserShortResponse.builder()
-                                          .id(user.getId())
-                                          .firstName(user.getFirstName())
-                                          .lastName(user.getLastName())
-                                          .avatarUrl(user.getAvatarUrl())
-                                          .build()
-                                  )
-                                  .collect(Collectors.toSet())
-                )
-
                 .createdAt(project.getCreatedAt())
                 .build();
     }
