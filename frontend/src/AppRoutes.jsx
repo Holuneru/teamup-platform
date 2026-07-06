@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
+import EditProfile from "./pages/EditProfile";
 
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
@@ -13,6 +14,8 @@ import MyProjects from "./pages/MyProjects";
 
 import ProjectApplications from "./pages/ProjectApplications";
 import ProjectManage from "./pages/ProjectManage";
+
+
 
 export default function AppRoutes() {
 
@@ -46,6 +49,11 @@ export default function AppRoutes() {
                 <Route
                     path="/home"
                     element={<Home />}
+                />
+
+                <Route
+                    path="/profile/edit"
+                    element={<EditProfile />}
                 />
 
                 {/* Позже переименуем */}
