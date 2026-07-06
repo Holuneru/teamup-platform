@@ -1,6 +1,8 @@
 package com.teamup.dto.response;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -11,10 +13,19 @@ import java.util.Set;
 public class ProjectResponse {
 
     private Long id;
+
     private String title;
+
     private String description;
+
     private Long ownerId;
+
+    // 🔥 Новый объект владельца
+    private UserShortResponse owner;
+
     private Set<String> requiredSkills;
+
     private LocalDateTime createdAt;
+
     private Set<UserShortResponse> members;
 }

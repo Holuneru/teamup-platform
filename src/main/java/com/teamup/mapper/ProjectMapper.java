@@ -19,12 +19,26 @@ public class ProjectMapper {
                 .title(project.getTitle())
                 .description(project.getDescription())
 
-                // ✅ owner safe
-                .ownerId(project.getOwner() != null
-                        ? project.getOwner().getId()
-                        : null)
+                // owner id
+                .ownerId(
+                        project.getOwner() != null
+                                ? project.getOwner().getId()
+                                : null
+                )
 
-                // ✅ skills safe
+                // 🔥 полноценный owner
+                .owner(
+                        project.getOwner() == null
+                                ? null
+                                : UserShortResponse.builder()
+                                  .id(project.getOwner().getId())
+                                  .firstName(project.getOwner().getFirstName())
+                                  .lastName(project.getOwner().getLastName())
+                                  .avatarUrl(project.getOwner().getAvatarUrl())
+                                  .build()
+                )
+
+                // skills
                 .requiredSkills(
                         project.getRequiredSkills() == null
                                 ? Set.of()
@@ -34,18 +48,19 @@ public class ProjectMapper {
                                   .collect(Collectors.toSet())
                 )
 
-                // ✅ members safe + DTO mapping
+                // members
                 .members(
                         project.getMembers() == null
                                 ? Set.of()
                                 : project.getMembers()
                                   .stream()
-                                  .map(user -> UserShortResponse.builder()
-                                               .id(user.getId())
-                                               .firstName(user.getFirstName())
-                                               .lastName(user.getLastName())
-                                               .avatarUrl(user.getAvatarUrl())
-                                               .build()
+                                  .map(user ->
+                                          UserShortResponse.builder()
+                                          .id(user.getId())
+                                          .firstName(user.getFirstName())
+                                          .lastName(user.getLastName())
+                                          .avatarUrl(user.getAvatarUrl())
+                                          .build()
                                   )
                                   .collect(Collectors.toSet())
                 )

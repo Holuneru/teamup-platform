@@ -6,7 +6,7 @@ import Projects from "./pages/Projects";
 import ProjectApplications from "./pages/ProjectApplications";
 import MyProjects from "./pages/MyProjects";
 import ProjectManage from "./pages/ProjectManage";
-
+import ProjectDetails from "./pages/ProjectDetails";
 
 
 
@@ -21,6 +21,8 @@ export default function AppRoutes() {
                 <Route path="/home" element={<Home />} />
 
                 <Route path="/projects" element={<Projects />} />
+                <Route path="/projects/:id" element={<ProjectDetails />} />
+
                 <Route path="/my-projects" element={<MyProjects />} />
 
                 <Route path="/projects/:id/applications" element={<ProjectApplications />} />

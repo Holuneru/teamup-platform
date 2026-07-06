@@ -62,6 +62,14 @@ public class ProjectService {
                 .toList();
     }
 
+    public ProjectResponse getById(Long id) {
+
+        Project project = projectRepository.findByIdWithMembers(id)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        return projectMapper.toResponse(project);
+    }
+
     public List<ProjectResponse> getByOwner(Long ownerId) {
 
         List<Project> projects = projectRepository.findByOwnerIdWithMembers(ownerId);

@@ -35,4 +35,9 @@ public class ProjectController {
     public List<ProjectResponse> getMyProjects() {
         return projectService.getMyProjects();
     }
+
+    @GetMapping("/{id}")
+    public ProjectResponse getById(@PathVariable Long id) {
+        return projectService.getById(id);
+    }
 }

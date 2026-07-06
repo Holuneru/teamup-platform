@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useParams } from "react-router-dom";
+import api from "../api/axios";
 
 export default function ProjectManage() {
     const { id } = useParams();
@@ -10,24 +10,28 @@ export default function ProjectManage() {
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [id]);
 
     const loadData = () => {
-        axios.get(`http://localhost:8080/api/projects/${id}/applications`)
-            .then(res => setApplications(res.data));
+        api.get(`/projects/${id}/applications`)
+            .then(res => setApplications(res.data))
+            .catch(err => console.error("Ошибка загрузки заявок:", err.response?.status, err.response?.data ?? err.message));
 
-        axios.get(`http://localhost:8080/api/projects/${id}/members`)
-            .then(res => setMembers(res.data));
+        api.get(`/projects/${id}/members`)
+            .then(res => setMembers(res.data))
+            .catch(err => console.error("Ошибка загрузки участников:", err.response?.status, err.response?.data ?? err.message));
     };
 
     const accept = (appId) => {
-        axios.post(`http://localhost:8080/api/projects/applications/${appId}/accept`)
-            .then(() => loadData());
+        api.post(`/projects/applications/${appId}/accept`)
+            .then(() => loadData())
+            .catch(err => console.error("Ошибка при accept:", err.response?.status, err.response?.data ?? err.message));
     };
 
     const reject = (appId) => {
-        axios.post(`http://localhost:8080/api/projects/applications/${appId}/reject`)
-            .then(() => loadData());
+        api.post(`/projects/applications/${appId}/reject`)
+            .then(() => loadData())
+            .catch(err => console.error("Ошибка при reject:", err.response?.status, err.response?.data ?? err.message));
     };
 
     return (
@@ -54,9 +58,11 @@ export default function ProjectManage() {
 
             <h2>Members</h2>
 
+            {members.length === 0 && <p>No members yet</p>}
+
             {members.map(m => (
                 <div key={m.id}>
-                    User ID: {m.userId} | Role: {m.role}
+                    User ID: {m.userId ?? m.user?.id ?? "?"} | Role: {m.role}
                 </div>
             ))}
         </div>
