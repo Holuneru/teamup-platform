@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../api/auth";
+import "../styles/auth.css";
 
 export default function Register() {
 
@@ -10,7 +11,13 @@ export default function Register() {
         firstName: "",
         lastName: "",
         email: "",
-        password: ""
+        password: "",
+
+        university: "",
+        course: "",
+        about: "",
+        telegram: "",
+        github: ""
     });
 
     const handleChange = (e) => {
@@ -27,7 +34,7 @@ export default function Register() {
 
             await register(form);
 
-            alert("Пользователь успешно зарегистрирован!");
+            alert("Registration successful!");
 
             navigate("/login");
 
@@ -38,60 +45,131 @@ export default function Register() {
             if (error.response?.data?.message) {
                 alert(error.response.data.message);
             } else {
-                alert("Ошибка регистрации");
+                alert("Registration failed.");
             }
         }
     };
 
     return (
-        <div>
+        <div className="auth-page">
 
-            <h2>Register</h2>
+            <form className="auth-card" onSubmit={handleSubmit}>
 
-            <form onSubmit={handleSubmit}>
+                <h2>Create account</h2>
+
+                <p style={{ marginBottom: "20px", color: "#666", fontSize: "14px" }}>
+                    Fields marked with <b>*</b> are required.
+                </p>
+
+                <h3 style={{ textAlign: "left" }}>
+                    Personal Information
+                </h3>
+
+                <p style={{ textAlign: "left", color: "#888", fontSize: "13px" }}>
+                    Required
+                </p>
 
                 <input
-                    type="text"
+                    className="auth-input"
                     name="firstName"
-                    placeholder="First name"
+                    placeholder="First Name *"
                     value={form.firstName}
                     onChange={handleChange}
                 />
 
-                <br /><br />
-
                 <input
-                    type="text"
+                    className="auth-input"
                     name="lastName"
-                    placeholder="Last name"
+                    placeholder="Last Name *"
                     value={form.lastName}
                     onChange={handleChange}
                 />
 
-                <br /><br />
-
                 <input
+                    className="auth-input"
                     type="email"
                     name="email"
-                    placeholder="Email"
+                    placeholder="Email *"
                     value={form.email}
                     onChange={handleChange}
                 />
 
-                <br /><br />
-
                 <input
+                    className="auth-input"
                     type="password"
                     name="password"
-                    placeholder="Password"
+                    placeholder="Password *"
                     value={form.password}
                     onChange={handleChange}
                 />
 
-                <br /><br />
+                <hr />
 
-                <button type="submit">
-                    Register
+                <h3 style={{ textAlign: "left" }}>
+                    Academic Information
+                </h3>
+
+                <p style={{ textAlign: "left", color: "#888", fontSize: "13px" }}>
+                    Optional
+                </p>
+
+                <input
+                    className="auth-input"
+                    name="university"
+                    placeholder="University"
+                    value={form.university}
+                    onChange={handleChange}
+                />
+
+                <input
+                    className="auth-input"
+                    type="number"
+                    name="course"
+                    placeholder="Course"
+                    value={form.course}
+                    onChange={handleChange}
+                />
+
+                <hr />
+
+                <h3 style={{ textAlign: "left" }}>
+                    Profile
+                </h3>
+
+                <p style={{ textAlign: "left", color: "#888", fontSize: "13px" }}>
+                    Optional
+                </p>
+
+                <textarea
+                    className="auth-input"
+                    rows="4"
+                    name="about"
+                    placeholder="Tell us about yourself..."
+                    value={form.about}
+                    onChange={handleChange}
+                />
+
+                <input
+                    className="auth-input"
+                    name="telegram"
+                    placeholder="Telegram"
+                    value={form.telegram}
+                    onChange={handleChange}
+                />
+
+                <input
+                    className="auth-input"
+                    name="github"
+                    placeholder="GitHub"
+                    value={form.github}
+                    onChange={handleChange}
+                />
+
+                <button
+                    className="auth-button"
+                    type="submit"
+                >
+                    Create Account
                 </button>
 
             </form>

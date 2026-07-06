@@ -1,0 +1,154 @@
+.project-details {
+    max-width: 950px;
+    margin: 40px auto;
+    padding: 0 25px;
+}
+
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.project-header h1 {
+    margin: 0;
+    font-size: 42px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.project-meta {
+    margin-top: 8px;
+    color: #6b7280;
+    font-size: 15px;
+}
+
+.apply-button {
+    border: none;
+    border-radius: 10px;
+    background: #2563eb;
+    color: white;
+    padding: 14px 26px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+    white-space: nowrap;
+}
+
+.apply-button:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.apply-button:disabled {
+    background: #9ca3af;
+    cursor: default;
+}
+
+.project-section {
+    padding: 28px 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+.project-section:first-of-type {
+    border-top: none;
+}
+
+.project-section h2 {
+    margin: 0 0 18px;
+    font-size: 28px;
+    color: #111827;
+}
+
+.section-subtitle {
+    margin-top: 35px;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #374151;
+}
+
+.project-description {
+    color: #4b5563;
+    line-height: 1.8;
+    font-size: 17px;
+}
+
+.skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.skill {
+    background: #eef4ff;
+    color: #2563eb;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.person-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 0;
+}
+
+.person-row:not(:last-child) {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.person-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.person-subtitle {
+    margin-top: 4px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.empty-text {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+
+    .project-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .apply-button {
+        width: 100%;
+    }
+
+    .project-header h1 {
+        font-size: 34px;
+    }
+
+    .project-section h2 {
+        font-size: 24px;
+    }
+
+}

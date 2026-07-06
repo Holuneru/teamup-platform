@@ -25,13 +25,13 @@ export default function Login() {
 
             const response = await login(form);
 
-            // 🔥 ВОТ СЮДА ДОБАВЛЯЕШЬ
             localStorage.setItem("token", response.data.token);
             localStorage.setItem("user", JSON.stringify(response.data.user));
 
             alert("Успешный вход");
 
-            navigate("/home");
+            // ✅ Теперь после входа открывается Dashboard
+            navigate("/dashboard");
 
         } catch {
 
@@ -41,27 +41,33 @@ export default function Login() {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <div className="auth-page">
 
-            <h2>Login</h2>
+            <form className="auth-card" onSubmit={handleSubmit}>
 
-            <input
-                name="email"
-                placeholder="Email"
-                onChange={handleChange}
-            />
+                <h2>Login</h2>
 
-            <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                onChange={handleChange}
-            />
+                <input
+                    className="auth-input"
+                    name="email"
+                    placeholder="Email"
+                    onChange={handleChange}
+                />
 
-            <button type="submit">
-                Login
-            </button>
+                <input
+                    className="auth-input"
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    onChange={handleChange}
+                />
 
-        </form>
+                <button className="auth-button">
+                    Login
+                </button>
+
+            </form>
+
+        </div>
     );
 }
