@@ -43,10 +43,12 @@ public class ProjectApplicationService {
         return toResponse(app);
     }
 
-    // 📌 GET APPLICATIONS
     public List<ApplicationResponse> getByProject(Long projectId) {
 
-        return repository.findByProjectId(projectId)
+        return repository.findByProjectIdAndStatus(
+                        projectId,
+                        ApplicationStatus.PENDING
+                )
                 .stream()
                 .map(this::toResponse)
                 .toList();

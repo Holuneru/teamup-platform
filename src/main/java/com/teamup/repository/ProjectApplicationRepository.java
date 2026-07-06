@@ -1,6 +1,7 @@
 package com.teamup.repository;
 
 import com.teamup.entity.ProjectApplication;
+import com.teamup.enums.ApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +13,9 @@ public interface ProjectApplicationRepository extends JpaRepository<ProjectAppli
     List<ProjectApplication> findByProjectId(Long projectId);
 
     Optional<ProjectApplication> findByProjectIdAndUserId(Long projectId, Long userId);
+
+    List<ProjectApplication> findByProjectIdAndStatus(
+            Long projectId,
+            ApplicationStatus status
+    );
 }

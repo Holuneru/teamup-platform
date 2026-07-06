@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+
+import Layout from "../components/Layout";
 import api from "../api/axios";
+
+import "./project-manage.css";
 
 export default function ProjectManage() {
 
@@ -34,6 +38,7 @@ export default function ProjectManage() {
                     err.response?.data ?? err.message
                 )
             );
+
     };
 
     const accept = (appId) => {
@@ -47,6 +52,7 @@ export default function ProjectManage() {
                     err.response?.data ?? err.message
                 )
             );
+
     };
 
     const reject = (appId) => {
@@ -60,83 +66,129 @@ export default function ProjectManage() {
                     err.response?.data ?? err.message
                 )
             );
+
     };
 
     return (
-        <div style={{ padding: "20px" }}>
 
-            <h1>Project Management</h1>
+        <Layout>
 
-            <h2>Applications</h2>
+            <div className="project-manage">
 
-            {applications.length === 0 && (
-                <p>No applications</p>
-            )}
+                <h1>Project Management</h1>
 
-            {applications.map(app => (
-                <div
-                    key={app.id}
-                    style={{
-                        border: "1px solid #ccc",
-                        borderRadius: "8px",
-                        padding: "15px",
-                        marginBottom: "15px"
-                    }}
-                >
+                <p className="page-subtitle">
+                    Review applications and manage your team.
+                </p>
 
-                    <h3>
-                        {app.applicant.firstName} {app.applicant.lastName}
-                    </h3>
+                <section>
 
-                    <p>
-                        <b>Status:</b> {app.status}
-                    </p>
+                    <h2>Pending Applications</h2>
 
-                    {app.status === "PENDING" && (
-                        <>
-                            <button onClick={() => accept(app.id)}>
-                                Accept
-                            </button>
+                    {applications.length === 0 ? (
 
-                            {" "}
+                        <div className="empty-state">
+                            No applications yet.
+                        </div>
 
-                            <button onClick={() => reject(app.id)}>
-                                Reject
-                            </button>
-                        </>
+                    ) : (
+
+                        applications.map(app => (
+
+                            <div
+                                key={app.id}
+                                className="manage-card"
+                            >
+
+                                <div>
+
+                                    <h3>
+                                        {app.applicant.firstName} {app.applicant.lastName}
+                                    </h3>
+
+                                    <p className="status">
+                                        {app.status}
+                                    </p>
+
+                                </div>
+
+                                {app.status === "PENDING" && (
+
+                                    <div className="actions">
+
+                                        <button
+                                            className="reject-button"
+                                            onClick={() => reject(app.id)}
+                                        >
+                                            Reject
+                                        </button>
+
+                                        <button
+                                            className="accept-button"
+                                            onClick={() => accept(app.id)}
+                                        >
+                                            Accept
+                                        </button>
+
+                                    </div>
+
+                                )}
+
+                            </div>
+
+                        ))
+
                     )}
 
-                </div>
-            ))}
+                </section>
 
-            <h2>Members</h2>
+                <section>
 
-            {members.length === 0 && (
-                <p>No members yet</p>
-            )}
+                    <h2>Current Team</h2>
 
-            {members.map(member => (
-                <div
-                    key={member.id}
-                    style={{
-                        border: "1px solid #ddd",
-                        borderRadius: "8px",
-                        padding: "10px",
-                        marginBottom: "10px"
-                    }}
-                >
+                    {members.length === 0 ? (
 
-                    <h3>
-                        {member.firstName} {member.lastName}
-                    </h3>
+                        <div className="empty-state">
+                            No members yet.
+                        </div>
 
-                    <p>
-                        <b>Role:</b> {member.role}
-                    </p>
+                    ) : (
 
-                </div>
-            ))}
+                        members.map(member => (
 
-        </div>
+                            <div
+                                key={member.id}
+                                className="member-card"
+                            >
+
+                                <div>
+
+                                    <h3>
+
+                                        {member.firstName} {member.lastName}
+
+                                    </h3>
+
+                                    <p className="member-role">
+
+                                        {member.role}
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        ))
+
+                    )}
+
+                </section>
+
+            </div>
+
+        </Layout>
+
     );
+
 }
