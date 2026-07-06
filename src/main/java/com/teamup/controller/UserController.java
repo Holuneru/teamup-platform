@@ -30,4 +30,10 @@ public class UserController {
         return skillService.updateUserSkills(userId, request);
     }
 
+    @GetMapping("/me")
+    public UserResponse getMe(@RequestHeader("Authorization") String authHeader) {
+
+        return userService.getMe(authHeader);
+    }
+
 }
