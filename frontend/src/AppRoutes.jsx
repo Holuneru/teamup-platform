@@ -1,9 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Landing from "./pages/Landing";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 import Dashboard from "./pages/Dashboard";
+
 import Home from "./pages/Home";
 import EditProfile from "./pages/EditProfile";
 
@@ -15,20 +18,21 @@ import MyProjects from "./pages/MyProjects";
 import ProjectApplications from "./pages/ProjectApplications";
 import ProjectManage from "./pages/ProjectManage";
 
-
-
 export default function AppRoutes() {
 
     return (
+
         <BrowserRouter>
 
             <Routes>
 
+                {/* Главная страница */}
                 <Route
                     path="/"
-                    element={<Navigate to="/login" />}
+                    element={<Landing />}
                 />
 
+                {/* Авторизация */}
                 <Route
                     path="/login"
                     element={<Login />}
@@ -45,9 +49,14 @@ export default function AppRoutes() {
                     element={<Dashboard />}
                 />
 
-                {/* Пока Home остается профилем */}
+                {/* Профиль */}
                 <Route
                     path="/home"
+                    element={<Home />}
+                />
+
+                <Route
+                    path="/profile"
                     element={<Home />}
                 />
 
@@ -56,13 +65,7 @@ export default function AppRoutes() {
                     element={<EditProfile />}
                 />
 
-                {/* Позже переименуем */}
-                <Route
-                    path="/profile"
-                    element={<Home />}
-                />
-
-                {/* Projects */}
+                {/* Проекты */}
                 <Route
                     path="/projects"
                     element={<Projects />}
@@ -73,13 +76,13 @@ export default function AppRoutes() {
                     element={<ProjectDetails />}
                 />
 
-                {/* My Projects */}
+                {/* Мои проекты */}
                 <Route
                     path="/my-projects"
                     element={<MyProjects />}
                 />
 
-                {/* Management */}
+                {/* Управление проектом */}
                 <Route
                     path="/projects/:id/applications"
                     element={<ProjectApplications />}
@@ -99,5 +102,7 @@ export default function AppRoutes() {
             </Routes>
 
         </BrowserRouter>
+
     );
+
 }

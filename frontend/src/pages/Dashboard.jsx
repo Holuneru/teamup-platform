@@ -1,10 +1,24 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import Layout from "../components/Layout";
+import api from "../api/axios";
+
 import "./dashboard.css";
 
 export default function Dashboard() {
 
+    const [projects, setProjects] = useState([]);
+
     const navigate = useNavigate();
+
+    useEffect(() => {
+
+        api.get("/projects")
+            .then(res => setProjects(res.data))
+            .catch(console.log);
+
+    }, []);
 
     return (
 
@@ -14,79 +28,77 @@ export default function Dashboard() {
 
                 <div className="dashboard-header">
 
-                    <h1>Welcome to TeamUp</h1>
+                    <h1>Latest Projects</h1>
 
                     <p>
-                        Collaborate, build projects and find teammates.
+                        Discover projects and join a team.
                     </p>
 
                 </div>
 
-                <div className="dashboard-grid">
+                <div className="dashboard-feed">
 
-                    <div className="dashboard-card">
+                    {projects.map(project => (
 
-                        <h2>Profile</h2>
-
-                        <p>
-                            View and edit your personal information.
-                        </p>
-
-                        <button
-                            onClick={() => navigate("/profile")}
+                        <div
+                            key={project.id}
+                            className="project-feed-card"
                         >
-                            Open Profile
-                        </button>
 
-                    </div>
+                            <div className="feed-top">
 
-                    <div className="dashboard-card">
+                                <div>
 
-                        <h2>Browse Projects</h2>
+                                    <h2>
 
-                        <p>
-                            Explore projects created by other students.
-                        </p>
+                                        {project.title}
 
-                        <button
-                            onClick={() => navigate("/projects")}
-                        >
-                            Browse
-                        </button>
+                                    </h2>
 
-                    </div>
+                                    <span>
 
-                    <div className="dashboard-card">
+                                        by {project.owner.firstName}{" "}
+                                        {project.owner.lastName}
 
-                        <h2>My Projects</h2>
+                                    </span>
 
-                        <p>
-                            Manage your own projects and applications.
-                        </p>
+                                </div>
 
-                        <button
-                            onClick={() => navigate("/my-projects")}
-                        >
-                            Open
-                        </button>
+                                <button
+                                    className="open-project-button"
+                                    onClick={() =>
+                                        navigate(`/projects/${project.id}`)
+                                    }
+                                >
+                                    Open
+                                </button>
 
-                    </div>
+                            </div>
 
-                    <div className="dashboard-card">
+                            <p className="feed-description">
 
-                        <h2>Create Project</h2>
+                                {project.description}
 
-                        <p>
-                            Start building a new team project.
-                        </p>
+                            </p>
 
-                        <button
-                            onClick={() => navigate("/create-project")}
-                        >
-                            Create
-                        </button>
+                            <div className="feed-skills">
 
-                    </div>
+                                {project.requiredSkills.map(skill => (
+
+                                    <span
+                                        key={skill}
+                                        className="skill"
+                                    >
+                                        {skill}
+                                    </span>
+
+                                ))}
+
+                            </div>
+
+                        </div>
+
+                    ))}
 
                 </div>
 
@@ -95,4 +107,5 @@ export default function Dashboard() {
         </Layout>
 
     );
+
 }
