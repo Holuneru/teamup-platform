@@ -53,7 +53,14 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+
+                        // Авторизация
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // 👇 Разрешаем изображения
+                        .requestMatchers("/uploads/**").permitAll()
+
+                        // Всё остальное требует JWT
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

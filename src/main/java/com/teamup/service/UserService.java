@@ -65,4 +65,9 @@ public class UserService {
 
     }
 
+
+    public Long extractUserId(String token) {
+        return jwtService.extractUserId(token);
+    }
+
 }

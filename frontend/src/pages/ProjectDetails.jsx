@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import api from "../api/axios";
+
 import Layout from "../components/Layout";
+import UserAvatar from "../components/UserAvatar";
 
 import "./project-details.css";
 
 export default function ProjectDetails() {
 
-    const { id } =useParams();
+    const { id } = useParams();
 
     const [project, setProject] = useState(null);
     const [members, setMembers] = useState([]);
@@ -67,14 +69,21 @@ export default function ProjectDetails() {
     };
 
     if (!project) {
+
         return (
+
             <Layout>
+
                 <h2>Loading...</h2>
+
             </Layout>
+
         );
+
     }
 
     return (
+
         <Layout>
 
             <div className="project-details">
@@ -86,7 +95,9 @@ export default function ProjectDetails() {
                         <h1>{project.title}</h1>
 
                         <p className="project-meta">
+
                             {members.length} member{members.length !== 1 ? "s" : ""}
+
                         </p>
 
                     </div>
@@ -106,11 +117,15 @@ export default function ProjectDetails() {
                     <h2>Description</h2>
 
                     <p className="project-description">
+
                         {project.description}
+
                     </p>
 
                     <h3 className="section-subtitle">
+
                         Required Skills
+
                     </h3>
 
                     <div className="skills">
@@ -118,8 +133,10 @@ export default function ProjectDetails() {
                         {project.requiredSkills?.length === 0 ? (
 
                             <span className="empty-text">
-                            No required skills
-                        </span>
+
+                                No required skills
+
+                            </span>
 
                         ) : (
 
@@ -129,8 +146,8 @@ export default function ProjectDetails() {
                                     key={skill}
                                     className="skill"
                                 >
-                                {skill}
-                            </span>
+                                    {skill}
+                                </span>
 
                             ))
 
@@ -146,33 +163,16 @@ export default function ProjectDetails() {
 
                     {project.owner ? (
 
-                        <div className="person-row">
-
-                            <div className="avatar">
-
-                                {project.owner.firstName.charAt(0)}
-                                {project.owner.lastName.charAt(0)}
-
-                            </div>
-
-                            <div>
-
-                                <div className="person-name">
-                                    {project.owner.firstName} {project.owner.lastName}
-                                </div>
-
-                                <div className="person-subtitle">
-                                    Project Owner
-                                </div>
-
-                            </div>
-
-                        </div>
+                        <UserAvatar
+                            user={project.owner}
+                        />
 
                     ) : (
 
                         <p className="empty-text">
+
                             Unknown
+
                         </p>
 
                     )}
@@ -186,7 +186,9 @@ export default function ProjectDetails() {
                     {members.length === 0 ? (
 
                         <p className="empty-text">
+
                             No members yet
+
                         </p>
 
                     ) : (
@@ -195,25 +197,24 @@ export default function ProjectDetails() {
 
                             <div
                                 key={member.id}
-                                className="person-row"
+                                style={{
+                                    marginBottom: "16px"
+                                }}
                             >
 
-                                <div className="avatar">
+                                <UserAvatar
+                                    user={member}
+                                />
 
-                                    {member.firstName.charAt(0)}
-                                    {member.lastName.charAt(0)}
+                                <div
+                                    className="person-subtitle"
+                                    style={{
+                                        marginLeft: "58px",
+                                        marginTop: "4px"
+                                    }}
+                                >
 
-                                </div>
-
-                                <div>
-
-                                    <div className="person-name">
-                                        {member.firstName} {member.lastName}
-                                    </div>
-
-                                    <div className="person-subtitle">
-                                        {member.role}
-                                    </div>
+                                    {member.role}
 
                                 </div>
 
@@ -228,6 +229,7 @@ export default function ProjectDetails() {
             </div>
 
         </Layout>
+
     );
 
 }

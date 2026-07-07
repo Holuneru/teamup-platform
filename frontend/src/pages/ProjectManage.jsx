@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import Layout from "../components/Layout";
+import UserAvatar from "../components/UserAvatar";
+
 import api from "../api/axios";
 
 import "./project-manage.css";
@@ -14,13 +16,21 @@ export default function ProjectManage() {
     const [members, setMembers] = useState([]);
 
     useEffect(() => {
+
         loadData();
+
     }, [id]);
 
     const loadData = () => {
 
         api.get(`/projects/${id}/applications`)
-            .then(res => setApplications(res.data))
+            .then(res => {
+
+                setApplications(
+                    res.data.filter(app => app.status === "PENDING")
+                );
+
+            })
             .catch(err =>
                 console.error(
                     "Ошибка загрузки заявок:",
@@ -78,7 +88,9 @@ export default function ProjectManage() {
                 <h1>Project Management</h1>
 
                 <p className="page-subtitle">
+
                     Review applications and manage your team.
+
                 </p>
 
                 <section>
@@ -88,7 +100,9 @@ export default function ProjectManage() {
                     {applications.length === 0 ? (
 
                         <div className="empty-state">
-                            No applications yet.
+
+                            No pending applications.
+
                         </div>
 
                     ) : (
@@ -102,37 +116,41 @@ export default function ProjectManage() {
 
                                 <div>
 
-                                    <h3>
-                                        {app.applicant.firstName} {app.applicant.lastName}
-                                    </h3>
+                                    <UserAvatar
+                                        user={app.applicant}
+                                    />
 
-                                    <p className="status">
+                                    <p
+                                        className="status"
+                                        style={{
+                                            marginLeft: "58px",
+                                            marginTop: "6px"
+                                        }}
+                                    >
+
                                         {app.status}
+
                                     </p>
 
                                 </div>
 
-                                {app.status === "PENDING" && (
+                                <div className="actions">
 
-                                    <div className="actions">
+                                    <button
+                                        className="reject-button"
+                                        onClick={() => reject(app.id)}
+                                    >
+                                        Reject
+                                    </button>
 
-                                        <button
-                                            className="reject-button"
-                                            onClick={() => reject(app.id)}
-                                        >
-                                            Reject
-                                        </button>
+                                    <button
+                                        className="accept-button"
+                                        onClick={() => accept(app.id)}
+                                    >
+                                        Accept
+                                    </button>
 
-                                        <button
-                                            className="accept-button"
-                                            onClick={() => accept(app.id)}
-                                        >
-                                            Accept
-                                        </button>
-
-                                    </div>
-
-                                )}
+                                </div>
 
                             </div>
 
@@ -149,7 +167,9 @@ export default function ProjectManage() {
                     {members.length === 0 ? (
 
                         <div className="empty-state">
+
                             No members yet.
+
                         </div>
 
                     ) : (
@@ -163,13 +183,17 @@ export default function ProjectManage() {
 
                                 <div>
 
-                                    <h3>
+                                    <UserAvatar
+                                        user={member}
+                                    />
 
-                                        {member.firstName} {member.lastName}
-
-                                    </h3>
-
-                                    <p className="member-role">
+                                    <p
+                                        className="member-role"
+                                        style={{
+                                            marginLeft: "58px",
+                                            marginTop: "6px"
+                                        }}
+                                    >
 
                                         {member.role}
 

@@ -1,5 +1,7 @@
 package com.teamup.controller;
 
+import com.teamup.service.AvatarService;
+import org.springframework.web.multipart.MultipartFile;
 import com.teamup.dto.request.UpdateSkillsRequest;
 import com.teamup.dto.request.UpdateUserRequest;
 import com.teamup.dto.response.SkillResponse;
@@ -18,6 +20,7 @@ public class UserController {
 
     private final UserService userService;
     private final SkillService skillService;
+    private final AvatarService avatarService;
 
     @GetMapping("/{id}")
     public UserResponse getUser(@PathVariable Long id) {
@@ -62,6 +65,19 @@ public class UserController {
 
         return userService.updateMe(authHeader, request);
 
+    }
+
+    @PostMapping("/me/avatar")
+    public String uploadAvatar(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam("file") MultipartFile file
+    ) throws Exception {
+
+        String token = authHeader.substring(7);
+
+        Long userId = userService.extractUserId(token);
+
+        return avatarService.uploadAvatar(userId, file);
     }
 
 }

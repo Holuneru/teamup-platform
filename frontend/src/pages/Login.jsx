@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { login } from "../api/auth";
 import { useNavigate } from "react-router-dom";
+
+import { login } from "../api/auth";
+import { useUser } from "../context/UserContext";
 
 export default function Login() {
 
     const navigate = useNavigate();
+
+    const { refreshUser } = useUser();
 
     const [form, setForm] = useState({
         email: "",
@@ -12,25 +16,32 @@ export default function Login() {
     });
 
     const handleChange = (e) => {
+
         setForm({
             ...form,
             [e.target.name]: e.target.value
         });
+
     };
 
     const handleSubmit = async (e) => {
+
         e.preventDefault();
 
         try {
 
             const response = await login(form);
 
-            localStorage.setItem("token", response.data.token);
-            localStorage.setItem("user", JSON.stringify(response.data.user));
+            localStorage.setItem(
+                "token",
+                response.data.token
+            );
+
+            // обновляем пользователя в Context
+            await refreshUser();
 
             alert("Успешный вход");
 
-            // ✅ Теперь после входа открывается Dashboard
             navigate("/dashboard");
 
         } catch {
@@ -38,12 +49,17 @@ export default function Login() {
             alert("Неверный логин или пароль");
 
         }
+
     };
 
     return (
+
         <div className="auth-page">
 
-            <form className="auth-card" onSubmit={handleSubmit}>
+            <form
+                className="auth-card"
+                onSubmit={handleSubmit}
+            >
 
                 <h2>Login</h2>
 
@@ -63,11 +79,15 @@ export default function Login() {
                 />
 
                 <button className="auth-button">
+
                     Login
+
                 </button>
 
             </form>
 
         </div>
+
     );
+
 }

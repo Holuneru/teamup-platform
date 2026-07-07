@@ -1,43 +1,67 @@
-import { useEffect, useState } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
+
 import api from "../api/axios";
 
 import Layout from "../components/Layout";
+import { useUser } from "../context/UserContext";
 
 import "./profile.css";
 
 export default function Home() {
 
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const {
+
+        user,
+        loading,
+        refreshUser
+
+    } = useUser();
+
+    const fileInputRef = useRef(null);
 
     const navigate = useNavigate();
 
-    useEffect(() => {
+    const chooseAvatar = () => {
 
-        const fetchUser = async () => {
+        fileInputRef.current.click();
 
-            try {
+    };
 
-                const res = await api.get("/users/me");
+    const uploadAvatar = async (e) => {
 
-                setUser(res.data);
+        const file = e.target.files[0];
 
-            } catch (err) {
+        if (!file) return;
 
-                console.log(err);
+        try {
 
-            } finally {
+            const formData = new FormData();
 
-                setLoading(false);
+            formData.append("file", file);
 
-            }
+            await api.post(
+                "/users/me/avatar",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                }
+            );
 
-        };
+            // Обновляем пользователя во всем приложении
+            await refreshUser();
 
-        fetchUser();
+        } catch (err) {
 
-    }, []);
+            console.log(err);
+
+            alert("Unable to upload avatar.");
+
+        }
+
+    };
 
     if (loading) {
 
@@ -65,22 +89,37 @@ export default function Home() {
 
             <div className="profile-page">
 
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    onChange={uploadAvatar}
+                />
+
                 <div className="profile-header">
 
-                    <div className="profile-avatar">
+                    <div
+                        className="profile-avatar"
+                        onClick={chooseAvatar}
+                        style={{ cursor: "pointer" }}
+                        title="Change avatar"
+                    >
 
                         {user.avatarUrl ? (
 
                             <img
-                                src={user.avatarUrl}
+                                src={`http://localhost:8080${user.avatarUrl}`}
                                 alt="avatar"
                             />
 
                         ) : (
 
                             <div className="avatar-placeholder">
+
                                 {user.firstName[0]}
                                 {user.lastName[0]}
+
                             </div>
 
                         )}
@@ -90,11 +129,15 @@ export default function Home() {
                     <div className="profile-main">
 
                         <h1>
+
                             {user.firstName} {user.lastName}
+
                         </h1>
 
                         <p className="profile-email">
+
                             {user.email}
+
                         </p>
 
                     </div>
@@ -113,9 +156,11 @@ export default function Home() {
                     <h2>About</h2>
 
                     <p>
+
                         {user.about
                             ? user.about
                             : "No information yet."}
+
                     </p>
 
                 </div>
