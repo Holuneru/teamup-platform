@@ -1,10 +1,80 @@
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { useUser } from "../context/UserContext";
+
+import Sidebar from "./Sidebar";
 
 import "./layout.css";
 
+
 export default function Layout({ children }) {
 
-    const { user, loading } = useUser();
+
+    const navigate = useNavigate();
+
+
+    const { user, loading, setUser } = useUser();
+
+
+    const [menuOpen, setMenuOpen] = useState(false);
+
+
+    const menuRef = useRef(null);
+
+
+
+    useEffect(() => {
+
+
+        function handleClickOutside(event) {
+
+
+            if (
+                menuRef.current &&
+                !menuRef.current.contains(event.target)
+            ) {
+
+                setMenuOpen(false);
+
+            }
+
+
+        }
+
+
+        document.addEventListener(
+            "mousedown",
+            handleClickOutside
+        );
+
+
+        return () =>
+            document.removeEventListener(
+                "mousedown",
+                handleClickOutside
+            );
+
+
+    }, []);
+
+
+
+    const logout = () => {
+
+
+        localStorage.removeItem("token");
+
+
+        setUser(null);
+
+
+        navigate("/login");
+
+
+    };
+
+
 
     if (loading) {
 
@@ -12,65 +82,153 @@ export default function Layout({ children }) {
 
     }
 
+
+
     return (
 
         <div className="layout">
 
+
             <header className="topbar">
 
-                <div className="logo">
+
+                <div
+                    className="logo"
+                    onClick={() => navigate("/dashboard")}
+                >
 
                     TeamUp
 
                 </div>
 
-                <div className="user-info">
 
-                    <div className="avatar">
 
-                        {user?.avatarUrl ? (
+                <div
+                    className="user-menu"
+                    ref={menuRef}
+                >
 
-                            <img
-                                src={`http://localhost:8080${user.avatarUrl}`}
-                                alt="avatar"
-                            />
 
-                        ) : (
+                    <div
+                        className="user-info"
+                        onClick={() =>
+                            setMenuOpen(!menuOpen)
+                        }
+                    >
 
-                            <>
-                                {user?.firstName?.charAt(0)}
-                                {user?.lastName?.charAt(0)}
-                            </>
 
-                        )}
+                        <div className="avatar">
 
-                    </div>
 
-                    <div>
+                            {user?.avatarUrl ? (
 
-                        <div className="username">
 
-                            {user?.firstName} {user?.lastName}
+                                <img
+                                    src={`http://localhost:8080${user.avatarUrl}`}
+                                    alt="avatar"
+                                />
+
+
+                            ) : (
+
+
+                                <>
+                                    {user?.firstName?.charAt(0)}
+                                    {user?.lastName?.charAt(0)}
+                                </>
+
+
+                            )}
+
 
                         </div>
 
-                        <div className="email">
 
-                            {user?.email}
+                        <div>
+
+
+                            <div className="username">
+
+                                {user?.firstName} {user?.lastName}
+
+                            </div>
+
+
+                            <div className="email">
+
+                                {user?.email}
+
+                            </div>
+
 
                         </div>
 
+
                     </div>
+
+
+
+                    {menuOpen && (
+
+
+                        <div className="dropdown-menu">
+
+
+                            <button
+                                onClick={() => {
+
+                                    navigate("/profile");
+
+                                    setMenuOpen(false);
+
+                                }}
+                            >
+
+                                Profile
+
+                            </button>
+
+
+                            <button
+                                className="logout-button"
+                                onClick={logout}
+                            >
+
+                                Logout
+
+                            </button>
+
+
+                        </div>
+
+
+                    )}
+
 
                 </div>
 
+
             </header>
 
-            <main className="page">
 
-                {children}
 
-            </main>
+            <div className="content-layout">
+
+
+                <Sidebar />
+
+
+                <main className="page">
+
+
+                    {children}
+
+
+                </main>
+
+
+            </div>
+
 
         </div>
 

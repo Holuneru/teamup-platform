@@ -40,6 +40,26 @@ body {
 
     color: #2563eb;
 
+    cursor: pointer;
+
+    user-select: none;
+
+    transition: .2s ease;
+
+}
+
+.logo:hover {
+
+    color: #1d4ed8;
+
+    transform: scale(1.03);
+
+}
+
+.user-menu {
+
+    position: relative;
+
 }
 
 .user-info {
@@ -49,6 +69,16 @@ body {
     align-items: center;
 
     gap: 14px;
+
+    cursor: pointer;
+
+    transition: .2s;
+
+}
+
+.user-info:hover {
+
+    opacity: .85;
 
 }
 
@@ -77,8 +107,6 @@ body {
     overflow: hidden;
 
     flex-shrink: 0;
-
-    cursor: pointer;
 
     transition: transform .2s;
 
@@ -125,5 +153,98 @@ body {
     margin: auto;
 
     padding: 40px;
+
+}
+
+.dropdown-menu {
+
+    position: absolute;
+
+    right: 0;
+
+    top: 70px;
+
+    width: 180px;
+
+    background: white;
+
+    border-radius: 12px;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+
+    overflow: hidden;
+
+    animation: menuAppear .15s ease;
+
+}
+
+.dropdown-menu button {
+
+    width: 100%;
+
+    padding: 14px 18px;
+
+    border: none;
+
+    background: white;
+
+    color: #1f2937;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    font-size: 15px;
+
+    font-weight: 500;
+
+    transition: all .2s ease;
+
+}
+
+.dropdown-menu button:hover {
+
+    background: #f4f6fb;
+
+}
+
+.logout-button {
+
+    color: #dc2626;
+
+    font-weight: 600;
+
+}
+
+@keyframes menuAppear {
+
+    from {
+
+        opacity: 0;
+
+        transform: translateY(-8px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+    }
+
+}
+
+.content-layout {
+
+    display:flex;
+
+}
+
+
+.page {
+
+    flex:1;
 
 }

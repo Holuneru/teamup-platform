@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useUser } from "../context/UserContext";
+
 import api from "../api/axios";
 import Layout from "../components/Layout";
 
@@ -9,6 +11,8 @@ import "./edit-profile.css";
 export default function EditProfile() {
 
     const navigate = useNavigate();
+
+    const { refreshUser } = useUser();
 
     const [form, setForm] = useState({
         firstName: "",
@@ -56,6 +60,9 @@ export default function EditProfile() {
         try {
 
             await api.put("/users/me", form);
+
+            // Обновляем пользователя в UserContext
+            await refreshUser();
 
             alert("Profile updated!");
 
