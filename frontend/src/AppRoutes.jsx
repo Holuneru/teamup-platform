@@ -14,6 +14,7 @@ import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 
 import MyProjects from "./pages/MyProjects";
+import CreateProject from "./pages/CreateProject";
 
 import ProjectApplications from "./pages/ProjectApplications";
 import ProjectManage from "./pages/ProjectManage";
@@ -26,13 +27,11 @@ export default function AppRoutes() {
 
             <Routes>
 
-                {/* Главная страница */}
                 <Route
                     path="/"
                     element={<Landing />}
                 />
 
-                {/* Авторизация */}
                 <Route
                     path="/login"
                     element={<Login />}
@@ -43,13 +42,11 @@ export default function AppRoutes() {
                     element={<Register />}
                 />
 
-                {/* Dashboard */}
                 <Route
                     path="/dashboard"
                     element={<Dashboard />}
                 />
 
-                {/* Профиль */}
                 <Route
                     path="/home"
                     element={<Home />}
@@ -65,7 +62,6 @@ export default function AppRoutes() {
                     element={<EditProfile />}
                 />
 
-                {/* Проекты */}
                 <Route
                     path="/projects"
                     element={<Projects />}
@@ -76,13 +72,16 @@ export default function AppRoutes() {
                     element={<ProjectDetails />}
                 />
 
-                {/* Мои проекты */}
                 <Route
                     path="/my-projects"
                     element={<MyProjects />}
                 />
 
-                {/* Управление проектом */}
+                <Route
+                    path="/create-project"
+                    element={<CreateProject />}
+                />
+
                 <Route
                     path="/projects/:id/applications"
                     element={<ProjectApplications />}
@@ -93,7 +92,6 @@ export default function AppRoutes() {
                     element={<ProjectManage />}
                 />
 
-                {/* 404 */}
                 <Route
                     path="*"
                     element={<h1>404 NOT FOUND</h1>}

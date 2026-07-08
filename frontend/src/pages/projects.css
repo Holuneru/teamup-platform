@@ -149,3 +149,95 @@
     background:#1d4ed8;
 
 }
+
+.projects-search{
+
+    width:100%;
+
+    padding:14px 18px;
+
+    margin:25px 0 35px;
+
+    border:1px solid #d1d5db;
+
+    border-radius:12px;
+
+    font-size:16px;
+
+    outline:none;
+
+    transition:.2s;
+
+}
+
+.projects-search:focus{
+
+    border-color:#2563eb;
+
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
+
+}
+
+.empty-projects{
+
+    width:100%;
+
+    text-align:center;
+
+    padding:60px 20px;
+
+    color:#6b7280;
+
+}
+
+.empty-projects h2{
+
+    color:#111827;
+
+    margin-bottom:10px;
+
+}
+
+.skills-filter{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    margin-bottom:30px;
+
+}
+
+.filter-skill{
+
+    padding:9px 16px;
+
+    border:none;
+
+    background:#eef2ff;
+
+    color:#2563eb;
+
+    border-radius:999px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.filter-skill:hover{
+
+    background:#dbeafe;
+
+}
+
+.filter-skill.selected{
+
+    background:#2563eb;
+
+    color:white;
+
+}

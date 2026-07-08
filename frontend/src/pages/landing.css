@@ -215,6 +215,108 @@ body {
 
 }
 
+/* ================= HOW IT WORKS ================= */
+
+.steps {
+
+    max-width: 1200px;
+
+    margin: auto;
+
+    padding: 30px 40px 90px;
+
+}
+
+.steps h2 {
+
+    text-align: center;
+
+    font-size: 42px;
+
+    margin-bottom: 60px;
+
+    color: #111827;
+
+}
+
+.steps-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 30px;
+
+}
+
+.step {
+
+    background: white;
+
+    border-radius: 18px;
+
+    padding: 35px;
+
+    text-align: center;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,.06);
+
+    transition: .25s;
+
+}
+
+.step:hover {
+
+    transform: translateY(-5px);
+
+}
+
+.step-number {
+
+    width: 64px;
+
+    height: 64px;
+
+    margin: auto;
+
+    margin-bottom: 24px;
+
+    border-radius: 50%;
+
+    background: #2563eb;
+
+    color: white;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    font-size: 24px;
+
+    font-weight: 700;
+
+}
+
+.step h3 {
+
+    margin-top: 0;
+
+    margin-bottom: 15px;
+
+    color: #111827;
+
+}
+
+.step p {
+
+    color: #6b7280;
+
+    line-height: 1.8;
+
+}
+
 /* ================= MOBILE ================= */
 
 @media (max-width: 900px) {
@@ -248,6 +350,12 @@ body {
     }
 
     .features {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .steps-grid {
 
         grid-template-columns: 1fr;
 
