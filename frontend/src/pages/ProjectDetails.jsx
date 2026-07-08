@@ -13,7 +13,9 @@ export default function ProjectDetails() {
     const { id } = useParams();
 
     const [project, setProject] = useState(null);
+
     const [members, setMembers] = useState([]);
+
     const [applied, setApplied] = useState(false);
 
     useEffect(() => {
@@ -23,9 +25,11 @@ export default function ProjectDetails() {
             try {
 
                 const res = await api.get(`/projects/${id}`);
+
                 setProject(res.data);
 
                 const membersRes = await api.get(`/projects/${id}/members`);
+
                 setMembers(membersRes.data);
 
             } catch (err) {
@@ -52,16 +56,20 @@ export default function ProjectDetails() {
 
             setApplied(true);
 
-            alert("Application sent!");
+            alert("Заявка отправлена!");
 
         } catch (err) {
 
             console.log(err);
 
             if (err.response?.data?.message) {
+
                 alert(err.response.data.message);
+
             } else {
-                alert("You have already applied.");
+
+                alert("Вы уже отправляли заявку.");
+
             }
 
         }
@@ -88,17 +96,37 @@ export default function ProjectDetails() {
 
             <div className="project-details">
 
-                <div className="project-header">
+                <div className="project-hero">
 
-                    <div>
+                    <div className="project-hero-left">
 
-                        <h1>{project.title}</h1>
+                        <h1>
 
-                        <p className="project-meta">
+                            {project.title}
 
-                            {members.length} member{members.length !== 1 ? "s" : ""}
+                        </h1>
 
-                        </p>
+                        <div className="project-meta">
+
+                            <span>
+
+                                Участников: {members.length}
+
+                            </span>
+
+                            <span>
+
+                                Создан:
+
+                                {" "}
+
+                                {project.createdAt
+                                    ? new Date(project.createdAt).toLocaleDateString("ru-RU")
+                                    : "—"}
+
+                            </span>
+
+                        </div>
 
                     </div>
 
@@ -107,14 +135,22 @@ export default function ProjectDetails() {
                         onClick={handleApply}
                         disabled={applied}
                     >
-                        {applied ? "Application Sent" : "Apply to Project"}
+
+                        {applied
+                            ? "Заявка отправлена"
+                            : "Подать заявку"}
+
                     </button>
 
                 </div>
 
-                <section className="project-section">
+                <section className="project-card">
 
-                    <h2>Description</h2>
+                    <h2>
+
+                        Описание проекта
+
+                    </h2>
 
                     <p className="project-description">
 
@@ -122,11 +158,15 @@ export default function ProjectDetails() {
 
                     </p>
 
-                    <h3 className="section-subtitle">
+                </section>
 
-                        Required Skills
+                <section className="project-card">
 
-                    </h3>
+                    <h2>
+
+                        Необходимые навыки
+
+                    </h2>
 
                     <div className="skills">
 
@@ -134,7 +174,7 @@ export default function ProjectDetails() {
 
                             <span className="empty-text">
 
-                                No required skills
+                                Навыки не указаны
 
                             </span>
 
@@ -146,7 +186,9 @@ export default function ProjectDetails() {
                                     key={skill}
                                     className="skill"
                                 >
+
                                     {skill}
+
                                 </span>
 
                             ))
@@ -157,9 +199,13 @@ export default function ProjectDetails() {
 
                 </section>
 
-                <section className="project-section">
+                <section className="project-card">
 
-                    <h2>Owner</h2>
+                    <h2>
+
+                        Руководитель проекта
+
+                    </h2>
 
                     {project.owner ? (
 
@@ -171,7 +217,7 @@ export default function ProjectDetails() {
 
                         <p className="empty-text">
 
-                            Unknown
+                            Неизвестно
 
                         </p>
 
@@ -179,48 +225,52 @@ export default function ProjectDetails() {
 
                 </section>
 
-                <section className="project-section">
+                <section className="project-card">
 
-                    <h2>Members</h2>
+                    <h2>
+
+                        Участники команды
+
+                    </h2>
 
                     {members.length === 0 ? (
 
                         <p className="empty-text">
 
-                            No members yet
+                            Пока участников нет.
 
                         </p>
 
                     ) : (
 
-                        members.map(member => (
+                        <div className="members-list">
 
-                            <div
-                                key={member.id}
-                                style={{
-                                    marginBottom: "16px"
-                                }}
-                            >
-
-                                <UserAvatar
-                                    user={member}
-                                />
+                            {members.map(member => (
 
                                 <div
-                                    className="person-subtitle"
-                                    style={{
-                                        marginLeft: "58px",
-                                        marginTop: "4px"
-                                    }}
+                                    key={member.id}
+                                    className="member-card"
                                 >
 
-                                    {member.role}
+                                    <UserAvatar
+                                        user={member}
+                                    />
+
+                                    <div className="member-info">
+
+                                        <div className="member-role">
+
+                                            {member.role}
+
+                                        </div>
+
+                                    </div>
 
                                 </div>
 
-                            </div>
+                            ))}
 
-                        ))
+                        </div>
 
                     )}
 
