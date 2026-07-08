@@ -11,11 +11,9 @@ import "./profile.css";
 export default function Home() {
 
     const {
-
         user,
         loading,
         refreshUser
-
     } = useUser();
 
     const fileInputRef = useRef(null);
@@ -50,14 +48,13 @@ export default function Home() {
                 }
             );
 
-            // Обновляем пользователя во всем приложении
             await refreshUser();
 
         } catch (err) {
 
             console.log(err);
 
-            alert("Unable to upload avatar.");
+            alert("Не удалось загрузить аватар.");
 
         }
 
@@ -97,13 +94,12 @@ export default function Home() {
                     onChange={uploadAvatar}
                 />
 
-                <div className="profile-header">
+                <div className="profile-hero">
 
                     <div
                         className="profile-avatar"
                         onClick={chooseAvatar}
-                        style={{ cursor: "pointer" }}
-                        title="Change avatar"
+                        title="Изменить аватар"
                     >
 
                         {user.avatarUrl ? (
@@ -117,8 +113,8 @@ export default function Home() {
 
                             <div className="avatar-placeholder">
 
-                                {user.firstName[0]}
-                                {user.lastName[0]}
+                                {user.firstName?.charAt(0)}
+                                {user.lastName?.charAt(0)}
 
                             </div>
 
@@ -126,7 +122,7 @@ export default function Home() {
 
                     </div>
 
-                    <div className="profile-main">
+                    <div className="profile-info">
 
                         <h1>
 
@@ -134,11 +130,47 @@ export default function Home() {
 
                         </h1>
 
-                        <p className="profile-email">
+                        <p className="profile-subtitle">
 
-                            {user.email}
+                            {user.university || "Университет не указан"}
+
+                            {user.course && (
+                                <> • {user.course} курс</>
+                            )}
 
                         </p>
+
+                        <div className="profile-links">
+
+                            {user.telegram && (
+
+                                <a
+                                    href={`https://t.me/${user.telegram.replace("@", "")}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    Telegram
+                                </a>
+
+                            )}
+
+                            {user.github && (
+
+                                <a
+                                    href={
+                                        user.github.startsWith("http")
+                                            ? user.github
+                                            : `https://github.com/${user.github}`
+                                    }
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    GitHub
+                                </a>
+
+                            )}
+
+                        </div>
 
                     </div>
 
@@ -146,60 +178,126 @@ export default function Home() {
                         className="edit-profile-button"
                         onClick={() => navigate("/profile/edit")}
                     >
-                        Edit Profile
+
+                        Редактировать профиль
+
                     </button>
 
                 </div>
 
                 <div className="profile-section">
 
-                    <h2>About</h2>
+                    <h2>
+
+                        О себе
+
+                    </h2>
 
                     <p>
 
                         {user.about
                             ? user.about
-                            : "No information yet."}
+                            : "Пользователь пока не добавил информацию о себе."}
 
                     </p>
 
                 </div>
 
-                <div className="profile-section">
+                <div className="profile-bottom">
 
-                    <h2>Education</h2>
+                    <div className="profile-card">
 
-                    <p>
+                        <h2>
 
-                        <strong>University:</strong>{" "}
-                        {user.university || "Not specified"}
+                            Информация
 
-                    </p>
+                        </h2>
 
-                    <p>
+                        <div className="info-row">
 
-                        <strong>Course:</strong>{" "}
-                        {user.course || "Not specified"}
+                            <span>Университет</span>
 
-                    </p>
+                            <strong>
+
+                                {user.university || "Не указано"}
+
+                            </strong>
+
+                        </div>
+
+                        <div className="info-row">
+
+                            <span>Курс</span>
+
+                            <strong>
+
+                                {user.course || "Не указан"}
+
+                            </strong>
+
+                        </div>
+
+                        <div className="info-row">
+
+                            <span>Email</span>
+
+                            <strong>
+
+                                {user.email}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                    <div className="profile-card">
+
+                        <h2>
+
+                            Контакты
+
+                        </h2>
+
+                        <div className="info-row">
+
+                            <span>Telegram</span>
+
+                            <strong>
+
+                                {user.telegram || "Не указан"}
+
+                            </strong>
+
+                        </div>
+
+                        <div className="info-row">
+
+                            <span>GitHub</span>
+
+                            <strong>
+
+                                {user.github || "Не указан"}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
                 <div className="profile-section">
 
-                    <h2>Contacts</h2>
+                    <h2>
+
+                        Мои проекты
+
+                    </h2>
 
                     <p>
 
-                        <strong>Telegram:</strong>{" "}
-                        {user.telegram || "Not specified"}
-
-                    </p>
-
-                    <p>
-
-                        <strong>GitHub:</strong>{" "}
-                        {user.github || "Not specified"}
+                        Скоро здесь будут отображаться проекты пользователя.
 
                     </p>
 
