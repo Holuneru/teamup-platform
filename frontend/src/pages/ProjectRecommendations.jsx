@@ -18,6 +18,8 @@ export default function ProjectRecommendations() {
 
     const [loading, setLoading] = useState(true);
 
+    const [sending, setSending] = useState({});
+
     useEffect(() => {
 
         api.get(`/recommendations/project/${id}`)
@@ -30,6 +32,53 @@ export default function ProjectRecommendations() {
             .finally(() => setLoading(false));
 
     }, [id]);
+
+    const inviteUser = async (userId) => {
+
+        try {
+
+            setSending(prev => ({
+                ...prev,
+                [userId]: true
+            }));
+
+            await api.post("/invitations", {
+
+                projectId: Number(id),
+                userId: userId
+
+            });
+
+            setUsers(prev =>
+                prev.map(user =>
+                    user.id === userId
+                        ? {
+                            ...user,
+                            invited: true
+                        }
+                        : user
+                )
+            );
+
+        } catch (err) {
+
+            console.log(err);
+
+            alert(
+                err.response?.data?.message ||
+                "Не удалось отправить приглашение."
+            );
+
+        } finally {
+
+            setSending(prev => ({
+                ...prev,
+                [userId]: false
+            }));
+
+        }
+
+    };
 
     if (loading) {
 
@@ -148,14 +197,19 @@ export default function ProjectRecommendations() {
 
                                 <button
                                     className="primary-button"
-                                    onClick={() => {
-
-                                        alert("Отправка приглашений появится следующим этапом.");
-
-                                    }}
+                                    disabled={user.invited || sending[user.id]}
+                                    onClick={() => inviteUser(user.id)}
                                 >
 
-                                    Пригласить
+                                    {
+
+                                        sending[user.id]
+                                            ? "Отправка..."
+                                            : user.invited
+                                                ? "Приглашён"
+                                                : "Пригласить"
+
+                                    }
 
                                 </button>
 

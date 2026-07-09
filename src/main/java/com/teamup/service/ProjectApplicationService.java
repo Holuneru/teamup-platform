@@ -5,7 +5,6 @@ import com.teamup.dto.response.ApplicationResponse;
 import com.teamup.dto.response.ProjectMemberResponse;
 import com.teamup.dto.response.UserShortResponse;
 import com.teamup.entity.ProjectApplication;
-import com.teamup.entity.ProjectMember;
 import com.teamup.entity.User;
 import com.teamup.enums.ApplicationStatus;
 import com.teamup.repository.ProjectApplicationRepository;
@@ -23,8 +22,12 @@ public class ProjectApplicationService {
     private final ProjectApplicationRepository repository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
+    private final ProjectMemberService memberService;
 
-    // 📌 APPLY
+    // ===========================
+    // APPLY
+    // ===========================
+
     public ApplicationResponse apply(Long projectId, CreateApplicationRequest request) {
 
         repository.findByProjectIdAndUserId(projectId, request.getUserId())
@@ -43,6 +46,10 @@ public class ProjectApplicationService {
         return toResponse(app);
     }
 
+    // ===========================
+    // GET APPLICATIONS
+    // ===========================
+
     public List<ApplicationResponse> getByProject(Long projectId) {
 
         return repository.findByProjectIdAndStatus(
@@ -54,11 +61,14 @@ public class ProjectApplicationService {
                 .toList();
     }
 
-    // 📌 ACCEPT
+    // ===========================
+    // ACCEPT
+    // ===========================
+
     public ApplicationResponse accept(Long id) {
 
         ProjectApplication app = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+                .orElseThrow(() -> new RuntimeException("Application not found"));
 
         if (app.getStatus() != ApplicationStatus.PENDING) {
             throw new RuntimeException("Already processed");
@@ -68,22 +78,22 @@ public class ProjectApplicationService {
 
         repository.save(app);
 
-        ProjectMember member = ProjectMember.builder()
-                .projectId(app.getProjectId())
-                .userId(app.getUserId())
-                .role("MEMBER")
-                .build();
-
-        projectMemberRepository.save(member);
+        memberService.addMember(
+                app.getProjectId(),
+                app.getUserId()
+        );
 
         return toResponse(app);
     }
 
-    // 📌 REJECT
+    // ===========================
+    // REJECT
+    // ===========================
+
     public ApplicationResponse reject(Long id) {
 
         ProjectApplication app = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+                .orElseThrow(() -> new RuntimeException("Application not found"));
 
         if (app.getStatus() != ApplicationStatus.PENDING) {
             throw new RuntimeException("Already processed");
@@ -93,14 +103,18 @@ public class ProjectApplicationService {
 
         repository.save(app);
 
-        projectMemberRepository
-                .findByProjectIdAndUserId(app.getProjectId(), app.getUserId())
-                .ifPresent(projectMemberRepository::delete);
+        memberService.removeMember(
+                app.getProjectId(),
+                app.getUserId()
+        );
 
         return toResponse(app);
     }
 
-    // 📌 MEMBERS
+    // ===========================
+    // MEMBERS
+    // ===========================
+
     public List<ProjectMemberResponse> getMembers(Long projectId) {
 
         return projectMemberRepository.findByProjectId(projectId)
@@ -117,11 +131,15 @@ public class ProjectApplicationService {
                             .avatarUrl(user.getAvatarUrl())
                             .role(member.getRole())
                             .build();
+
                 })
                 .toList();
     }
 
-    // 📌 mapper
+    // ===========================
+    // MAPPER
+    // ===========================
+
     private ApplicationResponse toResponse(ProjectApplication app) {
 
         User user = userRepository.findById(app.getUserId())
@@ -142,4 +160,5 @@ public class ProjectApplicationService {
                 .createdAt(app.getCreatedAt())
                 .build();
     }
+
 }
