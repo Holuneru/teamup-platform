@@ -20,7 +20,7 @@ public class ProjectResponse {
 
     private Long ownerId;
 
-    // 🔥 Новый объект владельца
+
     private UserShortResponse owner;
 
     private Set<String> requiredSkills;

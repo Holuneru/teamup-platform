@@ -49,4 +49,15 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 """)
     List<Project> findByOwnerIdWithMembers(Long ownerId);
 
+    @Query("""
+select p from Project p
+left join fetch p.requiredSkills
+left join fetch p.owner
+where p.id = :id
+""")
+    Optional<Project> findByIdWithEverything(Long id);
+
+
+
+
 }

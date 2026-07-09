@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 
 import Home from "./pages/Home";
+import UserProfile from "./pages/UserProfile";
 import EditProfile from "./pages/EditProfile";
 
 import Projects from "./pages/Projects";
@@ -18,6 +19,7 @@ import CreateProject from "./pages/CreateProject";
 
 import ProjectApplications from "./pages/ProjectApplications";
 import ProjectManage from "./pages/ProjectManage";
+import ProjectRecommendations from "./pages/ProjectRecommendations";
 
 export default function AppRoutes() {
 
@@ -58,6 +60,11 @@ export default function AppRoutes() {
                 />
 
                 <Route
+                    path="/profile/:id"
+                    element={<UserProfile />}
+                />
+
+                <Route
                     path="/profile/edit"
                     element={<EditProfile />}
                 />
@@ -90,6 +97,11 @@ export default function AppRoutes() {
                 <Route
                     path="/projects/:id/manage"
                     element={<ProjectManage />}
+                />
+
+                <Route
+                    path="/projects/:id/recommendations"
+                    element={<ProjectRecommendations />}
                 />
 
                 <Route

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-
+    @EntityGraph(attributePaths = "skills")
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
@@ -20,6 +20,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = "skills")
     List<User> findAll();
 
+    @EntityGraph(attributePaths = "skills")
+    @Override
     Optional<User> findById(Long id);
 
 }

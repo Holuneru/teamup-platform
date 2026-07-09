@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
@@ -11,6 +11,8 @@ import "./project-manage.css";
 export default function ProjectManage() {
 
     const { id } = useParams();
+
+    const navigate = useNavigate();
 
     const [applications, setApplications] = useState([]);
     const [members, setMembers] = useState([]);
@@ -57,7 +59,7 @@ export default function ProjectManage() {
             .then(() => loadData())
             .catch(err =>
                 console.error(
-                    "Ошибка при accept:",
+                    "Ошибка при принятии:",
                     err.response?.status,
                     err.response?.data ?? err.message
                 )
@@ -71,7 +73,7 @@ export default function ProjectManage() {
             .then(() => loadData())
             .catch(err =>
                 console.error(
-                    "Ошибка при reject:",
+                    "Ошибка при отклонении:",
                     err.response?.status,
                     err.response?.data ?? err.message
                 )
@@ -85,127 +87,165 @@ export default function ProjectManage() {
 
             <div className="project-manage">
 
-                <h1>Project Management</h1>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "30px"
+                    }}
+                >
 
-                <p className="page-subtitle">
+                    <div>
 
-                    Review applications and manage your team.
+                        <h1>Управление проектом</h1>
 
-                </p>
+                        <p className="page-subtitle">
+
+                            Просматривайте заявки и управляйте своей командой.
+
+                        </p>
+
+                    </div>
+
+                    <button
+                        className="accept-button"
+                        onClick={() =>
+                            navigate(`/projects/${id}/recommendations`)
+                        }
+                    >
+
+                        Подобрать участников
+
+                    </button>
+
+                </div>
 
                 <section>
 
-                    <h2>Pending Applications</h2>
+                    <h2>Новые заявки</h2>
 
-                    {applications.length === 0 ? (
+                    {
 
-                        <div className="empty-state">
+                        applications.length === 0 ? (
 
-                            No pending applications.
+                            <div className="empty-state">
 
-                        </div>
-
-                    ) : (
-
-                        applications.map(app => (
-
-                            <div
-                                key={app.id}
-                                className="manage-card"
-                            >
-
-                                <div>
-
-                                    <UserAvatar
-                                        user={app.applicant}
-                                    />
-
-                                    <p
-                                        className="status"
-                                        style={{
-                                            marginLeft: "58px",
-                                            marginTop: "6px"
-                                        }}
-                                    >
-
-                                        {app.status}
-
-                                    </p>
-
-                                </div>
-
-                                <div className="actions">
-
-                                    <button
-                                        className="reject-button"
-                                        onClick={() => reject(app.id)}
-                                    >
-                                        Reject
-                                    </button>
-
-                                    <button
-                                        className="accept-button"
-                                        onClick={() => accept(app.id)}
-                                    >
-                                        Accept
-                                    </button>
-
-                                </div>
+                                Новых заявок пока нет.
 
                             </div>
 
-                        ))
+                        ) : (
 
-                    )}
+                            applications.map(app => (
+
+                                <div
+                                    key={app.id}
+                                    className="manage-card"
+                                >
+
+                                    <div>
+
+                                        <UserAvatar
+                                            user={app.applicant}
+                                        />
+
+                                        <p
+                                            className="status"
+                                            style={{
+                                                marginLeft: "58px",
+                                                marginTop: "6px"
+                                            }}
+                                        >
+
+                                            {app.status}
+
+                                        </p>
+
+                                    </div>
+
+                                    <div className="actions">
+
+                                        <button
+                                            className="reject-button"
+                                            onClick={() => reject(app.id)}
+                                        >
+
+                                            Отклонить
+
+                                        </button>
+
+                                        <button
+                                            className="accept-button"
+                                            onClick={() => accept(app.id)}
+                                        >
+
+                                            Принять
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            ))
+
+                        )
+
+                    }
 
                 </section>
 
                 <section>
 
-                    <h2>Current Team</h2>
+                    <h2>Команда проекта</h2>
 
-                    {members.length === 0 ? (
+                    {
 
-                        <div className="empty-state">
+                        members.length === 0 ? (
 
-                            No members yet.
+                            <div className="empty-state">
 
-                        </div>
-
-                    ) : (
-
-                        members.map(member => (
-
-                            <div
-                                key={member.id}
-                                className="member-card"
-                            >
-
-                                <div>
-
-                                    <UserAvatar
-                                        user={member}
-                                    />
-
-                                    <p
-                                        className="member-role"
-                                        style={{
-                                            marginLeft: "58px",
-                                            marginTop: "6px"
-                                        }}
-                                    >
-
-                                        {member.role}
-
-                                    </p>
-
-                                </div>
+                                В команде пока нет участников.
 
                             </div>
 
-                        ))
+                        ) : (
 
-                    )}
+                            members.map(member => (
+
+                                <div
+                                    key={member.id}
+                                    className="member-card"
+                                >
+
+                                    <div>
+
+                                        <UserAvatar
+                                            user={member}
+                                        />
+
+                                        <p
+                                            className="member-role"
+                                            style={{
+                                                marginLeft: "58px",
+                                                marginTop: "6px"
+                                            }}
+                                        >
+
+                                            {member.role}
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            ))
+
+                        )
+
+                    }
 
                 </section>
 

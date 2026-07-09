@@ -10,14 +10,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/recommendations")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
 
-    @GetMapping("/{userId}")
+    @GetMapping("/project/{projectId}")
     public List<UserRecommendationResponse> getRecommendations(
-            @PathVariable Long userId
+            @PathVariable Long projectId
     ) {
-        return recommendationService.getRecommendations(userId);
+
+        return recommendationService.getRecommendations(projectId);
+
     }
+
 }

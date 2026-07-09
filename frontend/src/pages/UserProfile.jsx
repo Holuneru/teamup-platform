@@ -1,71 +1,45 @@
-import { useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import Layout from "../components/Layout";
 
 import api from "../api/axios";
 
-import Layout from "../components/Layout";
-import { useUser } from "../context/UserContext";
-
 import "./profile.css";
 
-export default function Home() {
+export default function UserProfile() {
 
-    const {
-        user,
-        loading,
-        refreshUser
-    } = useUser();
-
-    const fileInputRef = useRef(null);
+    const { id } = useParams();
 
     const navigate = useNavigate();
 
-    const chooseAvatar = () => {
+    const [user, setUser] = useState(null);
 
-        fileInputRef.current.click();
+    const [loading, setLoading] = useState(true);
 
-    };
+    useEffect(() => {
 
-    const uploadAvatar = async (e) => {
+        api.get(`/users/${id}`)
+            .then(res => {
 
-        const file = e.target.files[0];
+                setUser(res.data);
 
-        if (!file) return;
+            })
+            .catch(console.log)
+            .finally(() => setLoading(false));
 
-        try {
-
-            const formData = new FormData();
-
-            formData.append("file", file);
-
-            await api.post(
-                "/users/me/avatar",
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data"
-                    }
-                }
-            );
-
-            await refreshUser();
-
-        } catch (err) {
-
-            console.log(err);
-
-            alert("Не удалось загрузить аватар.");
-
-        }
-
-    };
+    }, [id]);
 
     if (loading) {
 
         return (
+
             <Layout>
-                <h2>Loading...</h2>
+
+                <h2>Загрузка...</h2>
+
             </Layout>
+
         );
 
     }
@@ -73,9 +47,13 @@ export default function Home() {
     if (!user) {
 
         return (
+
             <Layout>
-                <h2>User not found</h2>
+
+                <h2>Пользователь не найден</h2>
+
             </Layout>
+
         );
 
     }
@@ -86,21 +64,9 @@ export default function Home() {
 
             <div className="profile-page">
 
-                <input
-                    type="file"
-                    accept="image/*"
-                    ref={fileInputRef}
-                    style={{ display: "none" }}
-                    onChange={uploadAvatar}
-                />
-
                 <div className="profile-hero">
 
-                    <div
-                        className="profile-avatar"
-                        onClick={chooseAvatar}
-                        title="Изменить аватар"
-                    >
+                    <div className="profile-avatar">
 
                         {user.avatarUrl ? (
 
@@ -149,7 +115,9 @@ export default function Home() {
                                     target="_blank"
                                     rel="noreferrer"
                                 >
+
                                     Telegram
+
                                 </a>
 
                             )}
@@ -165,7 +133,9 @@ export default function Home() {
                                     target="_blank"
                                     rel="noreferrer"
                                 >
+
                                     GitHub
+
                                 </a>
 
                             )}
@@ -176,10 +146,10 @@ export default function Home() {
 
                     <button
                         className="edit-profile-button"
-                        onClick={() => navigate("/profile/edit")}
+                        onClick={() => navigate(-1)}
                     >
 
-                        Редактировать профиль
+                        Назад
 
                     </button>
 
@@ -189,7 +159,7 @@ export default function Home() {
 
                     <h2>
 
-                        О себе
+                        О пользователе
 
                     </h2>
 
@@ -221,7 +191,9 @@ export default function Home() {
                                     key={skill.id}
                                     className="skill"
                                 >
+
                                     {skill.name}
+
                                 </span>
 
                             ))}
@@ -232,7 +204,7 @@ export default function Home() {
 
                         <p className="empty-text">
 
-                            Пока навыки не добавлены.
+                            Пользователь пока не добавил навыки.
 
                         </p>
 
@@ -252,7 +224,11 @@ export default function Home() {
 
                         <div className="info-row">
 
-                            <span>Университет</span>
+                            <span>
+
+                                Университет
+
+                            </span>
 
                             <strong>
 
@@ -264,7 +240,11 @@ export default function Home() {
 
                         <div className="info-row">
 
-                            <span>Курс</span>
+                            <span>
+
+                                Курс
+
+                            </span>
 
                             <strong>
 
@@ -276,7 +256,11 @@ export default function Home() {
 
                         <div className="info-row">
 
-                            <span>Email</span>
+                            <span>
+
+                                Email
+
+                            </span>
 
                             <strong>
 
@@ -298,7 +282,11 @@ export default function Home() {
 
                         <div className="info-row">
 
-                            <span>Telegram</span>
+                            <span>
+
+                                Telegram
+
+                            </span>
 
                             <strong>
 
@@ -310,7 +298,11 @@ export default function Home() {
 
                         <div className="info-row">
 
-                            <span>GitHub</span>
+                            <span>
+
+                                GitHub
+
+                            </span>
 
                             <strong>
 
@@ -321,22 +313,6 @@ export default function Home() {
                         </div>
 
                     </div>
-
-                </div>
-
-                <div className="profile-section">
-
-                    <h2>
-
-                        Мои проекты
-
-                    </h2>
-
-                    <p className="empty-text">
-
-                        Скоро здесь будут отображаться проекты пользователя.
-
-                    </p>
 
                 </div>
 

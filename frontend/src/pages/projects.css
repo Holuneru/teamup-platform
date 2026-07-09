@@ -241,3 +241,32 @@
     color:white;
 
 }
+
+.skills {
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+}
+
+.skill {
+
+    background: #eef4ff;
+    color: #2563eb;
+
+    padding: 8px 16px;
+
+    border-radius: 999px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+}
+
+.empty-text {
+
+    color: #9ca3af;
+    font-style: italic;
+
+}

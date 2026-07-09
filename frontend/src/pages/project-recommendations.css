@@ -1,0 +1,113 @@
+.recommendations-page{
+
+    max-width:1100px;
+
+    margin:auto;
+
+}
+
+.recommendations-header{
+
+    margin-bottom:35px;
+
+}
+
+.recommendation-card{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:24px;
+
+    background:white;
+
+    border-radius:18px;
+
+    margin-bottom:22px;
+
+    border:1px solid #ececec;
+
+}
+
+.recommendation-left{
+
+    display:flex;
+
+    gap:20px;
+
+    align-items:center;
+
+}
+
+.recommendation-university{
+
+    margin-top:6px;
+
+    color:#666;
+
+}
+
+.recommendation-skills{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:8px;
+
+    margin-top:14px;
+
+}
+
+.recommendation-right{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+    align-items:center;
+
+}
+
+.match-circle{
+
+    width:70px;
+
+    height:70px;
+
+    border-radius:50%;
+
+    background:#2563eb;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-weight:700;
+
+    font-size:20px;
+
+}
+
+.empty-block{
+
+    padding:60px;
+
+    text-align:center;
+
+    border:1px dashed #ddd;
+
+    border-radius:18px;
+
+    color:#777;
+
+}

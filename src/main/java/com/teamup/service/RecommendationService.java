@@ -1,9 +1,14 @@
 package com.teamup.service;
 
 import com.teamup.dto.response.UserRecommendationResponse;
+import com.teamup.entity.Project;
+import com.teamup.entity.ProjectApplication;
 import com.teamup.entity.Skill;
 import com.teamup.entity.User;
-import com.teamup.exception.UserNotFoundException;
+import com.teamup.enums.ApplicationStatus;
+import com.teamup.repository.ProjectApplicationRepository;
+import com.teamup.repository.ProjectMemberRepository;
+import com.teamup.repository.ProjectRepository;
 import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,49 +23,73 @@ import java.util.stream.Collectors;
 public class RecommendationService {
 
     private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository memberRepository;
+    private final ProjectApplicationRepository applicationRepository;
 
-    public List<UserRecommendationResponse> getRecommendations(Long userId) {
+    public List<UserRecommendationResponse> getRecommendations(Long projectId) {
 
-        User currentUser = userRepository.findWithSkillsById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+        Project project = projectRepository.findByIdWithEverything(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
 
-        List<User> users = userRepository.findAll();
+        // Пользователи, которых не нужно показывать
+        Set<Long> excludedUsers = memberRepository.findByProjectId(projectId)
+                .stream()
+                .map(member -> member.getUserId())
+                .collect(Collectors.toSet());
 
-        return users.stream()
-                .filter(user -> !user.getId().equals(currentUser.getId()))
-                .map(user -> buildRecommendation(currentUser, user))
-                .filter(r -> r.getMatchPercent() > 0)
-                .sorted(Comparator.comparing(UserRecommendationResponse::getMatchPercent).reversed())
-                .limit(10)
+        // Владелец проекта
+        excludedUsers.add(project.getOwner().getId());
+
+        // Пользователи с ожидающей заявкой
+        applicationRepository
+                .findByProjectIdAndStatus(projectId, ApplicationStatus.PENDING)
+                .stream()
+                .map(ProjectApplication::getUserId)
+                .forEach(excludedUsers::add);
+
+        Set<String> requiredSkills = project.getRequiredSkills()
+                .stream()
+                .map(Skill::getName)
+                .collect(Collectors.toSet());
+
+        return userRepository.findAll()
+                .stream()
+                .filter(user -> !excludedUsers.contains(user.getId()))
+                .map(user -> buildRecommendation(requiredSkills, user))
+                .filter(recommendation -> recommendation.getMatchPercent() > 0)
+                .sorted(
+                        Comparator.comparing(UserRecommendationResponse::getMatchPercent)
+                                .reversed()
+                )
+                .limit(20)
                 .toList();
     }
 
-    private UserRecommendationResponse buildRecommendation(User currentUser, User candidate) {
+    private UserRecommendationResponse buildRecommendation(
+            Set<String> requiredSkills,
+            User user
+    ) {
 
-        Set<String> currentSkills = currentUser.getSkills()
+        Set<String> userSkills = user.getSkills()
                 .stream()
                 .map(Skill::getName)
                 .collect(Collectors.toSet());
 
-        Set<String> candidateSkills = candidate.getSkills()
-                .stream()
-                .map(Skill::getName)
+        Set<String> matchedSkills = requiredSkills.stream()
+                .filter(userSkills::contains)
                 .collect(Collectors.toSet());
 
-        Set<String> matchedSkills = currentSkills.stream()
-                .filter(candidateSkills::contains)
-                .collect(Collectors.toSet());
-
-        int matchPercent = currentSkills.isEmpty()
+        int matchPercent = requiredSkills.isEmpty()
                 ? 0
-                : (matchedSkills.size() * 100) / currentSkills.size();
+                : matchedSkills.size() * 100 / requiredSkills.size();
 
         return UserRecommendationResponse.builder()
-                .id(candidate.getId())
-                .firstName(candidate.getFirstName())
-                .lastName(candidate.getLastName())
-                .university(candidate.getUniversity())
-                .avatarUrl(candidate.getAvatarUrl())
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .university(user.getUniversity())
+                .avatarUrl(user.getAvatarUrl())
                 .matchedSkills(matchedSkills)
                 .matchPercent(matchPercent)
                 .build();

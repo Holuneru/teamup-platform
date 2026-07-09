@@ -14,6 +14,12 @@ export default function EditProfile() {
 
     const { refreshUser } = useUser();
 
+    const [skills, setSkills] = useState([]);
+
+    const [selectedSkills, setSelectedSkills] = useState([]);
+
+    const [userId, setUserId] = useState(null);
+
     const [form, setForm] = useState({
         firstName: "",
         lastName: "",
@@ -26,23 +32,48 @@ export default function EditProfile() {
 
     useEffect(() => {
 
-        api.get("/users/me")
-            .then(res => {
-
-                setForm({
-                    firstName: res.data.firstName || "",
-                    lastName: res.data.lastName || "",
-                    university: res.data.university || "",
-                    course: res.data.course || "",
-                    about: res.data.about || "",
-                    telegram: res.data.telegram || "",
-                    github: res.data.github || ""
-                });
-
-            })
-            .catch(console.log);
+        loadData();
 
     }, []);
+
+    const loadData = async () => {
+
+        try {
+
+            const [userRes, skillsRes] = await Promise.all([
+                api.get("/users/me"),
+                api.get("/skills")
+            ]);
+
+            const user = userRes.data;
+
+            setUserId(user.id);
+
+            setForm({
+                firstName: user.firstName || "",
+                lastName: user.lastName || "",
+                university: user.university || "",
+                course: user.course || "",
+                about: user.about || "",
+                telegram: user.telegram || "",
+                github: user.github || ""
+            });
+
+            setSkills(skillsRes.data);
+
+            setSelectedSkills(
+                user.skills
+                    ? user.skills.map(skill => skill.id)
+                    : []
+            );
+
+        } catch (err) {
+
+            console.log(err);
+
+        }
+
+    };
 
     const handleChange = (e) => {
 
@@ -50,6 +81,25 @@ export default function EditProfile() {
             ...form,
             [e.target.name]: e.target.value
         });
+
+    };
+
+    const toggleSkill = (skillId) => {
+
+        if (selectedSkills.includes(skillId)) {
+
+            setSelectedSkills(
+                selectedSkills.filter(id => id !== skillId)
+            );
+
+        } else {
+
+            setSelectedSkills([
+                ...selectedSkills,
+                skillId
+            ]);
+
+        }
 
     };
 
@@ -61,18 +111,21 @@ export default function EditProfile() {
 
             await api.put("/users/me", form);
 
-            // Обновляем пользователя в UserContext
+            await api.put(`/users/${userId}/skills`, {
+                skillIds: selectedSkills
+            });
+
             await refreshUser();
 
-            alert("Profile updated!");
+            alert("Профиль успешно обновлён.");
 
-            navigate("/home");
+            navigate("/profile");
 
         } catch (err) {
 
             console.log(err);
 
-            alert("Unable to update profile.");
+            alert("Не удалось сохранить изменения.");
 
         }
 
@@ -84,11 +137,15 @@ export default function EditProfile() {
 
             <div className="edit-profile">
 
-                <h1>Edit Profile</h1>
+                <h1>Редактирование профиля</h1>
 
                 <form onSubmit={handleSubmit}>
 
-                    <label>First name</label>
+                    <label>
+
+                        Имя
+
+                    </label>
 
                     <input
                         name="firstName"
@@ -96,7 +153,11 @@ export default function EditProfile() {
                         onChange={handleChange}
                     />
 
-                    <label>Last name</label>
+                    <label>
+
+                        Фамилия
+
+                    </label>
 
                     <input
                         name="lastName"
@@ -104,7 +165,11 @@ export default function EditProfile() {
                         onChange={handleChange}
                     />
 
-                    <label>University</label>
+                    <label>
+
+                        Университет
+
+                    </label>
 
                     <input
                         name="university"
@@ -112,7 +177,11 @@ export default function EditProfile() {
                         onChange={handleChange}
                     />
 
-                    <label>Course</label>
+                    <label>
+
+                        Курс
+
+                    </label>
 
                     <input
                         type="number"
@@ -121,7 +190,11 @@ export default function EditProfile() {
                         onChange={handleChange}
                     />
 
-                    <label>About</label>
+                    <label>
+
+                        О себе
+
+                    </label>
 
                     <textarea
                         rows="5"
@@ -130,7 +203,11 @@ export default function EditProfile() {
                         onChange={handleChange}
                     />
 
-                    <label>Telegram</label>
+                    <label>
+
+                        Telegram
+
+                    </label>
 
                     <input
                         name="telegram"
@@ -138,7 +215,11 @@ export default function EditProfile() {
                         onChange={handleChange}
                     />
 
-                    <label>GitHub</label>
+                    <label>
+
+                        GitHub
+
+                    </label>
 
                     <input
                         name="github"
@@ -146,21 +227,63 @@ export default function EditProfile() {
                         onChange={handleChange}
                     />
 
+                    <label
+                        style={{
+                            marginTop: "18px"
+                        }}
+                    >
+
+                        Навыки
+
+                    </label>
+
+                    <div className="skills-list">
+
+                        {skills.map(skill => (
+
+                            <button
+
+                                key={skill.id}
+
+                                type="button"
+
+                                className={
+                                    selectedSkills.includes(skill.id)
+                                        ? "skill selected"
+                                        : "skill"
+                                }
+
+                                onClick={() => toggleSkill(skill.id)}
+
+                            >
+
+                                {skill.name}
+
+                            </button>
+
+                        ))}
+
+                    </div>
+
                     <div className="buttons">
 
                         <button
                             type="button"
                             className="cancel-button"
-                            onClick={() => navigate("/home")}
+                            onClick={() => navigate("/profile")}
                         >
-                            Cancel
+
+                            Отмена
+
                         </button>
 
                         <button
                             type="submit"
                             className="save-button"
                         >
-                            Save Changes
+
+                            Сохранить
+
                         </button>
 
                     </div>
