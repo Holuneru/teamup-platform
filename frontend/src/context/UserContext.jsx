@@ -9,18 +9,24 @@ export function UserProvider({ children }) {
 
     const [loading, setLoading] = useState(true);
 
+    const [invitations, setInvitations] = useState([]);
+
     const refreshUser = async () => {
 
         try {
 
-            const res = await api.get("/users/me");
+            const userResponse = await api.get("/users/me");
 
-            setUser(res.data);
+            setUser(userResponse.data);
 
             localStorage.setItem(
                 "user",
-                JSON.stringify(res.data)
+                JSON.stringify(userResponse.data)
             );
+
+            const invitationResponse = await api.get("/invitations/me");
+
+            setInvitations(invitationResponse.data);
 
         } catch (err) {
 
@@ -28,9 +34,27 @@ export function UserProvider({ children }) {
 
             setUser(null);
 
+            setInvitations([]);
+
         } finally {
 
             setLoading(false);
+
+        }
+
+    };
+
+    const refreshInvitations = async () => {
+
+        try {
+
+            const res = await api.get("/invitations/me");
+
+            setInvitations(res.data);
+
+        } catch (err) {
+
+            console.log(err);
 
         }
 
@@ -49,6 +73,8 @@ export function UserProvider({ children }) {
                 user,
                 setUser,
                 refreshUser,
+                invitations,
+                refreshInvitations,
                 loading
             }}
         >

@@ -21,6 +21,8 @@ import ProjectApplications from "./pages/ProjectApplications";
 import ProjectManage from "./pages/ProjectManage";
 import ProjectRecommendations from "./pages/ProjectRecommendations";
 
+import Invitations from "./pages/Invitations";
+
 export default function AppRoutes() {
 
     return (
@@ -102,6 +104,11 @@ export default function AppRoutes() {
                 <Route
                     path="/projects/:id/recommendations"
                     element={<ProjectRecommendations />}
+                />
+
+                <Route
+                    path="/invitations"
+                    element={<Invitations />}
                 />
 
                 <Route

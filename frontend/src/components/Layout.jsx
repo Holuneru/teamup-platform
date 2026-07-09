@@ -1,34 +1,34 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import {
+    Bell
+} from "lucide-react";
+
 import { useUser } from "../context/UserContext";
 
 import Sidebar from "./Sidebar";
 
 import "./layout.css";
 
-
 export default function Layout({ children }) {
-
 
     const navigate = useNavigate();
 
-
-    const { user, loading, setUser } = useUser();
-
+    const {
+        user,
+        loading,
+        setUser,
+        invitations
+    } = useUser();
 
     const [menuOpen, setMenuOpen] = useState(false);
 
-
     const menuRef = useRef(null);
-
-
 
     useEffect(() => {
 
-
         function handleClickOutside(event) {
-
 
             if (
                 menuRef.current &&
@@ -39,15 +39,12 @@ export default function Layout({ children }) {
 
             }
 
-
         }
-
 
         document.addEventListener(
             "mousedown",
             handleClickOutside
         );
-
 
         return () =>
             document.removeEventListener(
@@ -55,26 +52,17 @@ export default function Layout({ children }) {
                 handleClickOutside
             );
 
-
     }, []);
-
-
 
     const logout = () => {
 
-
         localStorage.removeItem("token");
-
 
         setUser(null);
 
-
         navigate("/login");
 
-
     };
-
-
 
     if (loading) {
 
@@ -82,15 +70,11 @@ export default function Layout({ children }) {
 
     }
 
-
-
     return (
 
         <div className="layout">
 
-
             <header className="topbar">
-
 
                 <div
                     className="logo"
@@ -101,13 +85,39 @@ export default function Layout({ children }) {
 
                 </div>
 
+                <div className="topbar-center">
 
+                    <button
+                        className="invitation-button"
+                        onClick={() => navigate("/invitations")}
+                    >
+
+                        <Bell size={20} />
+
+                        <span>
+
+                            Invitations
+
+                        </span>
+
+                        {
+
+                            invitations.length > 0 && (
+
+                                <div className="notification-dot"/>
+
+                            )
+
+                        }
+
+                    </button>
+
+                </div>
 
                 <div
                     className="user-menu"
                     ref={menuRef}
                 >
-
 
                     <div
                         className="user-info"
@@ -116,36 +126,37 @@ export default function Layout({ children }) {
                         }
                     >
 
-
                         <div className="avatar">
 
+                            {
 
-                            {user?.avatarUrl ? (
+                                user?.avatarUrl
 
+                                    ? (
 
-                                <img
-                                    src={`http://localhost:8080${user.avatarUrl}`}
-                                    alt="avatar"
-                                />
+                                        <img
+                                            src={`http://localhost:8080${user.avatarUrl}`}
+                                            alt="avatar"
+                                        />
 
+                                    )
 
-                            ) : (
+                                    : (
 
+                                        <>
 
-                                <>
-                                    {user?.firstName?.charAt(0)}
-                                    {user?.lastName?.charAt(0)}
-                                </>
+                                            {user?.firstName?.charAt(0)}
+                                            {user?.lastName?.charAt(0)}
 
+                                        </>
 
-                            )}
+                                    )
 
+                            }
 
                         </div>
 
-
                         <div>
-
 
                             <div className="username">
 
@@ -153,82 +164,66 @@ export default function Layout({ children }) {
 
                             </div>
 
-
                             <div className="email">
 
                                 {user?.email}
 
                             </div>
 
-
                         </div>
-
 
                     </div>
 
+                    {
 
+                        menuOpen && (
 
-                    {menuOpen && (
+                            <div className="dropdown-menu">
 
+                                <button
+                                    onClick={() => {
 
-                        <div className="dropdown-menu">
+                                        navigate("/profile");
 
+                                        setMenuOpen(false);
 
-                            <button
-                                onClick={() => {
+                                    }}
+                                >
 
-                                    navigate("/profile");
+                                    Profile
 
-                                    setMenuOpen(false);
+                                </button>
 
-                                }}
-                            >
+                                <button
+                                    className="logout-button"
+                                    onClick={logout}
+                                >
 
-                                Profile
+                                    Logout
 
-                            </button>
+                                </button>
 
+                            </div>
 
-                            <button
-                                className="logout-button"
-                                onClick={logout}
-                            >
+                        )
 
-                                Logout
-
-                            </button>
-
-
-                        </div>
-
-
-                    )}
-
+                    }
 
                 </div>
 
-
             </header>
-
-
 
             <div className="content-layout">
 
-
-                <Sidebar />
-
+                <Sidebar/>
 
                 <main className="page">
 
-
                     {children}
-
 
                 </main>
 
-
             </div>
-
 
         </div>
 
