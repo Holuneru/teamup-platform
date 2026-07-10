@@ -11,6 +11,9 @@ export function UserProvider({ children }) {
 
     const [invitations, setInvitations] = useState([]);
 
+    // Пользователи, которым уже отправили приглашение
+    const [sentInvitations, setSentInvitations] = useState([]);
+
     const refreshUser = async () => {
 
         try {
@@ -60,6 +63,21 @@ export function UserProvider({ children }) {
 
     };
 
+    // Добавить пользователя в список уже приглашённых
+    const addSentInvitation = (userId) => {
+
+        setSentInvitations(prev => {
+
+            if (prev.includes(userId)) {
+                return prev;
+            }
+
+            return [...prev, userId];
+
+        });
+
+    };
+
     useEffect(() => {
 
         refreshUser();
@@ -72,10 +90,16 @@ export function UserProvider({ children }) {
             value={{
                 user,
                 setUser,
+
+                loading,
+
                 refreshUser,
+
                 invitations,
                 refreshInvitations,
-                loading
+
+                sentInvitations,
+                addSentInvitation
             }}
         >
 

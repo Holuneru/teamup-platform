@@ -111,3 +111,22 @@
     color:#777;
 
 }
+.invited-button{
+
+    background:#22c55e;
+
+    color:white;
+
+    border:none;
+
+    border-radius:12px;
+
+    padding:12px 18px;
+
+    cursor:default;
+
+    font-weight:600;
+
+    opacity:.9;
+
+}
