@@ -5,8 +5,6 @@ import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
 
 import api from "../api/axios";
-import { inviteUser } from "../api/invitationService";
-import { useUser } from "../context/UserContext";
 
 import "./project-recommendations.css";
 
@@ -16,27 +14,37 @@ export default function ProjectRecommendations() {
 
     const navigate = useNavigate();
 
-    const {
-        sentInvitations,
-        addSentInvitation
-    } = useUser();
-
     const [users, setUsers] = useState([]);
 
     const [loading, setLoading] = useState(true);
 
     const [sending, setSending] = useState({});
 
+    const loadRecommendations = async () => {
+
+        try {
+
+            setLoading(true);
+
+            const res = await api.get(`/recommendations/project/${id}`);
+
+            setUsers(res.data);
+
+        } catch (err) {
+
+            console.log(err);
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
+
     useEffect(() => {
 
-        api.get(`/recommendations/project/${id}`)
-            .then(res => {
-
-                setUsers(res.data);
-
-            })
-            .catch(console.log)
-            .finally(() => setLoading(false));
+        loadRecommendations();
 
     }, [id]);
 
@@ -49,9 +57,10 @@ export default function ProjectRecommendations() {
                 [userId]: true
             }));
 
-            await inviteUser(id, userId);
+            await api.post(`/invitations/project/${id}/user/${userId}`);
 
-            addSentInvitation(userId);
+            // Получаем свежие рекомендации после приглашения
+            await loadRecommendations();
 
         } catch (err) {
 
@@ -125,109 +134,103 @@ export default function ProjectRecommendations() {
 
                 {
 
-                    users.map(user => {
+                    users.map(user => (
 
-                        const invited = sentInvitations.includes(user.id);
+                        <div
+                            key={user.id}
+                            className="recommendation-card"
+                        >
 
-                        return (
+                            <div className="recommendation-left">
 
-                            <div
-                                key={user.id}
-                                className="recommendation-card"
-                            >
+                                <UserAvatar
+                                    user={user}
+                                />
 
-                                <div className="recommendation-left">
+                                <div>
 
-                                    <UserAvatar
-                                        user={user}
-                                    />
+                                    <div className="recommendation-university">
 
-                                    <div>
-
-                                        <div className="recommendation-university">
-
-                                            {user.university || "Университет не указан"}
-
-                                        </div>
-
-                                        <div className="recommendation-skills">
-
-                                            {
-
-                                                user.matchedSkills.map(skill => (
-
-                                                    <span
-                                                        key={skill}
-                                                        className="skill"
-                                                    >
-
-                                                        {skill}
-
-                                                    </span>
-
-                                                ))
-
-                                            }
-
-                                        </div>
+                                        {user.university || "Университет не указан"}
 
                                     </div>
 
-                                </div>
-
-                                <div className="recommendation-right">
-
-                                    <div className="match-circle">
-
-                                        {user.matchPercent}%
-
-                                    </div>
-
-                                    <button
-                                        className="secondary-button"
-                                        onClick={() => navigate(`/profile/${user.id}`)}
-                                    >
-
-                                        Профиль
-
-                                    </button>
-
-                                    <button
-                                        className={
-                                            invited
-                                                ? "invited-button"
-                                                : "primary-button"
-                                        }
-                                        disabled={
-                                            invited ||
-                                            sending[user.id]
-                                        }
-                                        onClick={() => handleInvite(user.id)}
-                                    >
+                                    <div className="recommendation-skills">
 
                                         {
 
-                                            sending[user.id]
+                                            user.matchedSkills.map(skill => (
 
-                                                ? "Отправка..."
+                                                <span
+                                                    key={skill}
+                                                    className="skill"
+                                                >
 
-                                                : invited
+                                                    {skill}
 
-                                                    ? "✓ Приглашение отправлено"
+                                                </span>
 
-                                                    : "Пригласить"
+                                            ))
 
                                         }
 
-                                    </button>
+                                    </div>
 
                                 </div>
 
                             </div>
 
-                        );
+                            <div className="recommendation-right">
 
-                    })
+                                <div className="match-circle">
+
+                                    {user.matchPercent}%
+
+                                </div>
+
+                                <button
+                                    className="secondary-button"
+                                    onClick={() => navigate(`/profile/${user.id}`)}
+                                >
+
+                                    Профиль
+
+                                </button>
+
+                                <button
+                                    className={
+                                        user.invited
+                                            ? "invited-button"
+                                            : "primary-button"
+                                    }
+                                    disabled={
+                                        user.invited ||
+                                        sending[user.id]
+                                    }
+                                    onClick={() => handleInvite(user.id)}
+                                >
+
+                                    {
+
+                                        sending[user.id]
+
+                                            ? "Отправка..."
+
+                                            : user.invited
+
+                                                ? "✓ Приглашение отправлено"
+
+                                                : "Пригласить"
+
+                                    }
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    ))
 
                 }
 

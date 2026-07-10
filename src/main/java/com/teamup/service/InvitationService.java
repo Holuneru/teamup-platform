@@ -40,19 +40,36 @@ public class InvitationService {
             throw new RuntimeException("Owner cannot invite himself");
         }
 
-        // Уже является участником
+        // Уже является участником проекта
         if (memberRepository.existsByProjectIdAndUserId(projectId, userId)) {
             throw new RuntimeException("User already member");
         }
 
-        // Уже есть активное приглашение
         Optional<ProjectInvitation> existingInvitation =
                 invitationRepository.findByProjectIdAndUserId(projectId, userId);
 
-        if (existingInvitation.isPresent()
-                && existingInvitation.get().getStatus() == InvitationStatus.PENDING) {
+        if (existingInvitation.isPresent()) {
 
-            throw new RuntimeException("Invitation already exists");
+            ProjectInvitation invitation = existingInvitation.get();
+
+            switch (invitation.getStatus()) {
+
+                case PENDING ->
+                        throw new RuntimeException("Invitation already exists");
+
+                case ACCEPTED ->
+                        throw new RuntimeException("User already accepted invitation");
+
+                case REJECTED -> {
+
+                    // Повторное приглашение
+                    invitation.setStatus(InvitationStatus.PENDING);
+
+                    invitationRepository.save(invitation);
+
+                    return toResponse(invitation);
+                }
+            }
         }
 
         ProjectInvitation invitation = ProjectInvitation.builder()

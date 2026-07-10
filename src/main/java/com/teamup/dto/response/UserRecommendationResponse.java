@@ -25,4 +25,7 @@ public class UserRecommendationResponse {
 
     private Set<String> matchedSkills;
 
+    // новое поле
+    private boolean invited;
+
 }

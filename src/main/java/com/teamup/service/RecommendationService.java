@@ -3,10 +3,13 @@ package com.teamup.service;
 import com.teamup.dto.response.UserRecommendationResponse;
 import com.teamup.entity.Project;
 import com.teamup.entity.ProjectApplication;
+import com.teamup.entity.ProjectInvitation;
 import com.teamup.entity.Skill;
 import com.teamup.entity.User;
 import com.teamup.enums.ApplicationStatus;
+import com.teamup.enums.InvitationStatus;
 import com.teamup.repository.ProjectApplicationRepository;
+import com.teamup.repository.ProjectInvitationRepository;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
 import com.teamup.repository.UserRepository;
@@ -26,13 +29,14 @@ public class RecommendationService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository memberRepository;
     private final ProjectApplicationRepository applicationRepository;
+    private final ProjectInvitationRepository invitationRepository;
 
     public List<UserRecommendationResponse> getRecommendations(Long projectId) {
 
         Project project = projectRepository.findByIdWithEverything(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
-        // Пользователи, которых не нужно показывать
+        // Пользователи, которых вообще нельзя показывать
         Set<Long> excludedUsers = memberRepository.findByProjectId(projectId)
                 .stream()
                 .map(member -> member.getUserId())
@@ -43,7 +47,10 @@ public class RecommendationService {
 
         // Пользователи с ожидающей заявкой
         applicationRepository
-                .findByProjectIdAndStatus(projectId, ApplicationStatus.PENDING)
+                .findByProjectIdAndStatus(
+                        projectId,
+                        ApplicationStatus.PENDING
+                )
                 .stream()
                 .map(ProjectApplication::getUserId)
                 .forEach(excludedUsers::add);
@@ -56,7 +63,7 @@ public class RecommendationService {
         return userRepository.findAll()
                 .stream()
                 .filter(user -> !excludedUsers.contains(user.getId()))
-                .map(user -> buildRecommendation(requiredSkills, user))
+                .map(user -> buildRecommendation(projectId, requiredSkills, user))
                 .filter(recommendation -> recommendation.getMatchPercent() > 0)
                 .sorted(
                         Comparator.comparing(UserRecommendationResponse::getMatchPercent)
@@ -67,6 +74,7 @@ public class RecommendationService {
     }
 
     private UserRecommendationResponse buildRecommendation(
+            Long projectId,
             Set<String> requiredSkills,
             User user
     ) {
@@ -84,6 +92,13 @@ public class RecommendationService {
                 ? 0
                 : matchedSkills.size() * 100 / requiredSkills.size();
 
+        boolean invited = invitationRepository
+                .findByProjectIdAndUserId(projectId, user.getId())
+                .map(invitation ->
+                        invitation.getStatus() == InvitationStatus.PENDING
+                )
+                .orElse(false);
+
         return UserRecommendationResponse.builder()
                 .id(user.getId())
                 .firstName(user.getFirstName())
@@ -92,6 +107,8 @@ public class RecommendationService {
                 .avatarUrl(user.getAvatarUrl())
                 .matchedSkills(matchedSkills)
                 .matchPercent(matchPercent)
+                .invited(invited)
                 .build();
     }
+
 }
