@@ -15,6 +15,12 @@ export default function ParticipatingProjects() {
 
     useEffect(() => {
 
+        loadProjects();
+
+    }, []);
+
+    const loadProjects = () => {
+
         api.get("/projects/participating")
             .then(res => {
 
@@ -27,7 +33,36 @@ export default function ParticipatingProjects() {
 
             });
 
-    }, []);
+    };
+
+    const leaveProject = async (projectId) => {
+
+        const confirmed = window.confirm(
+            "Are you sure you want to leave this project?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+
+            await api.delete(`/projects/${projectId}/leave`);
+
+            setProjects(prev =>
+                prev.filter(project => project.id !== projectId)
+            );
+
+        } catch (err) {
+
+            console.log(err);
+
+            alert(
+                err.response?.data?.message ??
+                "Failed to leave project."
+            );
+
+        }
+
+    };
 
     return (
 
@@ -120,13 +155,24 @@ export default function ParticipatingProjects() {
                             <div className="project-actions">
 
                                 <button
-                                    className="primary-button"
+                                    className="secondary-button"
                                     onClick={() =>
                                         navigate(`/projects/${project.id}`)
                                     }
                                 >
 
                                     Open
+
+                                </button>
+
+                                <button
+                                    className="danger-button"
+                                    onClick={() =>
+                                        leaveProject(project.id)
+                                    }
+                                >
+
+                                    Leave Project
 
                                 </button>
 

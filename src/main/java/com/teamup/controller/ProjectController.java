@@ -47,4 +47,13 @@ public class ProjectController {
         return projectService.getMyParticipations();
 
     }
+
+    @DeleteMapping("/{id}/leave")
+    public void leaveProject(
+            @PathVariable Long id
+    ) {
+
+        projectService.leaveProject(id);
+
+    }
 }

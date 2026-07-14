@@ -13,6 +13,10 @@ import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import com.teamup.repository.ProjectApplicationRepository;
+import com.teamup.repository.ProjectInvitationRepository;
+import com.teamup.repository.ProjectMemberRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +25,10 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
+
+    private final ProjectMemberRepository projectMemberRepository;
+    private final ProjectInvitationRepository projectInvitationRepository;
+    private final ProjectApplicationRepository projectApplicationRepository;
 
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
@@ -105,6 +113,32 @@ public class ProjectService {
         return projects.stream()
                 .map(projectMapper::toResponse)
                 .toList();
+
+    }
+    @Transactional
+    public void leaveProject(Long projectId) {
+
+        Long userId = (Long) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        if (project.getOwner().getId().equals(userId)) {
+            throw new RuntimeException("Owner cannot leave his own project");
+        }
+
+        if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, userId)) {
+            throw new RuntimeException("User is not member of this project");
+        }
+
+        projectMemberRepository.deleteByProjectIdAndUserId(projectId, userId);
+
+        projectInvitationRepository.deleteByProjectIdAndUserId(projectId, userId);
+
+        projectApplicationRepository.deleteByProjectIdAndUserId(projectId, userId);
 
     }
 }

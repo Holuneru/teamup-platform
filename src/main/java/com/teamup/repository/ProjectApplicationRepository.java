@@ -25,4 +25,8 @@ public interface ProjectApplicationRepository extends JpaRepository<ProjectAppli
             ApplicationStatus status
     );
 
+    void deleteByProjectIdAndUserId(Long projectId, Long userId);
+
+    void deleteByProjectId(Long projectId);
+
 }

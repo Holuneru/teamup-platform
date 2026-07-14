@@ -22,4 +22,8 @@ public interface ProjectInvitationRepository extends JpaRepository<ProjectInvita
             Long userId
     );
 
+    void deleteByProjectIdAndUserId(Long projectId, Long userId);
+
+    void deleteByProjectId(Long projectId);
+
 }
