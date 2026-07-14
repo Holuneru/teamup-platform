@@ -5,8 +5,12 @@ import {
     User,
     Search,
     Folder,
-    SquarePlus
+    SquarePlus,
+    Users
 } from "lucide-react";
+
+
+
 
 import "./sidebar.css";
 
@@ -44,6 +48,12 @@ export default function Sidebar() {
             name: "My Projects",
             path: "/my-projects",
             icon: <Folder size={18}/>
+        },
+
+        {
+            name: "Projects I'm In",
+            path: "/participating-projects",
+            icon: <Users size={18}/>
         },
 
         {

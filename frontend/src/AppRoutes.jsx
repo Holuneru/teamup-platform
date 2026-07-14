@@ -25,6 +25,10 @@ import Invitations from "./pages/Invitations";
 
 import People from "./pages/People";
 import InviteUser from "./pages/InviteUser";
+
+import ParticipatingProjects from "./pages/ParticipatingProjects";
+
+
 export default function AppRoutes() {
 
     return (
@@ -101,6 +105,11 @@ export default function AppRoutes() {
                 <Route
                     path="/my-projects"
                     element={<MyProjects />}
+                />
+
+                <Route
+                    path="/participating-projects"
+                    element={<ParticipatingProjects />}
                 />
 
                 <Route

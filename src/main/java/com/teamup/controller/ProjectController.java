@@ -40,4 +40,11 @@ public class ProjectController {
     public ProjectResponse getById(@PathVariable Long id) {
         return projectService.getById(id);
     }
+
+    @GetMapping("/participating")
+    public List<ProjectResponse> getMyParticipatingProjects() {
+
+        return projectService.getMyParticipations();
+
+    }
 }

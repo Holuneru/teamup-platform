@@ -91,4 +91,20 @@ public class ProjectService {
                 .map(projectMapper::toResponse)
                 .toList();
     }
+
+    public List<ProjectResponse> getMyParticipations() {
+
+        Long userId = (Long) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        List<Project> projects =
+                projectRepository.findProjectsWhereUserIsMember(userId);
+
+        return projects.stream()
+                .map(projectMapper::toResponse)
+                .toList();
+
+    }
 }

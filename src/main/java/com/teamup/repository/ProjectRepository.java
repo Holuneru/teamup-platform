@@ -59,5 +59,16 @@ where p.id = :id
 
 
 
-
+    @Query("""
+select distinct p from Project p
+left join fetch p.members
+left join fetch p.requiredSkills
+where exists (
+    select m from ProjectMember m
+    where m.projectId = p.id
+      and m.userId = :userId
+)
+and p.owner.id <> :userId
+""")
+    List<Project> findProjectsWhereUserIsMember(Long userId);
 }
