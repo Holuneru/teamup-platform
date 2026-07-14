@@ -86,4 +86,15 @@ public class InvitationController {
 
     }
 
+    @GetMapping("/status/user/{userId}")
+    public List<String> getInvitationStatuses(
+
+            @PathVariable Long userId
+
+    ) {
+
+        return invitationService.getInvitationStatuses(userId);
+
+    }
+
 }

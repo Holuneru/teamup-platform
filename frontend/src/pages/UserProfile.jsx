@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { useUser } from "../context/UserContext";
 import Layout from "../components/Layout";
 
 import api from "../api/axios";
@@ -13,9 +13,14 @@ export default function UserProfile() {
 
     const navigate = useNavigate();
 
+    const { user: currentUser } = useUser();
+
     const [user, setUser] = useState(null);
 
     const [loading, setLoading] = useState(true);
+
+    const [menuOpen, setMenuOpen] = useState(false);
+
 
     useEffect(() => {
 
@@ -29,6 +34,22 @@ export default function UserProfile() {
             .finally(() => setLoading(false));
 
     }, [id]);
+
+    useEffect(() => {
+
+        if (
+            currentUser &&
+            currentUser.id === Number(id)
+        ) {
+
+            navigate("/profile", {
+                replace: true
+            });
+
+        }
+
+    }, [currentUser, id, navigate]);
+
 
     if (loading) {
 
@@ -44,6 +65,7 @@ export default function UserProfile() {
 
     }
 
+
     if (!user) {
 
         return (
@@ -58,35 +80,42 @@ export default function UserProfile() {
 
     }
 
+
     return (
 
         <Layout>
 
             <div className="profile-page">
 
+
                 <div className="profile-hero">
+
 
                     <div className="profile-avatar">
 
-                        {user.avatarUrl ? (
+                        {
+                            user.avatarUrl ? (
 
-                            <img
-                                src={`http://localhost:8080${user.avatarUrl}`}
-                                alt="avatar"
-                            />
+                                <img
+                                    src={`http://localhost:8080${user.avatarUrl}`}
+                                    alt="avatar"
+                                />
 
-                        ) : (
+                            ) : (
 
-                            <div className="avatar-placeholder">
+                                <div className="avatar-placeholder">
 
-                                {user.firstName?.charAt(0)}
-                                {user.lastName?.charAt(0)}
+                                    {user.firstName?.charAt(0)}
+                                    {user.lastName?.charAt(0)}
 
-                            </div>
+                                </div>
 
-                        )}
+                            )
+                        }
 
                     </div>
+
+
 
                     <div className="profile-info">
 
@@ -96,53 +125,122 @@ export default function UserProfile() {
 
                         </h1>
 
+
                         <p className="profile-subtitle">
 
                             {user.university || "Университет не указан"}
 
                             {user.course && (
-                                <> • {user.course} курс</>
+                                <> • {user.course} курс </>
                             )}
 
                         </p>
 
+
                         <div className="profile-links">
 
-                            {user.telegram && (
 
-                                <a
-                                    href={`https://t.me/${user.telegram.replace("@", "")}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
+                            {
+                                user.telegram && (
 
-                                    Telegram
+                                    <a
+                                        href={`https://t.me/${user.telegram.replace("@","")}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
 
-                                </a>
+                                        Telegram
 
-                            )}
+                                    </a>
 
-                            {user.github && (
+                                )
+                            }
 
-                                <a
-                                    href={
-                                        user.github.startsWith("http")
-                                            ? user.github
-                                            : `https://github.com/${user.github}`
-                                    }
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
 
-                                    GitHub
 
-                                </a>
+                            {
+                                user.github && (
 
-                            )}
+                                    <a
+                                        href={
+                                            user.github.startsWith("http")
+                                                ? user.github
+                                                : `https://github.com/${user.github}`
+                                        }
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+
+                                        GitHub
+
+                                    </a>
+
+                                )
+                            }
+
 
                         </div>
 
+
                     </div>
+
+
+
+
+                    <div
+                        style={{
+                            position:"relative"
+                        }}
+                    >
+
+
+                        <button
+                            className="edit-profile-button"
+                            onClick={() =>
+                                setMenuOpen(!menuOpen)
+                            }
+                        >
+
+                            ⋮
+
+                        </button>
+
+
+
+                        {
+                            menuOpen && (
+
+                                <div
+                                    className="dropdown-menu"
+                                    style={{
+                                        right:0,
+                                        top:"55px"
+                                    }}
+                                >
+
+
+                                    <button
+                                        onClick={() =>
+                                            navigate(
+                                                `/invite-user/${user.id}`
+                                            )
+                                        }
+                                    >
+
+                                        Пригласить в проект
+
+                                    </button>
+
+
+                                </div>
+
+                            )
+                        }
+
+
+                    </div>
+
+
 
                     <button
                         className="edit-profile-button"
@@ -153,9 +251,16 @@ export default function UserProfile() {
 
                     </button>
 
+
+
                 </div>
 
+
+
+
+
                 <div className="profile-section">
+
 
                     <h2>
 
@@ -163,17 +268,29 @@ export default function UserProfile() {
 
                     </h2>
 
+
                     <p>
 
-                        {user.about
-                            ? user.about
-                            : "Пользователь пока не добавил информацию о себе."}
+                        {
+                            user.about
+                                ?
+                                user.about
+                                :
+                                "Пользователь пока не добавил информацию о себе."
+                        }
 
                     </p>
 
+
                 </div>
 
+
+
+
+
+
                 <div className="profile-section">
+
 
                     <h2>
 
@@ -181,40 +298,63 @@ export default function UserProfile() {
 
                     </h2>
 
-                    {user.skills && user.skills.length > 0 ? (
 
-                        <div className="skills">
 
-                            {user.skills.map(skill => (
+                    {
+                        user.skills && user.skills.length > 0 ? (
 
-                                <span
-                                    key={skill.id}
-                                    className="skill"
-                                >
 
-                                    {skill.name}
+                            <div className="skills">
 
-                                </span>
 
-                            ))}
+                                {
+                                    user.skills.map(skill => (
 
-                        </div>
 
-                    ) : (
+                                        <span
+                                            key={skill.id}
+                                            className="skill"
+                                        >
 
-                        <p className="empty-text">
+                                            {skill.name}
 
-                            Пользователь пока не добавил навыки.
+                                        </span>
 
-                        </p>
 
-                    )}
+                                    ))
+                                }
+
+
+                            </div>
+
+
+                        ) : (
+
+
+                            <p className="empty-text">
+
+                                Пользователь пока не добавил навыки.
+
+                            </p>
+
+
+                        )
+                    }
+
+
 
                 </div>
 
+
+
+
+
+
                 <div className="profile-bottom">
 
+
                     <div className="profile-card">
+
 
                         <h2>
 
@@ -222,13 +362,13 @@ export default function UserProfile() {
 
                         </h2>
 
+
                         <div className="info-row">
 
                             <span>
-
                                 Университет
-
                             </span>
+
 
                             <strong>
 
@@ -236,15 +376,18 @@ export default function UserProfile() {
 
                             </strong>
 
+
                         </div>
+
+
 
                         <div className="info-row">
 
+
                             <span>
-
                                 Курс
-
                             </span>
+
 
                             <strong>
 
@@ -252,15 +395,18 @@ export default function UserProfile() {
 
                             </strong>
 
+
                         </div>
+
+
 
                         <div className="info-row">
 
+
                             <span>
-
                                 Email
-
                             </span>
+
 
                             <strong>
 
@@ -268,11 +414,19 @@ export default function UserProfile() {
 
                             </strong>
 
+
                         </div>
+
+
 
                     </div>
 
+
+
+
+
                     <div className="profile-card">
+
 
                         <h2>
 
@@ -280,13 +434,14 @@ export default function UserProfile() {
 
                         </h2>
 
+
+
                         <div className="info-row">
 
                             <span>
-
                                 Telegram
-
                             </span>
+
 
                             <strong>
 
@@ -294,15 +449,18 @@ export default function UserProfile() {
 
                             </strong>
 
+
                         </div>
+
+
+
 
                         <div className="info-row">
 
                             <span>
-
                                 GitHub
-
                             </span>
+
 
                             <strong>
 
@@ -310,16 +468,25 @@ export default function UserProfile() {
 
                             </strong>
 
+
                         </div>
+
+
 
                     </div>
 
+
+
                 </div>
 
+
+
             </div>
+
 
         </Layout>
 
     );
 
 }
+

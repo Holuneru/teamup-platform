@@ -10,6 +10,8 @@ import com.teamup.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -33,6 +35,17 @@ public class UserService {
         Long userId = jwtService.extractUserId(token);
 
         return getUserById(userId);
+
+
+    }
+
+    public List<UserResponse> searchUsers(String query) {
+
+        return userRepository.searchUsers(query)
+                .stream()
+                .map(userMapper::toResponse)
+                .toList();
+
     }
 
     // ===========================

@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-    Bell
+    Bell,
+    Users
 } from "lucide-react";
 
 import { useUser } from "../context/UserContext";
@@ -89,6 +90,23 @@ export default function Layout({ children }) {
 
                     <button
                         className="invitation-button"
+                        onClick={() => navigate("/people")}
+                    >
+
+                        <Users size={20} />
+
+                        <span>
+
+                            People
+
+                        </span>
+
+                    </button>
+
+
+
+                    <button
+                        className="invitation-button"
                         onClick={() => navigate("/invitations")}
                     >
 
@@ -104,7 +122,7 @@ export default function Layout({ children }) {
 
                             invitations.length > 0 && (
 
-                                <div className="notification-dot"/>
+                                <div className="notification-dot" />
 
                             )
 
@@ -215,7 +233,7 @@ export default function Layout({ children }) {
 
             <div className="content-layout">
 
-                <Sidebar/>
+                <Sidebar />
 
                 <main className="page">
 

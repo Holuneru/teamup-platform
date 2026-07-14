@@ -23,6 +23,8 @@ import ProjectRecommendations from "./pages/ProjectRecommendations";
 
 import Invitations from "./pages/Invitations";
 
+import People from "./pages/People";
+import InviteUser from "./pages/InviteUser";
 export default function AppRoutes() {
 
     return (
@@ -52,6 +54,16 @@ export default function AppRoutes() {
                 />
 
                 <Route
+                    path="/invite-user/:id"
+                    element={<InviteUser />}
+                />
+
+                <Route
+                    path="/people"
+                    element={<People />}
+                />
+
+                <Route
                     path="/home"
                     element={<Home />}
                 />
@@ -59,6 +71,11 @@ export default function AppRoutes() {
                 <Route
                     path="/profile"
                     element={<Home />}
+                />
+
+                <Route
+                    path="/invite-user/:userId"
+                    element={<InviteUser />}
                 />
 
                 <Route

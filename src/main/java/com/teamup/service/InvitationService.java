@@ -12,6 +12,7 @@ import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
 import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -173,5 +174,46 @@ public class InvitationService {
                                 .build()
                 )
                 .build();
+    }
+
+    public List<String> getInvitationStatuses(Long userId) {
+
+        Long ownerId = (Long) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        List<Project> projects =
+                projectRepository.findByOwnerIdWithMembers(ownerId);
+
+        return projects.stream()
+                .map(project -> {
+
+                    if (memberRepository.existsByProjectIdAndUserId(
+                            project.getId(),
+                            userId
+                    )) {
+
+                        return project.getId() + ":MEMBER";
+                    }
+
+                    Optional<ProjectInvitation> invitation =
+                            invitationRepository.findByProjectIdAndUserId(
+                                    project.getId(),
+                                    userId
+                            );
+
+                    if (invitation.isPresent()) {
+
+                        return project.getId() + ":" +
+                                invitation.get().getStatus().name();
+
+                    }
+
+                    return project.getId() + ":NONE";
+
+                })
+                .toList();
+
     }
 }

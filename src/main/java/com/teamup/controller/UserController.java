@@ -1,7 +1,6 @@
 package com.teamup.controller;
 
 import com.teamup.service.AvatarService;
-import org.springframework.web.multipart.MultipartFile;
 import com.teamup.dto.request.UpdateSkillsRequest;
 import com.teamup.dto.request.UpdateUserRequest;
 import com.teamup.dto.response.SkillResponse;
@@ -10,6 +9,7 @@ import com.teamup.service.SkillService;
 import com.teamup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -27,6 +27,15 @@ public class UserController {
     public UserResponse getUser(@PathVariable Long id) {
 
         return userService.getUserById(id);
+
+    }
+
+    @GetMapping("/search")
+    public List<UserResponse> searchUsers(
+            @RequestParam String query
+    ) {
+
+        return userService.searchUsers(query);
 
     }
 
@@ -50,10 +59,6 @@ public class UserController {
         return userService.getMe(authHeader);
 
     }
-
-    // ==========================
-    // UPDATE PROFILE
-    // ==========================
 
     @PutMapping("/me")
     public UserResponse updateMe(
