@@ -4,16 +4,19 @@ import com.teamup.dto.request.CreateApplicationRequest;
 import com.teamup.dto.response.ApplicationResponse;
 import com.teamup.dto.response.ProjectMemberResponse;
 import com.teamup.dto.response.UserShortResponse;
+import com.teamup.entity.Project;
 import com.teamup.entity.ProjectApplication;
 import com.teamup.entity.User;
 import com.teamup.enums.ApplicationStatus;
 import com.teamup.repository.ProjectApplicationRepository;
 import com.teamup.repository.ProjectMemberRepository;
+import com.teamup.repository.ProjectRepository;
 import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class ProjectApplicationService {
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
     private final ProjectMemberService memberService;
+    private final ProjectRepository projectRepository;
 
     // ===========================
     // APPLY
@@ -30,10 +34,22 @@ public class ProjectApplicationService {
 
     public ApplicationResponse apply(Long projectId, CreateApplicationRequest request) {
 
+        Project project = projectRepository.findByIdWithOwner(projectId)
+                .orElseThrow(
+                        () -> new RuntimeException("Project not found")
+                );
+
+
+        if (Objects.equals(project.getOwner().getId(), request.getUserId())){
+            throw new RuntimeException("Owner cannot apply");
+        }
+
         repository.findByProjectIdAndUserId(projectId, request.getUserId())
                 .ifPresent(app -> {
                     throw new RuntimeException("Already applied");
                 });
+
+
 
         ProjectApplication app = ProjectApplication.builder()
                 .projectId(projectId)
