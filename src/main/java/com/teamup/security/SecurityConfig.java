@@ -57,10 +57,10 @@ public class SecurityConfig {
                         // Авторизация
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // 👇 Разрешаем изображения
+                        // Загрузка файлов
                         .requestMatchers("/uploads/**").permitAll()
 
-                        // Всё остальное требует JWT
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

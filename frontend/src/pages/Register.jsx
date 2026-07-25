@@ -58,7 +58,7 @@ export default function Register() {
                 <h2>Create account</h2>
 
                 <p style={{ marginBottom: "20px", color: "#666", fontSize: "14px" }}>
-                    Fields marked with <b>*</b> are required.
+                    Поля помеченные <b>" * "</b> обязательны.
                 </p>
 
                 <h3 style={{ textAlign: "left" }}>
