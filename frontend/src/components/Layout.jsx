@@ -97,7 +97,7 @@ export default function Layout({ children }) {
 
                         <span>
 
-                            People
+                            Найти людей
 
                         </span>
 
@@ -114,7 +114,7 @@ export default function Layout({ children }) {
 
                         <span>
 
-                            Invitations
+                            Приглашения в Проекты
 
                         </span>
 

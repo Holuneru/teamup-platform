@@ -61,7 +61,7 @@ export default function Login() {
                 onSubmit={handleSubmit}
             >
 
-                <h2>Login</h2>
+                <h2>Вход</h2>
 
                 <input
                     className="auth-input"
@@ -80,7 +80,7 @@ export default function Login() {
 
                 <button className="auth-button">
 
-                    Login
+                    Войти
 
                 </button>
 
@@ -92,24 +92,3 @@ export default function Login() {
 
 }
 
-/*
-TODO пофиксить баг с логином
-    Прислать ChatGPT
-    Нужно посмотреть 3 файла
-    Чтобы найти проблему, пришли, пожалуйста, полностью:
-    
-    1. src/pages/Login.jsx
-
-    (там происходит логин и сохранение токена)
-
-    2. src/api/axios.js
-
-    (там может не прикрепляться Authorization Header)
-
-    3. Бэкенд:
-    AuthController.java
-
-    и
-
-    AuthService.java
- */

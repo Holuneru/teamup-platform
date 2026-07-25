@@ -70,7 +70,7 @@ export default function Invitations() {
 
                     <h1>
 
-                        Invitations
+                        Приглашения
 
                     </h1>
 

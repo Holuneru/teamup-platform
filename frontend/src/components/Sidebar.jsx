@@ -33,31 +33,31 @@ export default function Sidebar() {
         },
 
         {
-            name: "Profile",
+            name: "Профиль",
             path: "/profile",
             icon: <User size={18}/>
         },
 
         {
-            name: "Browse Projects",
+            name: "Поиск Проектов",
             path: "/projects",
             icon: <Search size={18}/>
         },
 
         {
-            name: "My Projects",
+            name: "Мои Проекты",
             path: "/my-projects",
             icon: <Folder size={18}/>
         },
 
         {
-            name: "Projects I'm In",
+            name: "Где я участник",
             path: "/participating-projects",
             icon: <Users size={18}/>
         },
 
         {
-            name: "Create Project",
+            name: "Создать проект",
             path: "/create-project",
             icon: <SquarePlus size={18}/>
         }

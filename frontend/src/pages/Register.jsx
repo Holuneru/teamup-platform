@@ -55,18 +55,18 @@ export default function Register() {
 
             <form className="auth-card" onSubmit={handleSubmit}>
 
-                <h2>Create account</h2>
+                <h2>Создание аккаунта</h2>
 
                 <p style={{ marginBottom: "20px", color: "#666", fontSize: "14px" }}>
                     Поля помеченные <b>" * "</b> обязательны.
                 </p>
 
                 <h3 style={{ textAlign: "left" }}>
-                    Personal Information
+                    Персональная Информация
                 </h3>
 
                 <p style={{ textAlign: "left", color: "#888", fontSize: "13px" }}>
-                    Required
+                    Обязательные поля
                 </p>
 
                 <input
@@ -106,11 +106,11 @@ export default function Register() {
                 <hr />
 
                 <h3 style={{ textAlign: "left" }}>
-                    Academic Information
+                    Академическая Информация
                 </h3>
 
                 <p style={{ textAlign: "left", color: "#888", fontSize: "13px" }}>
-                    Optional
+                    Опционально
                 </p>
 
                 <input
@@ -133,11 +133,11 @@ export default function Register() {
                 <hr />
 
                 <h3 style={{ textAlign: "left" }}>
-                    Profile
+                    Профиль
                 </h3>
 
                 <p style={{ textAlign: "left", color: "#888", fontSize: "13px" }}>
-                    Optional
+                    Опйционально
                 </p>
 
                 <textarea
@@ -169,7 +169,7 @@ export default function Register() {
                     className="auth-button"
                     type="submit"
                 >
-                    Create Account
+                    Создать аккаунт
                 </button>
 
             </form>

@@ -26,10 +26,10 @@ export default function ProjectApplications({ projectId }) {
 
     return (
         <div style={{ padding: "20px" }}>
-            <h2>Applications</h2>
+            <h2>Заявки</h2>
 
             {applications.length === 0 ? (
-                <p>No applications</p>
+                <p>Нет заявок</p>
             ) : (
                 applications.map(app => (
                     <div key={app.id} style={{

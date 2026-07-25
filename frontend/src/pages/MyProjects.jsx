@@ -29,20 +29,20 @@ export default function MyProjects() {
 
             <div className="my-projects">
 
-                <h1>My Projects</h1>
+                <h1>Мои проекты</h1>
 
                 <p className="page-subtitle">
-                    Projects that you created and manage.
+                    Проекты, которые вы создали и которыми управляете.
                 </p>
 
                 {projects.length === 0 && (
 
                     <div className="empty-projects">
 
-                        <h2>No projects yet</h2>
+                        <h2>Ещё нет проектов</h2>
 
                         <p>
-                            Create your first project and start building your team.
+                            Создай свой Первый Проект и начни искать Команду!
                         </p>
 
                     </div>
@@ -85,14 +85,14 @@ export default function MyProjects() {
                                 className="secondary-button"
                                 onClick={() => navigate(`/projects/${project.id}`)}
                             >
-                                Open
+                                Открыть страницу Проекта
                             </button>
 
                             <button
                                 className="primary-button"
                                 onClick={() => navigate(`/projects/${project.id}/manage`)}
                             >
-                                Manage
+                                Управление
                             </button>
 
                         </div>
