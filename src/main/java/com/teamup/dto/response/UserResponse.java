@@ -31,6 +31,8 @@ public class UserResponse {
 
     private String avatarUrl;
 
+    private Boolean lookingForTeam;
+
     private ParticipationFormat participationFormat;
 
     private Role role;

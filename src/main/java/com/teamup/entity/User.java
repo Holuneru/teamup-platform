@@ -66,6 +66,10 @@ public class User {
     @Builder.Default
     private Set<Skill> skills = new HashSet<>();
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean lookingForTeam = true;
+
 
     @PrePersist
     public void prePersist() {
@@ -77,6 +81,10 @@ public class User {
 
         if (participationFormat == null) {
             participationFormat = ParticipationFormat.BOTH;
+        }
+
+        if (lookingForTeam == null) {
+            lookingForTeam = true;
         }
     }
 }

@@ -27,6 +27,7 @@ public class UserMapper {
                 .telegram(user.getTelegram())
                 .github(user.getGithub())
                 .avatarUrl(user.getAvatarUrl())
+                .lookingForTeam(user.getLookingForTeam())
                 .participationFormat(user.getParticipationFormat())
                 .role(user.getRole())
                 .skills(

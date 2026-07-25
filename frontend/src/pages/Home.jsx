@@ -130,6 +130,31 @@ export default function Home() {
 
                         </h1>
 
+                        <div
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                padding: "6px 14px",
+                                borderRadius: "999px",
+                                marginTop: "10px",
+                                marginBottom: "14px",
+                                fontWeight: 600,
+                                fontSize: "14px",
+                                background: user.lookingForTeam
+                                    ? "#dcfce7"
+                                    : "#f3f4f6",
+                                color: user.lookingForTeam
+                                    ? "#15803d"
+                                    : "#6b7280"
+                            }}
+                        >
+
+                            {user.lookingForTeam
+                                ? "🟢 Ищу команду"
+                                : "⚪ Не ищу команду"}
+
+                        </div>
+
                         <p className="profile-subtitle">
 
                             {user.university || "Университет не указан"}

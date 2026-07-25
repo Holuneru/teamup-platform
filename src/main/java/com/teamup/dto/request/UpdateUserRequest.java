@@ -19,4 +19,6 @@ public class UpdateUserRequest {
 
     private String github;
 
+    private Boolean lookingForTeam;
+
 }

@@ -27,7 +27,8 @@ export default function EditProfile() {
         course: "",
         about: "",
         telegram: "",
-        github: ""
+        github: "",
+        lookingForTeam: true
     });
 
     useEffect(() => {
@@ -56,7 +57,8 @@ export default function EditProfile() {
                 course: user.course || "",
                 about: user.about || "",
                 telegram: user.telegram || "",
-                github: user.github || ""
+                github: user.github || "",
+                lookingForTeam: user.lookingForTeam ?? true
             });
 
             setSkills(skillsRes.data);
@@ -77,9 +79,13 @@ export default function EditProfile() {
 
     const handleChange = (e) => {
 
+        const { name, value, type, checked } = e.target;
+
         setForm({
             ...form,
-            [e.target.name]: e.target.value
+            [name]: type === "checkbox"
+                ? checked
+                : value
         });
 
     };
@@ -137,7 +143,11 @@ export default function EditProfile() {
 
             <div className="edit-profile">
 
-                <h1>Редактирование профиля</h1>
+                <h1>
+
+                    Редактирование профиля
+
+                </h1>
 
                 <form onSubmit={handleSubmit}>
 
@@ -226,6 +236,27 @@ export default function EditProfile() {
                         value={form.github}
                         onChange={handleChange}
                     />
+
+                    <label
+                        style={{
+                            marginTop: "20px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            cursor: "pointer"
+                        }}
+                    >
+
+                        <input
+                            type="checkbox"
+                            name="lookingForTeam"
+                            checked={form.lookingForTeam}
+                            onChange={handleChange}
+                        />
+
+                        Ищу команду
+
+                    </label>
 
                     <label
                         style={{

@@ -71,6 +71,7 @@ public class UserService {
         user.setAbout(request.getAbout());
         user.setTelegram(request.getTelegram());
         user.setGithub(request.getGithub());
+        user.setLookingForTeam(request.getLookingForTeam());
 
         userRepository.save(user);
 
