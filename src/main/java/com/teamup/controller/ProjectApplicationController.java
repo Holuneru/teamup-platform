@@ -17,7 +17,7 @@ public class ProjectApplicationController {
 
     private final ProjectApplicationService service;
 
-    // 📌 APPLY
+
     @PostMapping("/{projectId}/apply")
     public ApplicationResponse apply(
             @PathVariable Long projectId,
@@ -26,7 +26,7 @@ public class ProjectApplicationController {
         return service.apply(projectId, request);
     }
 
-    // 📌 APPLICATIONS
+    //APPLICATIONS
     @GetMapping("/{projectId}/applications")
     public List<ApplicationResponse> getApplications(
             @PathVariable Long projectId
@@ -34,19 +34,19 @@ public class ProjectApplicationController {
         return service.getByProject(projectId);
     }
 
-    // 📌 ACCEPT
+    //ACCEPT
     @PostMapping("/applications/{id}/accept")
     public ApplicationResponse accept(@PathVariable Long id) {
         return service.accept(id);
     }
 
-    // 📌 REJECT
+    //REJECT
     @PostMapping("/applications/{id}/reject")
     public ApplicationResponse reject(@PathVariable Long id) {
         return service.reject(id);
     }
 
-    // 📌 MEMBERS
+    //MEMBERS
     @GetMapping("/{projectId}/members")
     public List<ProjectMemberResponse> getMembers(
             @PathVariable Long projectId

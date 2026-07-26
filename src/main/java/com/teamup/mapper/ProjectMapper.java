@@ -26,7 +26,7 @@ public class ProjectMapper {
                                 : null
                 )
 
-                // 🔥 полноценный owner
+
                 .owner(
                         project.getOwner() == null
                                 ? null
