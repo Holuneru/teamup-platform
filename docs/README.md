@@ -19,8 +19,6 @@ Backend
 
 Frontend
 
-- HTML
-- CSS
-- JavaScript
+-React
 
 Все требования находятся в PROJECT_RULES.md.
