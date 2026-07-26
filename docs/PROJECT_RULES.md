@@ -33,6 +33,7 @@ Frontend
 - HTML
 - CSS
 - Vanilla JavaScript
+- React
 
 Использовать существующий prototype.html как основу интерфейса.
 
