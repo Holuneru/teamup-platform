@@ -23,6 +23,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = "skills")
     List<User> findAll();
 
+
+    @Query("select u from User  u left join fetch u.skills s where u.lookingForTeam = :lookingForTeam")
+    List<User> findByLookingForTeamWithSkills(boolean lookingForTeam);
+
+
     @EntityGraph(attributePaths = "skills")
     @Override
     Optional<User> findById(Long id);

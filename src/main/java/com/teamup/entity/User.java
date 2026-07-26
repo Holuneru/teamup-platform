@@ -36,6 +36,8 @@ public class User {
 
     private String university;
 
+
+    //TODO сделать Валидацию что число только Positive
     private Integer course;
 
     @Column(length = 1000)

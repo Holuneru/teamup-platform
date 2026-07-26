@@ -60,7 +60,7 @@ public class RecommendationService {
                 .map(Skill::getName)
                 .collect(Collectors.toSet());
 
-        return userRepository.findAll()
+        return userRepository.findByLookingForTeamWithSkills(true)
                 .stream()
                 .filter(user -> !excludedUsers.contains(user.getId()))
                 .map(user -> buildRecommendation(projectId, requiredSkills, user))
