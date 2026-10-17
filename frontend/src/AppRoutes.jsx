@@ -27,6 +27,10 @@ import People from "./pages/People";
 import InviteUser from "./pages/InviteUser";
 
 import ParticipatingProjects from "./pages/ParticipatingProjects";
+import Hackathons from "./pages/Hackathons";
+import HackathonDetails from "./pages/HackathonDetails";
+import Mentors from "./pages/Mentors";
+import MentorDetails from "./pages/MentorDetails";
 
 
 export default function AppRoutes() {
@@ -55,11 +59,6 @@ export default function AppRoutes() {
                 <Route
                     path="/dashboard"
                     element={<Dashboard />}
-                />
-
-                <Route
-                    path="/invite-user/:id"
-                    element={<InviteUser />}
                 />
 
                 <Route
@@ -135,6 +134,26 @@ export default function AppRoutes() {
                 <Route
                     path="/invitations"
                     element={<Invitations />}
+                />
+
+                <Route
+                    path="/hackathons"
+                    element={<Hackathons />}
+                />
+
+                <Route
+                    path="/hackathons/:id"
+                    element={<HackathonDetails />}
+                />
+
+                <Route
+                    path="/mentors"
+                    element={<Mentors />}
+                />
+
+                <Route
+                    path="/mentors/:id"
+                    element={<MentorDetails />}
                 />
 
                 <Route

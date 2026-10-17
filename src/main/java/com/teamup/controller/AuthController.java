@@ -28,4 +28,10 @@ public class AuthController {
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout() {
+        // JWT хранится на клиенте, серверу достаточно подтвердить выход
+    }
 }

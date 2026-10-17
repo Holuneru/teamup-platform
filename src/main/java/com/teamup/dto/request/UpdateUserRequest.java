@@ -1,5 +1,7 @@
 package com.teamup.dto.request;
 
+import com.teamup.enums.ParticipationFormat;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
@@ -11,6 +13,7 @@ public class UpdateUserRequest {
 
     private String university;
 
+    @Positive
     private Integer course;
 
     private String about;
@@ -20,5 +23,7 @@ public class UpdateUserRequest {
     private String github;
 
     private Boolean lookingForTeam;
+
+    private ParticipationFormat participationFormat;
 
 }

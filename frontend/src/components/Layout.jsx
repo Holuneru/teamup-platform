@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import { useUser } from "../context/UserContext";
+import api from "../api/axios";
 
 import Sidebar from "./Sidebar";
 
@@ -55,14 +56,17 @@ export default function Layout({ children }) {
 
     }, []);
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await api.post("/auth/logout");
+        } catch (err) {
+            console.log(err);
+        }
 
         localStorage.removeItem("token");
-
+        localStorage.removeItem("user");
         setUser(null);
-
         navigate("/login");
-
     };
 
     if (loading) {

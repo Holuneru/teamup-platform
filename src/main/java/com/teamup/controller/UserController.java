@@ -5,8 +5,11 @@ import com.teamup.dto.request.UpdateSkillsRequest;
 import com.teamup.dto.request.UpdateUserRequest;
 import com.teamup.dto.response.SkillResponse;
 import com.teamup.dto.response.UserResponse;
+import com.teamup.enums.ParticipationFormat;
+import com.teamup.enums.Role;
 import com.teamup.service.SkillService;
 import com.teamup.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +25,16 @@ public class UserController {
     private final UserService userService;
     private final SkillService skillService;
     private final AvatarService avatarService;
+
+    @GetMapping
+    public List<UserResponse> getUsers(
+            @RequestParam(required = false) String university,
+            @RequestParam(required = false) String skill,
+            @RequestParam(required = false) Role role,
+            @RequestParam(required = false) ParticipationFormat format
+    ) {
+        return userService.findUsers(university, skill, role, format);
+    }
 
     @GetMapping("/{id}")
     public UserResponse getUser(@PathVariable Long id) {
@@ -65,7 +78,7 @@ public class UserController {
 
             @RequestHeader("Authorization") String authHeader,
 
-            @RequestBody UpdateUserRequest request
+            @Valid @RequestBody UpdateUserRequest request
 
     ) {
 

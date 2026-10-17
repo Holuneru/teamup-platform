@@ -28,7 +28,8 @@ export default function EditProfile() {
         about: "",
         telegram: "",
         github: "",
-        lookingForTeam: true
+        lookingForTeam: true,
+        participationFormat: "BOTH"
     });
 
     useEffect(() => {
@@ -58,7 +59,8 @@ export default function EditProfile() {
                 about: user.about || "",
                 telegram: user.telegram || "",
                 github: user.github || "",
-                lookingForTeam: user.lookingForTeam ?? true
+                lookingForTeam: user.lookingForTeam ?? true,
+                participationFormat: user.participationFormat || "BOTH"
             });
 
             setSkills(skillsRes.data);
@@ -236,6 +238,20 @@ export default function EditProfile() {
                         value={form.github}
                         onChange={handleChange}
                     />
+
+                    <label>
+                        Формат участия
+                    </label>
+
+                    <select
+                        name="participationFormat"
+                        value={form.participationFormat}
+                        onChange={handleChange}
+                    >
+                        <option value="ONLINE">Онлайн</option>
+                        <option value="OFFLINE">Оффлайн</option>
+                        <option value="BOTH">Онлайн и оффлайн</option>
+                    </select>
 
                     <label
                         style={{

@@ -5,6 +5,7 @@ import com.teamup.dto.response.ApplicationResponse;
 import com.teamup.dto.response.ProjectMemberResponse;
 import com.teamup.service.ProjectApplicationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,9 +20,10 @@ public class ProjectApplicationController {
 
 
     @PostMapping("/{projectId}/apply")
+    @ResponseStatus(HttpStatus.CREATED)
     public ApplicationResponse apply(
             @PathVariable Long projectId,
-            @RequestBody CreateApplicationRequest request
+            @RequestBody(required = false) CreateApplicationRequest request
     ) {
         return service.apply(projectId, request);
     }

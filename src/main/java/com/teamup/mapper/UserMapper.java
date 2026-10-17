@@ -2,7 +2,6 @@ package com.teamup.mapper;
 
 import com.teamup.dto.response.UserResponse;
 import com.teamup.entity.User;
-import com.teamup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

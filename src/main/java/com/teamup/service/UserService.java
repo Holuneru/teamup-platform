@@ -3,6 +3,8 @@ package com.teamup.service;
 import com.teamup.dto.request.UpdateUserRequest;
 import com.teamup.dto.response.UserResponse;
 import com.teamup.entity.User;
+import com.teamup.enums.ParticipationFormat;
+import com.teamup.enums.Role;
 import com.teamup.exception.UserNotFoundException;
 import com.teamup.mapper.UserMapper;
 import com.teamup.repository.UserRepository;
@@ -41,11 +43,33 @@ public class UserService {
 
     public List<UserResponse> searchUsers(String query) {
 
-        return userRepository.searchUsers(query)
+        String value = query == null ? "" : query;
+
+        return userRepository.searchUsers(value)
                 .stream()
                 .map(userMapper::toResponse)
                 .toList();
 
+    }
+
+    public List<UserResponse> findUsers(
+            String university,
+            String skill,
+            Role role,
+            ParticipationFormat format
+    ) {
+        return userRepository.findAll().stream()
+                .filter(user -> university == null || university.isBlank()
+                        || (user.getUniversity() != null
+                        && user.getUniversity().toLowerCase().contains(university.toLowerCase())))
+                .filter(user -> skill == null || skill.isBlank()
+                        || user.getSkills().stream()
+                        .anyMatch(item -> item.getName().equalsIgnoreCase(skill)))
+                .filter(user -> role == null || user.getRole() == role)
+                .filter(user -> format == null || user.getParticipationFormat() == format
+                        || user.getParticipationFormat() == ParticipationFormat.BOTH)
+                .map(userMapper::toResponse)
+                .toList();
     }
 
     // ===========================
@@ -72,6 +96,9 @@ public class UserService {
         user.setTelegram(request.getTelegram());
         user.setGithub(request.getGithub());
         user.setLookingForTeam(request.getLookingForTeam());
+        if (request.getParticipationFormat() != null) {
+            user.setParticipationFormat(request.getParticipationFormat());
+        }
 
         userRepository.save(user);
 

@@ -242,6 +242,18 @@ export default function UserProfile() {
 
 
 
+                    {user.telegram && (
+                        <a
+                            href={`https://t.me/${user.telegram.replace("@", "")}`}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <button className="edit-profile-button">
+                                Связаться
+                            </button>
+                        </a>
+                    )}
+
                     <button
                         className="edit-profile-button"
                         onClick={() => navigate(-1)}

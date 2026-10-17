@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import api from "../api/axios";
@@ -7,6 +7,7 @@ import Layout from "../components/Layout";
 import { useUser } from "../context/UserContext";
 
 import "./profile.css";
+import "./catalog.css";
 
 export default function Home() {
 
@@ -19,6 +20,14 @@ export default function Home() {
     const fileInputRef = useRef(null);
 
     const navigate = useNavigate();
+
+    const [myProjects, setMyProjects] = useState([]);
+
+    useEffect(() => {
+        api.get("/projects/my")
+            .then(res => setMyProjects(res.data))
+            .catch(console.log);
+    }, []);
 
     const chooseAvatar = () => {
 
@@ -357,11 +366,28 @@ export default function Home() {
 
                     </h2>
 
-                    <p className="empty-text">
-
-                        Скоро здесь будут отображаться проекты пользователя.
-
-                    </p>
+                    {myProjects.length === 0 ? (
+                        <p className="empty-text">
+                            У вас пока нет проектов.
+                        </p>
+                    ) : (
+                        <div className="preview-list">
+                            {myProjects.map(project => (
+                                <div key={project.id} className="preview-item">
+                                    <div>
+                                        <h3>{project.title}</h3>
+                                        <p>{project.description}</p>
+                                    </div>
+                                    <button
+                                        className="open-project-button"
+                                        onClick={() => navigate(`/projects/${project.id}`)}
+                                    >
+                                        Открыть
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                 </div>
 

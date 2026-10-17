@@ -1,5 +1,6 @@
 package com.teamup.service;
 
+import com.teamup.dto.request.CreateSkillRequest;
 import com.teamup.dto.request.UpdateSkillsRequest;
 import com.teamup.dto.response.SkillResponse;
 import com.teamup.entity.Skill;
@@ -29,6 +30,14 @@ public class SkillService {
                 .stream()
                 .map(skillMapper::toResponse)
                 .toList();
+    }
+
+    public SkillResponse createSkill(CreateSkillRequest request) {
+        return skillRepository.findByName(request.getName())
+                .map(skillMapper::toResponse)
+                .orElseGet(() -> skillMapper.toResponse(
+                        skillRepository.save(Skill.builder().name(request.getName()).build())
+                ));
     }
 
     public List<SkillResponse> updateUserSkills(Long userId, UpdateSkillsRequest request) {

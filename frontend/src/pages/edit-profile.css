@@ -34,7 +34,8 @@
 }
 
 .edit-profile input,
-.edit-profile textarea{
+.edit-profile textarea,
+.edit-profile select{
 
     padding:12px;
 

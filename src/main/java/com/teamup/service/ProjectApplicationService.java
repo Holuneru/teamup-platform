@@ -11,9 +11,12 @@ import com.teamup.enums.ApplicationStatus;
 import com.teamup.repository.ProjectApplicationRepository;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
+import com.teamup.exception.ResourceNotFoundException;
 import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -34,26 +37,31 @@ public class ProjectApplicationService {
 
     public ApplicationResponse apply(Long projectId, CreateApplicationRequest request) {
 
+        Long userId = currentUserId();
+        if (request != null && request.getUserId() != null) {
+            userId = request.getUserId();
+        }
+
         Project project = projectRepository.findByIdWithOwner(projectId)
                 .orElseThrow(
-                        () -> new RuntimeException("Project not found")
+                        () -> new ResourceNotFoundException("Проект не найден")
                 );
 
 
-        if (Objects.equals(project.getOwner().getId(), request.getUserId())){
-            throw new RuntimeException("Owner cannot apply");
+        if (Objects.equals(project.getOwner().getId(), userId)){
+            throw new RuntimeException("Владелец не может откликнуться на свой проект");
         }
 
-        repository.findByProjectIdAndUserId(projectId, request.getUserId())
+        repository.findByProjectIdAndUserId(projectId, userId)
                 .ifPresent(app -> {
-                    throw new RuntimeException("Already applied");
+                    throw new RuntimeException("Вы уже отправляли заявку на этот проект");
                 });
 
 
 
         ProjectApplication app = ProjectApplication.builder()
                 .projectId(projectId)
-                .userId(request.getUserId())
+                .userId(userId)
                 .status(ApplicationStatus.PENDING)
                 .build();
 
@@ -84,10 +92,10 @@ public class ProjectApplicationService {
     public ApplicationResponse accept(Long id) {
 
         ProjectApplication app = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
 
         if (app.getStatus() != ApplicationStatus.PENDING) {
-            throw new RuntimeException("Already processed");
+            throw new RuntimeException("Заявка уже обработана");
         }
 
         app.setStatus(ApplicationStatus.ACCEPTED);
@@ -109,10 +117,10 @@ public class ProjectApplicationService {
     public ApplicationResponse reject(Long id) {
 
         ProjectApplication app = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
 
         if (app.getStatus() != ApplicationStatus.PENDING) {
-            throw new RuntimeException("Already processed");
+            throw new RuntimeException("Заявка уже обработана");
         }
 
         app.setStatus(ApplicationStatus.REJECTED);
@@ -138,7 +146,7 @@ public class ProjectApplicationService {
                 .map(member -> {
 
                     User user = userRepository.findById(member.getUserId())
-                            .orElseThrow(() -> new RuntimeException("User not found"));
+                            .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
                     return ProjectMemberResponse.builder()
                             .id(user.getId())
@@ -152,6 +160,19 @@ public class ProjectApplicationService {
                 .toList();
     }
 
+    @Transactional
+    public void delete(Long id) {
+        ProjectApplication app = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
+        repository.delete(app);
+    }
+
+    private Long currentUserId() {
+        return (Long) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+    }
+
     // ===========================
     // MAPPER
     // ===========================
@@ -159,7 +180,7 @@ public class ProjectApplicationService {
     private ApplicationResponse toResponse(ProjectApplication app) {
 
         User user = userRepository.findById(app.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
         return ApplicationResponse.builder()
                 .id(app.getId())

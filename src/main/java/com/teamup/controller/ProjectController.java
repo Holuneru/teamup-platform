@@ -2,9 +2,10 @@ package com.teamup.controller;
 
 import com.teamup.dto.request.CreateProjectRequest;
 import com.teamup.dto.response.ProjectResponse;
-import com.teamup.entity.Project;
 import com.teamup.service.ProjectService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,12 +19,31 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping
-    public ProjectResponse create(@RequestBody CreateProjectRequest request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProjectResponse create(@Valid @RequestBody CreateProjectRequest request) {
         return projectService.createProject(request);
     }
+
     @GetMapping
-    public List<ProjectResponse> getAll() {
-        return projectService.getAllProjects();
+    public List<ProjectResponse> getAll(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String skill
+    ) {
+        return projectService.getAllProjects(query, skill);
+    }
+
+    @PutMapping("/{id}")
+    public ProjectResponse update(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateProjectRequest request
+    ) {
+        return projectService.updateProject(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        projectService.deleteProject(id);
     }
 
     @GetMapping("/my/{userId}")

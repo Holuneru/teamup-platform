@@ -5,6 +5,8 @@ import com.teamup.dto.response.ProjectResponse;
 import com.teamup.entity.Project;
 import com.teamup.entity.Skill;
 import com.teamup.entity.User;
+import com.teamup.exception.ForbiddenException;
+import com.teamup.exception.ResourceNotFoundException;
 import com.teamup.exception.UserNotFoundException;
 import com.teamup.mapper.ProjectMapper;
 import com.teamup.repository.ProjectRepository;
@@ -44,9 +46,7 @@ public class ProjectService {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new UserNotFoundException(ownerId));
 
-        Set<Skill> skills = new HashSet<>(
-                skillRepository.findAllById(request.getRequiredSkillIds())
-        );
+        Set<Skill> skills = resolveSkills(request.getRequiredSkillIds());
 
         Project project = Project.builder()
                 .title(request.getTitle())
@@ -61,11 +61,16 @@ public class ProjectService {
         return projectMapper.toResponse(saved);
     }
 
-    public List<ProjectResponse> getAllProjects() {
+    public List<ProjectResponse> getAllProjects(String query, String skill) {
 
-        List<Project> projects = projectRepository.findAllWithMembersAndSkills();
-
-        return projects.stream()
+        return projectRepository.findAllWithMembersAndSkills().stream()
+                .filter(project -> query == null || query.isBlank()
+                        || project.getTitle().toLowerCase().contains(query.toLowerCase())
+                        || (project.getDescription() != null
+                        && project.getDescription().toLowerCase().contains(query.toLowerCase())))
+                .filter(project -> skill == null || skill.isBlank()
+                        || project.getRequiredSkills().stream()
+                        .anyMatch(item -> item.getName().equalsIgnoreCase(skill)))
                 .map(projectMapper::toResponse)
                 .toList();
     }
@@ -73,9 +78,35 @@ public class ProjectService {
     public ProjectResponse getById(Long id) {
 
         Project project = projectRepository.findByIdWithMembers(id)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
 
         return projectMapper.toResponse(project);
+    }
+
+    public ProjectResponse updateProject(Long id, CreateProjectRequest request) {
+        Project project = projectRepository.findByIdWithMembers(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+
+        assertOwner(project);
+
+        project.setTitle(request.getTitle());
+        project.setDescription(request.getDescription());
+        project.setRequiredSkills(resolveSkills(request.getRequiredSkillIds()));
+
+        return projectMapper.toResponse(projectRepository.save(project));
+    }
+
+    @Transactional
+    public void deleteProject(Long id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+
+        assertOwner(project);
+
+        projectApplicationRepository.deleteByProjectId(id);
+        projectInvitationRepository.deleteByProjectId(id);
+        projectMemberRepository.deleteByProjectId(id);
+        projectRepository.delete(project);
     }
 
     public List<ProjectResponse> getByOwner(Long ownerId) {
@@ -124,14 +155,14 @@ public class ProjectService {
                 .getPrincipal();
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
 
         if (project.getOwner().getId().equals(userId)) {
-            throw new RuntimeException("Owner cannot leave his own project");
+            throw new RuntimeException("Владелец не может покинуть свой проект");
         }
 
         if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, userId)) {
-            throw new RuntimeException("User is not member of this project");
+            throw new RuntimeException("Вы не являетесь участником этого проекта");
         }
 
         projectMemberRepository.deleteByProjectIdAndUserId(projectId, userId);
@@ -140,5 +171,22 @@ public class ProjectService {
 
         projectApplicationRepository.deleteByProjectIdAndUserId(projectId, userId);
 
+    }
+
+    private void assertOwner(Project project) {
+        Long userId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        if (project.getOwner() == null || !project.getOwner().getId().equals(userId)) {
+            throw new ForbiddenException("Только владелец может изменять проект");
+        }
+    }
+
+    private Set<Skill> resolveSkills(Set<Long> skillIds) {
+        if (skillIds == null || skillIds.isEmpty()) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(skillRepository.findAllById(skillIds));
     }
 }
