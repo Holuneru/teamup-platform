@@ -6,7 +6,7 @@
 
 - API использует префикс `/api`.
 - Для защищённых запросов передавайте `Authorization: Bearer <JWT>`.
-- В `SecurityConfig` публичными объявлены маршруты `/api/auth/**) и `/uploads/**`; остальные маршруты требуют аутентификации.
+- В `SecurityConfig` публичными объявлены маршруты `/api/auth/**` и `/uploads/**`; остальные маршруты требуют аутентификации.
 - Для локального frontend настроен CORS origin `http://localhost:5173`.
 - В приложении используется JWT и stateless session policy.
 - Детальные проверки владения ресурсом/ролей необходимо проверять для каждого действия отдельно. Не делайте вывод о правах только по HTTP-методу или наличию токена.
@@ -25,13 +25,13 @@ JWT хранится на клиенте; текущий logout endpoint не о
 
 | Метод | Маршрут | Параметры | Назначение |
 |---|---|---|---|
-| GET | `/api/users` | необязательные `university`, `skill`, `role`, `format) | Список пользователей с фильтрами |
-| GET | `/api/users/search` | обязательный `query) | Поиск пользователей |
-| GET | `/api/users/{id}` | path: `id) | Профиль пользователя |
-| GET | `/api/users/me` | заголовок Authorization | Профиль текущего пользователя |
-| PUT | `/api/users/me` | заголовок Authorization, JSON `UpdateUserRequest) | Обновить профиль |
-| PUT | `/api/users/{userId}/skills` | path: `userId), JSON `UpdateSkillsRequest) | Обновить набор навыков пользователя |
-| POST | `/api/users/me/avatar` | multipart поле `file), заголовок Authorization | Загрузить аватар; возвращается строка с результатом/URL |
+| GET | `/api/users` | Необязательные `university`, `skill`, `role`, `format` | Список пользователей с фильтрами |
+| GET | `/api/users/search` | Обязательный `query` | Поиск пользователей |
+| GET | `/api/users/{id}` | Path: `id` | Профиль пользователя |
+| GET | `/api/users/me` | Заголовок Authorization | Профиль текущего пользователя |
+| PUT | `/api/users/me` | Заголовок Authorization, JSON `UpdateUserRequest` | Обновить профиль |
+| PUT | `/api/users/{userId}/skills` | Path: `userId`, JSON `UpdateSkillsRequest` | Обновить набор навыков пользователя |
+| POST | `/api/users/me/avatar` | Multipart-поле `file`, заголовок Authorization | Загрузить аватар; возвращается строка с результатом/URL |
 
 Для `role` используются значения enum `USER`, `MENTOR`, `ADMIN`; для `format` — `ONLINE`, `OFFLINE`, `BOTH`.
 
@@ -48,20 +48,20 @@ JWT хранится на клиенте; текущий logout endpoint не о
 
 | Метод | Маршрут | Параметры | Назначение |
 |---|---|---|---|
-| GET | `/api/projects` | необязательные `query), `skill) | Список/поиск проектов |
-| POST | `/api/projects` | JSON `CreateProjectRequest) | Создать проект; `201 Created` |
-| GET | `/api/projects/{id}` | path: `id) | Детали проекта |
-| PUT | `/api/projects/{id}` | path: `id), JSON `CreateProjectRequest) | Обновить проект |
-| DELETE | `/api/projects/{id}` | path: `id) | Удалить проект; `204 No Content` |
+| GET | `/api/projects` | Необязательные `query`, `skill` | Список/поиск проектов |
+| POST | `/api/projects` | JSON `CreateProjectRequest` | Создать проект; `201 Created` |
+| GET | `/api/projects/{id}` | Path: `id` | Детали проекта |
+| PUT | `/api/projects/{id}` | Path: `id`, JSON `CreateProjectRequest` | Обновить проект |
+| DELETE | `/api/projects/{id}` | Path: `id` | Удалить проект; `204 No Content` |
 | GET | `/api/projects/my` | — | Проекты текущего пользователя |
-| GET | `/api/projects/my/{userId}` | path: `userId) | Проекты указанного владельца |
+| GET | `/api/projects/my/{userId}` | Path: `userId` | Проекты указанного владельца |
 | GET | `/api/projects/participating` | — | Проекты, в которых участвует текущий пользователь |
-| DELETE | `/api/projects/{id}/leave` | path: `id) | Выйти из проекта |
-| GET | `/api/projects/{projectId}/members` | path: `projectId) | Список участников проекта |
+| DELETE | `/api/projects/{id}/leave` | Path: `id` | Выйти из проекта |
+| GET | `/api/projects/{projectId}/members` | Path: `projectId` | Список участников проекта |
 
 ## Заявки на участие
 
-Заявки обрабатываются двумя совместимыми группами маршрутов.
+Заявки обрабатываются двумя группами маршрутов.
 
 ### Через `/api/projects`
 
@@ -81,7 +81,7 @@ JWT хранится на клиенте; текущий logout endpoint не о
 | PUT | `/api/applications/{id}?status=APPROVED` | Совместимый endpoint смены статуса: `APPROVED`/`ACCEPTED` ведёт к принятию, остальные значения — к отклонению |
 | DELETE | `/api/applications/{id}` | Удалить заявку; `204 No Content` |
 
-В модели `ApplicationStatus` используются значения `PENDING`, `ACCEPTED`, `REJECTED`. Обратите внимание: в legacy endpoint параметр `status) не валидируется как enum — любые значения, кроме `APPROVED` и `ACCEPTED`, ведут к отклонению.
+В модели `ApplicationStatus` используются значения `PENDING`, `ACCEPTED`, `REJECTED`. В legacy endpoint параметр `status` не валидируется как enum: любые значения, кроме `APPROVED` и `ACCEPTED`, ведут к отклонению.
 
 ## Приглашения — `/api/invitations`
 
@@ -107,11 +107,11 @@ JWT хранится на клиенте; текущий logout endpoint не о
 
 | Метод | Маршрут | Параметры | Назначение |
 |---|---|---|---|
-| GET | `/api/hackathons` | необязательные `format), `from` (дата ISO, например `2026-10-01`) | Список с фильтрами |
-| GET | `/api/hackathons/{id}` | path: `id) | Детали хакатона |
-| POST | `/api/hackathons` | JSON `CreateHackathonRequest) | Создать; `201 Created` |
-| PUT | `/api/hackathons/{id}` | JSON `CreateHackathonRequest) | Обновить |
-| DELETE | `/api/hackathons/{id}` | path: `id) | Удалить; `204 No Content` |
+| GET | `/api/hackathons` | Необязательные `format`, `from` (дата ISO, например `2026-10-01`) | Список с фильтрами |
+| GET | `/api/hackathons/{id}` | Path: `id` | Детали хакатона |
+| POST | `/api/hackathons` | JSON `CreateHackathonRequest` | Создать; `201 Created` |
+| PUT | `/api/hackathons/{id}` | JSON `CreateHackathonRequest` | Обновить |
+| DELETE | `/api/hackathons/{id}` | Path: `id` | Удалить; `204 No Content` |
 
 Формат хакатона — enum `HackathonFormat`; список значений см. в исходном enum.
 
@@ -121,13 +121,13 @@ JWT хранится на клиенте; текущий logout endpoint не о
 |---|---|---|
 | GET | `/api/mentors` | Каталог наставников |
 | GET | `/api/mentors/{id}` | Детали наставника |
-| POST | `/api/mentors` | Создать наставника; JSON `CreateMentorRequest), `201 Created` |
+| POST | `/api/mentors` | Создать наставника; JSON `CreateMentorRequest`, `201 Created` |
 | PUT | `/api/mentors/{id}` | Обновить наставника |
 | DELETE | `/api/mentors/{id}` | Удалить наставника; `204 No Content` |
 
 ## Ошибки и тестирование
 
-Ожидаемые HTTP-коды зависят от обработчиков исключений и конкретной операции: обычно используются `200`, `201), `204), `400), `401), `403) и `404). Не все случаи описаны централизованным контрактом; перед фиксацией стабильного API-контракта следует добавить тесты контроллеров.
+Ожидаемые HTTP-коды зависят от обработчиков исключений и конкретной операции: обычно используются `200`, `201`, `204`, `400`, `401`, `403` и `404`. Не все случаи описаны централизованным контрактом; перед фиксацией стабильного API-контракта следует добавить тесты контроллеров.
 
 Пример запроса после входа:
 
