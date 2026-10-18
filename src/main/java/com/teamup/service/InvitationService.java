@@ -12,6 +12,7 @@ import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
 import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,11 @@ public class InvitationService {
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        // Only the project owner may send invitations.
+        if (!project.getOwner().getId().equals(currentUserId())) {
+            throw new AccessDeniedException("Only the project owner can invite users");
+        }
 
         // Нельзя пригласить владельца проекта
         if (project.getOwner().getId().equals(userId)) {
@@ -90,6 +96,10 @@ public class InvitationService {
 
     public List<InvitationResponse> getMyInvitations(Long userId) {
 
+        if (!currentUserId().equals(userId)) {
+            throw new AccessDeniedException("You can only view your own invitations");
+        }
+
         return invitationRepository.findByUserIdAndStatus(
                         userId,
                         InvitationStatus.PENDING
@@ -107,6 +117,10 @@ public class InvitationService {
 
         ProjectInvitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
+
+        if (!invitation.getUserId().equals(currentUserId())) {
+            throw new AccessDeniedException("Only the invited user can accept this invitation");
+        }
 
         if (invitation.getStatus() != InvitationStatus.PENDING) {
             throw new RuntimeException("Invitation already processed");
@@ -136,6 +150,10 @@ public class InvitationService {
         ProjectInvitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
 
+        if (!invitation.getUserId().equals(currentUserId())) {
+            throw new AccessDeniedException("Only the invited user can reject this invitation");
+        }
+
         if (invitation.getStatus() != InvitationStatus.PENDING) {
             throw new RuntimeException("Invitation already processed");
         }
@@ -145,6 +163,12 @@ public class InvitationService {
         invitationRepository.save(invitation);
 
         return toResponse(invitation);
+    }
+
+    private Long currentUserId() {
+        return (Long) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
     }
 
     // ==========================
