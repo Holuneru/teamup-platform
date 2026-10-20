@@ -2,21 +2,16 @@ spring:
   application:
     name: teamup-platform
 
-
   datasource:
-    url: jdbc:postgresql://localhost:5432/teamup
-    username: postgres
-    password: 23022011
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/teamup}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
 
   jpa:
-
     open-in-view: false
-
     hibernate:
       ddl-auto: update
-
     show-sql: true
-
     properties:
       hibernate:
         format_sql: true
