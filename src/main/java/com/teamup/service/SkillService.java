@@ -11,6 +11,8 @@ import com.teamup.mapper.SkillMapper;
 import com.teamup.repository.SkillRepository;
 import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,6 +43,13 @@ public class SkillService {
     }
 
     public List<SkillResponse> updateUserSkills(Long userId, UpdateSkillsRequest request) {
+
+        Long currentUserId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+        if (!currentUserId.equals(userId)) {
+            throw new AccessDeniedException("You can only update your own skills");
+        }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));

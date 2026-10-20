@@ -14,6 +14,7 @@ import com.teamup.repository.ProjectRepository;
 import com.teamup.exception.ResourceNotFoundException;
 import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,10 +38,8 @@ public class ProjectApplicationService {
 
     public ApplicationResponse apply(Long projectId, CreateApplicationRequest request) {
 
+        // The applicant identity must come from the authenticated token, never the request body.
         Long userId = currentUserId();
-        if (request != null && request.getUserId() != null) {
-            userId = request.getUserId();
-        }
 
         Project project = projectRepository.findByIdWithOwner(projectId)
                 .orElseThrow(
@@ -76,6 +75,8 @@ public class ProjectApplicationService {
 
     public List<ApplicationResponse> getByProject(Long projectId) {
 
+        requireProjectOwner(projectId);
+
         return repository.findByProjectIdAndStatus(
                         projectId,
                         ApplicationStatus.PENDING
@@ -93,6 +94,8 @@ public class ProjectApplicationService {
 
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
+
+        requireProjectOwner(app.getProjectId());
 
         if (app.getStatus() != ApplicationStatus.PENDING) {
             throw new RuntimeException("Заявка уже обработана");
@@ -118,6 +121,8 @@ public class ProjectApplicationService {
 
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
+
+        requireProjectOwner(app.getProjectId());
 
         if (app.getStatus() != ApplicationStatus.PENDING) {
             throw new RuntimeException("Заявка уже обработана");
@@ -164,7 +169,22 @@ public class ProjectApplicationService {
     public void delete(Long id) {
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
+        Long actorId = currentUserId();
+        Project project = projectRepository.findByIdWithOwner(app.getProjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+        if (!Objects.equals(actorId, app.getUserId())
+                && !Objects.equals(actorId, project.getOwner().getId())) {
+            throw new AccessDeniedException("Only the applicant or project owner can delete this application");
+        }
         repository.delete(app);
+    }
+
+    private void requireProjectOwner(Long projectId) {
+        Project project = projectRepository.findByIdWithOwner(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+        if (!Objects.equals(project.getOwner().getId(), currentUserId())) {
+            throw new AccessDeniedException("Only the project owner can manage applications");
+        }
     }
 
     private Long currentUserId() {
