@@ -4,7 +4,7 @@ spring:
 
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/
+    url: jdbc:postgresql://localhost:5432/teamup
     username: postgres
     password: 23022011
 
@@ -20,10 +20,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-  flyway:
-    baseline-on-migrate: true
-    baseline-version: 0
 
   sql:
     init:
