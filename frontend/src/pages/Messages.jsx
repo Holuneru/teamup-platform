@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ArrowUp, MessageCircle, RefreshCw } from "lucide-react";
+import { ArrowUp, MessageCircle, RefreshCw, Trash2 } from "lucide-react";
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
 import { useUser } from "../context/UserContext";
 import {
     getConversations,
+    deleteConversation,
     getMessages,
     markConversationRead,
     openConversation,
@@ -92,6 +93,23 @@ export default function Messages() {
 
     const activeConversation = conversations.find(item => String(item.id) === String(activeId));
 
+    const handleDeleteConversation = async conversation => {
+        const confirmed = window.confirm("Удалить чат только у себя? Переписка останется у собеседника.");
+        if (!confirmed) return;
+        try {
+            await deleteConversation(conversation.id);
+            setConversations(current => current.filter(item => item.id !== conversation.id));
+            if (String(activeId) === String(conversation.id)) {
+                setActiveId(null);
+                setMessages([]);
+                setSearchParams({}, { replace: true });
+            }
+        } catch (error) {
+            console.error(error);
+            window.alert("Не удалось удалить чат.");
+        }
+    };
+
     const handleSend = async event => {
         event.preventDefault();
         const content = draft.trim();
@@ -132,21 +150,33 @@ export default function Messages() {
                                 <button onClick={() => navigate("/people")}>Найти людей</button>
                             </div>
                         ) : conversations.map(conversation => (
-                            <button
+                            <div
                                 key={conversation.id}
-                                className={`conversation-row ${String(activeId) === String(conversation.id) ? "selected" : ""}`}
-                                onClick={() => {
-                                    setActiveId(String(conversation.id));
-                                    setSearchParams({ conversation: conversation.id });
-                                }}
+                                className={`conversation-entry ${String(activeId) === String(conversation.id) ? "selected" : ""}`}
                             >
-                                <UserAvatar user={conversation.peer} showName={false} />
-                                <span className="conversation-copy">
-                                    <strong>{conversation.peer.firstName} {conversation.peer.lastName}</strong>
-                                    <small>{conversation.lastMessage || "Диалог создан"}</small>
-                                </span>
-                                {conversation.unreadCount > 0 && <span className="conversation-unread">{conversation.unreadCount}</span>}
-                            </button>
+                                <button
+                                    className="conversation-row"
+                                    onClick={() => {
+                                        setActiveId(String(conversation.id));
+                                        setSearchParams({ conversation: conversation.id });
+                                    }}
+                                >
+                                    <UserAvatar user={conversation.peer} showName={false} />
+                                    <span className="conversation-copy">
+                                        <strong>{conversation.peer.firstName} {conversation.peer.lastName}</strong>
+                                        <small>{conversation.lastMessage || "Диалог создан"}</small>
+                                    </span>
+                                    {conversation.unreadCount > 0 && <span className="conversation-unread">{conversation.unreadCount}</span>}
+                                </button>
+                                <button
+                                    className="conversation-delete"
+                                    onClick={() => handleDeleteConversation(conversation)}
+                                    aria-label={`Удалить чат с ${conversation.peer.firstName} ${conversation.peer.lastName}`}
+                                    title="Удалить чат у себя"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
                         ))}
                     </aside>
                     <section className="chat-panel">

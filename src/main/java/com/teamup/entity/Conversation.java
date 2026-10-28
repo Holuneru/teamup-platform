@@ -29,6 +29,12 @@ public class Conversation {
     @Column(nullable = false)
     private LocalDateTime lastMessageAt;
 
+    @Column(name = "participant_one_deleted_at")
+    private LocalDateTime participantOneDeletedAt;
+
+    @Column(name = "participant_two_deleted_at")
+    private LocalDateTime participantTwoDeletedAt;
+
     @PrePersist
     public void prePersist() {
         if (lastMessageAt == null) {

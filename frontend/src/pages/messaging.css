@@ -67,6 +67,12 @@
 
 .conversation-list-title span { color: #73827c; font-weight: 500; }
 
+.conversation-entry {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #eef2ef;
+}
+
 .conversation-row {
     width: 100%;
     min-height: 76px;
@@ -75,14 +81,30 @@
     gap: 12px;
     padding: 12px 15px;
     border: 0;
-    border-bottom: 1px solid #eef2ef;
+    border: 0;
     background: #fff;
     text-align: left;
     cursor: pointer;
 }
 
-.conversation-row:hover,
-.conversation-row.selected { background: #f0f6f2; }
+.conversation-entry:hover,
+.conversation-entry.selected { background: #f0f6f2; }
+.conversation-entry:hover .conversation-row,
+.conversation-entry.selected .conversation-row { background: transparent; }
+.conversation-delete {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    margin-right: 10px;
+    place-items: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #78857f;
+    cursor: pointer;
+}
+.conversation-delete:hover { background: #fcebea; color: #b42318; }
 
 .conversation-copy,
 .notification-copy { min-width: 0; display: flex; flex: 1; flex-direction: column; }

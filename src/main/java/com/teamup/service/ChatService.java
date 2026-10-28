@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +33,35 @@ public class ChatService {
     public List<ConversationResponse> getConversations() {
         Long userId = currentUserId();
         return conversationRepository.findByParticipantOneIdOrParticipantTwoIdOrderByLastMessageAtDesc(userId, userId)
-                .stream().map(conversation -> toConversationResponse(conversation, userId)).toList();
+                .stream()
+                .filter(conversation -> !isDeletedFor(conversation, userId))
+                .map(conversation -> toConversationResponse(conversation, userId)).toList();
+    }
+
+    @Transactional
+    public void deleteConversation(Long conversationId) {
+        Conversation conversation = getAccessibleConversation(conversationId);
+        Long userId = currentUserId();
+        if (conversation.getParticipantOneId().equals(userId)) {
+            conversation.setParticipantOneDeletedAt(LocalDateTime.now());
+        } else {
+            conversation.setParticipantTwoDeletedAt(LocalDateTime.now());
+        }
+        conversationRepository.save(conversation);
+    }
+
+    private boolean isDeletedFor(Conversation conversation, Long userId) {
+        return conversation.getParticipantOneId().equals(userId)
+                ? conversation.getParticipantOneDeletedAt() != null
+                : conversation.getParticipantTwoDeletedAt() != null;
+    }
+
+    private void restoreFor(Conversation conversation, Long userId) {
+        if (conversation.getParticipantOneId().equals(userId)) {
+            conversation.setParticipantOneDeletedAt(null);
+        } else {
+            conversation.setParticipantTwoDeletedAt(null);
+        }
     }
 
     @Transactional
@@ -50,6 +79,8 @@ public class ChatService {
                         .participantOneId(first)
                         .participantTwoId(second)
                         .build()));
+        restoreFor(conversation, userId);
+        conversationRepository.save(conversation);
         return toConversationResponse(conversation, userId);
     }
 
@@ -74,6 +105,8 @@ public class ChatService {
                 .senderId(senderId)
                 .content(content)
                 .build());
+        restoreFor(conversation, senderId);
+        restoreFor(conversation, recipientId);
         conversation.setLastMessageAt(message.getCreatedAt());
         conversationRepository.save(conversation);
         String senderName = sender.getFirstName() + " " + sender.getLastName();

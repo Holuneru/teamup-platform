@@ -79,3 +79,9 @@ POST /api/mentors
 PUT /api/mentors/{id}
 
 DELETE /api/mentors/{id}
+
+---
+
+## Чат
+
+DELETE /api/chat/conversations/{id} — скрывает диалог только у текущего пользователя. Сообщения и история у собеседника сохраняются.

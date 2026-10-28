@@ -45,6 +45,12 @@ public class ChatController {
         chatService.markRead(id);
     }
 
+    @DeleteMapping("/conversations/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteConversation(@PathVariable Long id) {
+        chatService.deleteConversation(id);
+    }
+
     @GetMapping("/unread-count")
     public long getUnreadCount() {
         return chatService.getUnreadCount();
