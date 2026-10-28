@@ -1,0 +1,11 @@
+package com.teamup.enums;
+
+public enum NotificationType {
+    NEW_MESSAGE,
+    PROJECT_INVITATION,
+    INVITATION_ACCEPTED,
+    INVITATION_REJECTED,
+    APPLICATION_RECEIVED,
+    APPLICATION_ACCEPTED,
+    APPLICATION_REJECTED
+}

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import {
     Bell,
-    Users
+    Users,
+    MessageCircle
 } from "lucide-react";
 
 import { useUser } from "../context/UserContext";
@@ -25,8 +26,28 @@ export default function Layout({ children }) {
     } = useUser();
 
     const [menuOpen, setMenuOpen] = useState(false);
+    const [unreadMessages, setUnreadMessages] = useState(0);
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
 
     const menuRef = useRef(null);
+
+    useEffect(() => {
+        const refreshCounts = async () => {
+            try {
+                const [messages, notifications] = await Promise.all([
+                    api.get("/chat/unread-count"),
+                    api.get("/notifications/unread-count")
+                ]);
+                setUnreadMessages(messages.data);
+                setUnreadNotifications(notifications.data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        refreshCounts();
+        const timer = window.setInterval(refreshCounts, 15000);
+        return () => window.clearInterval(timer);
+    }, []);
 
     useEffect(() => {
 
@@ -132,6 +153,18 @@ export default function Layout({ children }) {
 
                         }
 
+                    </button>
+
+                    <button className="invitation-button messaging-shortcut" onClick={() => navigate("/messages")} aria-label="Сообщения">
+                        <MessageCircle size={20} />
+                        <span>Сообщения</span>
+                        {unreadMessages > 0 && <span className="topbar-count">{unreadMessages}</span>}
+                    </button>
+
+                    <button className="invitation-button messaging-shortcut" onClick={() => navigate("/notifications")} aria-label="Уведомления">
+                        <Bell size={20} />
+                        <span>Уведомления</span>
+                        {unreadNotifications > 0 && <span className="topbar-count">{unreadNotifications}</span>}
                     </button>
 
                 </div>

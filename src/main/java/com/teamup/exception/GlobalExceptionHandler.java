@@ -49,6 +49,14 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), request);
     }
 
+        @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+        public ResponseEntity<ErrorResponse> handleAccessDenied(
+                        org.springframework.security.access.AccessDeniedException ex,
+                        HttpServletRequest request
+        ) {
+                return build(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+        }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(
             MethodArgumentNotValidException ex,

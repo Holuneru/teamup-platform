@@ -7,6 +7,7 @@ import com.teamup.entity.ProjectInvitation;
 import com.teamup.entity.ProjectMember;
 import com.teamup.entity.User;
 import com.teamup.enums.InvitationStatus;
+import com.teamup.enums.NotificationType;
 import com.teamup.repository.ProjectInvitationRepository;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
@@ -14,6 +15,7 @@ import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,7 @@ public class InvitationService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository memberRepository;
     private final UserRepository userRepository;
+        private final NotificationService notificationService;
 
     // ==========================
     // Пригласить пользователя
@@ -33,8 +36,14 @@ public class InvitationService {
 
     public InvitationResponse invite(Long projectId, Long userId) {
 
+                Long actorId = currentUserId();
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
+
+                if (!project.getOwner().getId().equals(actorId)) {
+                        throw new org.springframework.security.access.AccessDeniedException("Только владелец проекта может приглашать участников");
+                }
 
         // Нельзя пригласить владельца проекта
         if (project.getOwner().getId().equals(userId)) {
@@ -68,6 +77,8 @@ public class InvitationService {
 
                     invitationRepository.save(invitation);
 
+                    notifyInvitation(userId, actorId, project);
+
                     return toResponse(invitation);
                 }
             }
@@ -80,6 +91,8 @@ public class InvitationService {
                 .build();
 
         invitationRepository.save(invitation);
+
+        notifyInvitation(userId, actorId, project);
 
         return toResponse(invitation);
     }
@@ -103,7 +116,8 @@ public class InvitationService {
     // Принять приглашение
     // ==========================
 
-    public InvitationResponse accept(Long invitationId) {
+        @Transactional
+        public InvitationResponse accept(Long invitationId) {
 
         ProjectInvitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
@@ -111,6 +125,10 @@ public class InvitationService {
         if (invitation.getStatus() != InvitationStatus.PENDING) {
             throw new RuntimeException("Invitation already processed");
         }
+
+                if (!invitation.getUserId().equals(currentUserId())) {
+                        throw new org.springframework.security.access.AccessDeniedException("Это приглашение адресовано другому пользователю");
+                }
 
         invitation.setStatus(InvitationStatus.ACCEPTED);
 
@@ -124,6 +142,11 @@ public class InvitationService {
 
         memberRepository.save(member);
 
+        Project project = projectRepository.findById(invitation.getProjectId())
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        notificationService.create(project.getOwner().getId(), invitation.getUserId(), NotificationType.INVITATION_ACCEPTED,
+                "Приглашение принято", "Пользователь принял приглашение в проект «" + project.getTitle() + "»", "/projects/" + project.getId());
+
         return toResponse(invitation);
     }
 
@@ -131,7 +154,7 @@ public class InvitationService {
     // Отклонить приглашение
     // ==========================
 
-    public InvitationResponse reject(Long invitationId) {
+        public InvitationResponse reject(Long invitationId) {
 
         ProjectInvitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
@@ -140,9 +163,18 @@ public class InvitationService {
             throw new RuntimeException("Invitation already processed");
         }
 
+                if (!invitation.getUserId().equals(currentUserId())) {
+                        throw new org.springframework.security.access.AccessDeniedException("Это приглашение адресовано другому пользователю");
+                }
+
         invitation.setStatus(InvitationStatus.REJECTED);
 
         invitationRepository.save(invitation);
+
+        Project project = projectRepository.findById(invitation.getProjectId())
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        notificationService.create(project.getOwner().getId(), invitation.getUserId(), NotificationType.INVITATION_REJECTED,
+                "Приглашение отклонено", "Пользователь отклонил приглашение в проект «" + project.getTitle() + "»", "/projects/" + project.getId());
 
         return toResponse(invitation);
     }
@@ -175,6 +207,18 @@ public class InvitationService {
                 )
                 .build();
     }
+
+        private void notifyInvitation(Long recipientId, Long actorId, Project project) {
+                User actor = userRepository.findById(actorId)
+                                .orElseThrow(() -> new RuntimeException("Owner not found"));
+                notificationService.create(recipientId, actorId, NotificationType.PROJECT_INVITATION,
+                                "Приглашение в проект", actor.getFirstName() + " " + actor.getLastName()
+                                                + " приглашает вас в проект «" + project.getTitle() + "»", "/invitations");
+        }
+
+        private Long currentUserId() {
+                return (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        }
 
     public List<String> getInvitationStatuses(Long userId) {
 

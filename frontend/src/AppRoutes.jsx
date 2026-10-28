@@ -31,6 +31,8 @@ import Hackathons from "./pages/Hackathons";
 import HackathonDetails from "./pages/HackathonDetails";
 import Mentors from "./pages/Mentors";
 import MentorDetails from "./pages/MentorDetails";
+import Messages from "./pages/Messages";
+import Notifications from "./pages/Notifications";
 
 
 export default function AppRoutes() {
@@ -134,6 +136,21 @@ export default function AppRoutes() {
                 <Route
                     path="/invitations"
                     element={<Invitations />}
+                />
+
+                <Route
+                    path="/messages"
+                    element={<Messages />}
+                />
+
+                <Route
+                    path="/messages/:userId"
+                    element={<Messages />}
+                />
+
+                <Route
+                    path="/notifications"
+                    element={<Notifications />}
                 />
 
                 <Route

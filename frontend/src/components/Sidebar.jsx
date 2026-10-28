@@ -9,7 +9,8 @@ import {
     Users,
     Trophy,
     GraduationCap,
-    Bell
+    Bell,
+    MessageCircle
 } from "lucide-react";
 
 import "./sidebar.css";
@@ -28,6 +29,8 @@ export default function Sidebar() {
         { name: "Мои проекты", path: "/my-projects", icon: <Folder size={18} /> },
         { name: "Где я участник", path: "/participating-projects", icon: <Users size={18} /> },
         { name: "Приглашения", path: "/invitations", icon: <Bell size={18} /> },
+        { name: "Сообщения", path: "/messages", icon: <MessageCircle size={18} /> },
+        { name: "Уведомления", path: "/notifications", icon: <Bell size={18} /> },
         { name: "Создать проект", path: "/create-project", icon: <SquarePlus size={18} /> }
     ];
 

@@ -346,3 +346,30 @@ body {
     }
 
 }
+
+.topbar-count {
+    display: inline-grid;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 4px;
+    place-items: center;
+    border-radius: 10px;
+    background: #28735a;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    .topbar { padding: 0 18px; }
+    .topbar-center { gap: 8px; }
+    .topbar-center .invitation-button span:not(.topbar-count) { display: none; }
+}
+
+.messaging-shortcut {
+    padding: 11px 12px;
+}
+
+.messaging-shortcut span:not(.topbar-count) {
+    display: none;
+}

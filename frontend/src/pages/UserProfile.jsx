@@ -184,6 +184,15 @@ export default function UserProfile() {
 
                     </div>
 
+                    {currentUser?.id !== user.id && (
+                        <button
+                            className="edit-profile-button"
+                            onClick={() => navigate(`/messages/${user.id}`)}
+                        >
+                            Написать
+                        </button>
+                    )}
+
 
 
 

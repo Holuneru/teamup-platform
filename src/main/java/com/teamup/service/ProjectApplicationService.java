@@ -8,6 +8,7 @@ import com.teamup.entity.Project;
 import com.teamup.entity.ProjectApplication;
 import com.teamup.entity.User;
 import com.teamup.enums.ApplicationStatus;
+import com.teamup.enums.NotificationType;
 import com.teamup.repository.ProjectApplicationRepository;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
@@ -16,6 +17,7 @@ import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -30,6 +32,7 @@ public class ProjectApplicationService {
     private final UserRepository userRepository;
     private final ProjectMemberService memberService;
     private final ProjectRepository projectRepository;
+        private final NotificationService notificationService;
 
     // ===========================
     // APPLY
@@ -37,10 +40,7 @@ public class ProjectApplicationService {
 
     public ApplicationResponse apply(Long projectId, CreateApplicationRequest request) {
 
-        Long userId = currentUserId();
-        if (request != null && request.getUserId() != null) {
-            userId = request.getUserId();
-        }
+                Long userId = currentUserId();
 
         Project project = projectRepository.findByIdWithOwner(projectId)
                 .orElseThrow(
@@ -67,6 +67,10 @@ public class ProjectApplicationService {
 
         repository.save(app);
 
+        notificationService.create(project.getOwner().getId(), userId, NotificationType.APPLICATION_RECEIVED,
+                "Новая заявка в проект", "Пользователь отправил заявку в проект «" + project.getTitle() + "»",
+                "/projects/" + projectId + "/applications");
+
         return toResponse(app);
     }
 
@@ -89,7 +93,8 @@ public class ProjectApplicationService {
     // ACCEPT
     // ===========================
 
-    public ApplicationResponse accept(Long id) {
+        @Transactional
+        public ApplicationResponse accept(Long id) {
 
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
@@ -97,6 +102,8 @@ public class ProjectApplicationService {
         if (app.getStatus() != ApplicationStatus.PENDING) {
             throw new RuntimeException("Заявка уже обработана");
         }
+
+        ensureProjectOwner(app.getProjectId());
 
         app.setStatus(ApplicationStatus.ACCEPTED);
 
@@ -107,6 +114,11 @@ public class ProjectApplicationService {
                 app.getUserId()
         );
 
+        Project project = projectRepository.findById(app.getProjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+        notificationService.create(app.getUserId(), currentUserId(), NotificationType.APPLICATION_ACCEPTED,
+                "Заявка принята", "Вас приняли в проект «" + project.getTitle() + "»", "/projects/" + project.getId());
+
         return toResponse(app);
     }
 
@@ -114,7 +126,8 @@ public class ProjectApplicationService {
     // REJECT
     // ===========================
 
-    public ApplicationResponse reject(Long id) {
+        @Transactional
+        public ApplicationResponse reject(Long id) {
 
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
@@ -122,6 +135,8 @@ public class ProjectApplicationService {
         if (app.getStatus() != ApplicationStatus.PENDING) {
             throw new RuntimeException("Заявка уже обработана");
         }
+
+        ensureProjectOwner(app.getProjectId());
 
         app.setStatus(ApplicationStatus.REJECTED);
 
@@ -131,6 +146,12 @@ public class ProjectApplicationService {
                 app.getProjectId(),
                 app.getUserId()
         );
+
+        Project project = projectRepository.findById(app.getProjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+        notificationService.create(app.getUserId(), currentUserId(), NotificationType.APPLICATION_REJECTED,
+                "Заявка отклонена", "Вашу заявку в проект «" + project.getTitle() + "» отклонили",
+                "/projects/" + project.getId());
 
         return toResponse(app);
     }
@@ -172,6 +193,14 @@ public class ProjectApplicationService {
                 .getAuthentication()
                 .getPrincipal();
     }
+
+        private void ensureProjectOwner(Long projectId) {
+                Project project = projectRepository.findByIdWithOwner(projectId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+                if (!project.getOwner().getId().equals(currentUserId())) {
+                        throw new org.springframework.security.access.AccessDeniedException("Только владелец проекта может обработать заявку");
+                }
+        }
 
     // ===========================
     // MAPPER

@@ -153,6 +153,12 @@ export default function People() {
                                 >
                                     Открыть профиль
                                 </button>
+                                <button
+                                    className="contact-button"
+                                    onClick={() => navigate(`/messages/${user.id}`)}
+                                >
+                                    Написать
+                                </button>
                                 {user.telegram && (
                                     <a
                                         href={`https://t.me/${user.telegram.replace("@", "")}`}

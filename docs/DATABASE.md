@@ -136,3 +136,45 @@ Status
 | email | String |
 
 ManyToMany -> Skill
+
+---
+
+# Conversation
+
+Личный диалог между двумя пользователями. Пара участников хранится в стабильном порядке и уникальна.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | Long | Уникальный идентификатор |
+| participantOneId | Long | ID первого участника |
+| participantTwoId | Long | ID второго участника |
+| lastMessageAt | LocalDateTime | Время последнего сообщения |
+
+---
+
+# ChatMessage
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | Long | Уникальный идентификатор |
+| conversationId | Long | Диалог |
+| senderId | Long | Отправитель |
+| content | String | Текст сообщения, до 4000 символов |
+| createdAt | LocalDateTime | Время отправки |
+| readAt | LocalDateTime | Время прочтения, если прочитано |
+
+---
+
+# UserNotification
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | Long | Уникальный идентификатор |
+| recipientId | Long | Получатель |
+| actorId | Long | Пользователь, вызвавший событие |
+| type | Enum | Тип события |
+| title | String | Заголовок |
+| body | String | Краткое описание |
+| targetUrl | String | Путь для перехода в приложении |
+| createdAt | LocalDateTime | Время создания |
+| readAt | LocalDateTime | Время прочтения, если прочитано |
