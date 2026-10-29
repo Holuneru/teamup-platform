@@ -104,8 +104,9 @@ OneToMany -> Application
 Status
 
 - PENDING
-- APPROVED
-- DECLINED
+- ACCEPTED
+- REJECTED
+- REMOVED — участник был исключен владельцем; после этого можно подать новую заявку
 
 ---
 

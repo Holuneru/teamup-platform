@@ -42,6 +42,8 @@ PUT /api/projects/{id}
 
 DELETE /api/projects/{id}
 
+DELETE /api/projects/{id}/members/{userId} — исключить участника из проекта (только владелец проекта).
+
 ---
 
 ## Заявки

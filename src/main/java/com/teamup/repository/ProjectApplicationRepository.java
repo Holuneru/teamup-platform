@@ -15,6 +15,8 @@ public interface ProjectApplicationRepository extends JpaRepository<ProjectAppli
 
     Optional<ProjectApplication> findByProjectIdAndUserId(Long projectId, Long userId);
 
+        Optional<ProjectApplication> findTopByProjectIdAndUserIdOrderByCreatedAtDesc(Long projectId, Long userId);
+
     List<ProjectApplication> findByProjectIdAndStatus(
             Long projectId,
             ApplicationStatus status

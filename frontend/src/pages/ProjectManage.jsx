@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useUser } from "../context/UserContext";
+import { Trash2 } from "lucide-react";
 
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
@@ -13,25 +15,27 @@ export default function ProjectManage() {
     const { id } = useParams();
 
     const navigate = useNavigate();
+    const { user } = useUser();
 
     const [applications, setApplications] = useState([]);
     const [members, setMembers] = useState([]);
+    const [projectOwnerId, setProjectOwnerId] = useState(null);
+    const [removingMembers, setRemovingMembers] = useState({});
 
-    useEffect(() => {
-
-        loadData();
-
-    }, [id]);
-
-    const loadData = () => {
-
-        api.get(`/projects/${id}/applications`)
+    const loadData = useCallback(async () => {
+        const requests = [
+            api.get(`/projects/${id}`)
+                .then(res => setProjectOwnerId(res.data.ownerId))
+                .catch(err => console.error(
+                    "Ошибка загрузки проекта:",
+                    err.response?.status,
+                    err.response?.data ?? err.message
+                )),
+            api.get(`/projects/${id}/applications`)
             .then(res => {
-
                 setApplications(
                     res.data.filter(app => app.status === "PENDING")
                 );
-
             })
             .catch(err =>
                 console.error(
@@ -39,19 +43,21 @@ export default function ProjectManage() {
                     err.response?.status,
                     err.response?.data ?? err.message
                 )
-            );
-
-        api.get(`/projects/${id}/members`)
-            .then(res => setMembers(res.data))
-            .catch(err =>
-                console.error(
+            ),
+            api.get(`/projects/${id}/members`)
+                .then(res => setMembers(res.data))
+                .catch(err => console.error(
                     "Ошибка загрузки участников:",
                     err.response?.status,
                     err.response?.data ?? err.message
-                )
-            );
+                ))
+        ];
+        await Promise.all(requests);
+    }, [id]);
 
-    };
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     const accept = (appId) => {
 
@@ -79,6 +85,22 @@ export default function ProjectManage() {
                 )
             );
 
+    };
+
+    const removeMember = async member => {
+        if (!window.confirm(`Исключить ${member.firstName} ${member.lastName} из проекта?`)) {
+            return;
+        }
+
+        setRemovingMembers(current => ({ ...current, [member.id]: true }));
+        try {
+            await api.delete(`/projects/${id}/members/${member.id}`);
+            await loadData();
+        } catch (error) {
+            window.alert(error.response?.data?.message || "Не удалось исключить участника.");
+        } finally {
+            setRemovingMembers(current => ({ ...current, [member.id]: false }));
+        }
     };
 
     return (
@@ -238,6 +260,17 @@ export default function ProjectManage() {
                                         </p>
 
                                     </div>
+
+                                    {user?.id === projectOwnerId && (
+                                        <button
+                                            className="member-remove-button"
+                                            disabled={removingMembers[member.id]}
+                                            onClick={() => removeMember(member)}
+                                        >
+                                            <Trash2 size={16} />
+                                            {removingMembers[member.id] ? "Удаление..." : "Исключить"}
+                                        </button>
+                                    )}
 
                                 </div>
 

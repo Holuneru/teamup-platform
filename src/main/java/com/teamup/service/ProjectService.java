@@ -3,8 +3,12 @@ package com.teamup.service;
 import com.teamup.dto.request.CreateProjectRequest;
 import com.teamup.dto.response.ProjectResponse;
 import com.teamup.entity.Project;
+import com.teamup.entity.ProjectApplication;
+import com.teamup.entity.ProjectInvitation;
 import com.teamup.entity.Skill;
 import com.teamup.entity.User;
+import com.teamup.enums.ApplicationStatus;
+import com.teamup.enums.InvitationStatus;
 import com.teamup.exception.ForbiddenException;
 import com.teamup.exception.ResourceNotFoundException;
 import com.teamup.exception.UserNotFoundException;
@@ -172,6 +176,36 @@ public class ProjectService {
         projectApplicationRepository.deleteByProjectIdAndUserId(projectId, userId);
 
     }
+
+        @Transactional
+        public void removeMember(Long projectId, Long memberUserId) {
+                Project project = projectRepository.findById(projectId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+
+                assertOwner(project);
+
+                if (project.getOwner().getId().equals(memberUserId)) {
+                        throw new ForbiddenException("Нельзя удалить владельца проекта");
+                }
+
+                if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, memberUserId)) {
+                        throw new ResourceNotFoundException("Пользователь не является участником проекта");
+                }
+
+                projectMemberRepository.deleteByProjectIdAndUserId(projectId, memberUserId);
+
+                projectApplicationRepository.findTopByProjectIdAndUserIdOrderByCreatedAtDesc(projectId, memberUserId)
+                                .ifPresent(application -> {
+                                        application.setStatus(ApplicationStatus.REMOVED);
+                                        projectApplicationRepository.save(application);
+                                });
+
+                projectInvitationRepository.findByProjectIdAndUserId(projectId, memberUserId)
+                                .ifPresent(invitation -> {
+                                        invitation.setStatus(InvitationStatus.REJECTED);
+                                        projectInvitationRepository.save(invitation);
+                                });
+        }
 
     private void assertOwner(Project project) {
         Long userId = (Long) SecurityContextHolder.getContext()

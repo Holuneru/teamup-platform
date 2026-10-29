@@ -49,10 +49,15 @@ public class ProjectApplicationService {
             throw new RuntimeException("Владелец не может откликнуться на свой проект");
         }
 
-        repository.findByProjectIdAndUserId(projectId, userId)
-                .ifPresent(app -> {
-                    throw new RuntimeException("Вы уже отправляли заявку на этот проект");
-                });
+                if (projectMemberRepository.existsByProjectIdAndUserId(projectId, userId)) {
+                        throw new RuntimeException("Вы уже являетесь участником проекта");
+                }
+
+                repository.findTopByProjectIdAndUserIdOrderByCreatedAtDesc(projectId, userId)
+                                .filter(app -> app.getStatus() != ApplicationStatus.REMOVED)
+                                .ifPresent(app -> {
+                                        throw new RuntimeException("Вы уже отправляли заявку на этот проект");
+                                });
 
 
 

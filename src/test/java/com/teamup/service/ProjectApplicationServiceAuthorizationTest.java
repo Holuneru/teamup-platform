@@ -106,7 +106,9 @@ class ProjectApplicationServiceAuthorizationTest {
         authenticateAs(APPLICANT_ID);
         when(projectRepository.findByIdWithOwner(PROJECT_ID))
                 .thenReturn(Optional.of(project(PROJECT_ID, OWNER_ID)));
-        when(applicationRepository.findByProjectIdAndUserId(PROJECT_ID, APPLICANT_ID))
+        when(projectMemberRepository.existsByProjectIdAndUserId(PROJECT_ID, APPLICANT_ID))
+                .thenReturn(false);
+        when(applicationRepository.findTopByProjectIdAndUserIdOrderByCreatedAtDesc(PROJECT_ID, APPLICANT_ID))
                 .thenReturn(Optional.empty());
         when(applicationRepository.save(any(ProjectApplication.class)))
                 .thenAnswer(invocation -> {
@@ -131,6 +133,43 @@ class ProjectApplicationServiceAuthorizationTest {
         verify(applicationRepository).save(captor.capture());
         assertEquals(APPLICANT_ID, captor.getValue().getUserId());
         assertEquals(ApplicationStatus.PENDING, captor.getValue().getStatus());
+    }
+
+    @Test
+    void applicantCanSubmitNewApplicationAfterOwnerRemovedThem() {
+        authenticateAs(APPLICANT_ID);
+        ProjectApplication removedApplication = application(
+                APPLICATION_ID,
+                PROJECT_ID,
+                APPLICANT_ID
+        );
+        removedApplication.setStatus(ApplicationStatus.REMOVED);
+        when(projectRepository.findByIdWithOwner(PROJECT_ID))
+                .thenReturn(Optional.of(project(PROJECT_ID, OWNER_ID)));
+        when(projectMemberRepository.existsByProjectIdAndUserId(PROJECT_ID, APPLICANT_ID))
+                .thenReturn(false);
+        when(applicationRepository.findTopByProjectIdAndUserIdOrderByCreatedAtDesc(PROJECT_ID, APPLICANT_ID))
+                .thenReturn(Optional.of(removedApplication));
+        when(applicationRepository.save(any(ProjectApplication.class)))
+                .thenAnswer(invocation -> {
+                    ProjectApplication saved = invocation.getArgument(0);
+                    saved.setId(APPLICATION_ID + 1);
+                    return saved;
+                });
+        when(userRepository.findById(APPLICANT_ID))
+                .thenReturn(Optional.of(User.builder()
+                        .id(APPLICANT_ID)
+                        .firstName("Applicant")
+                        .lastName("User")
+                        .build()));
+
+        service.apply(PROJECT_ID, null);
+
+        ArgumentCaptor<ProjectApplication> captor =
+                ArgumentCaptor.forClass(ProjectApplication.class);
+        verify(applicationRepository).save(captor.capture());
+        assertEquals(ApplicationStatus.PENDING, captor.getValue().getStatus());
+        assertEquals(ApplicationStatus.REMOVED, removedApplication.getStatus());
     }
 
     @Test
