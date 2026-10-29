@@ -11,7 +11,7 @@ import "./my-projects.css";
 
 export default function InviteUser() {
 
-    const { id } = useParams();
+    const { userId: id } = useParams();
 
     const navigate = useNavigate();
 
