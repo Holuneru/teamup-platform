@@ -88,3 +88,123 @@
     color:#2563eb;
 
 }
+
+.sidebar nav {
+    gap: 5px;
+}
+
+.sidebar-label {
+    padding: 3px 11px 8px;
+    color: #8a9690;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.sidebar-group {
+    padding: 3px 0;
+}
+
+.sidebar-group + .sidebar-group {
+    border-top: 1px solid #edf0ee;
+}
+
+.sidebar .sidebar-group-trigger,
+.sidebar .sidebar-link {
+    width: 100%;
+    border: 0;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    transition: background .16s ease, color .16s ease;
+}
+
+.sidebar .sidebar-group-trigger {
+    min-height: 42px;
+    gap: 10px;
+    padding: 0 11px;
+    border-radius: 6px;
+    background: transparent;
+    color: #33423b;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.sidebar .sidebar-group-trigger > svg:first-child {
+    flex-shrink: 0;
+}
+
+.sidebar .sidebar-group-trigger span {
+    flex: 1;
+}
+
+.sidebar-chevron {
+    color: #87938d;
+    transition: transform .18s ease;
+}
+
+.sidebar-group-trigger.expanded .sidebar-chevron {
+    transform: rotate(180deg);
+}
+
+.sidebar .sidebar-group-trigger:hover,
+.sidebar .sidebar-group-trigger.expanded {
+    background: #f2f6f3;
+    color: #27694f;
+}
+
+.sidebar-group-items {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 2px 0 5px 19px;
+    padding-left: 9px;
+    border-left: 1px solid #dfe7e2;
+}
+
+.sidebar .sidebar-link {
+    min-height: 36px;
+    gap: 9px;
+    padding: 0 9px;
+    border-radius: 5px;
+    background: transparent;
+    color: #63716a;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.sidebar .sidebar-link svg {
+    flex-shrink: 0;
+}
+
+.sidebar .sidebar-link:hover {
+    background: #f4f7f5;
+    color: #27694f;
+}
+
+.sidebar .sidebar-link.active {
+    background: #eaf3ed;
+    color: #236449;
+    font-weight: 650;
+}
+
+@media (max-width: 760px) {
+    .sidebar {
+        width: 190px;
+        padding: 17px 8px;
+    }
+
+    .sidebar .sidebar-group-trigger {
+        gap: 8px;
+        padding: 0 8px;
+        font-size: 12px;
+    }
+
+    .sidebar .sidebar-link {
+        gap: 7px;
+        padding: 0 6px;
+        font-size: 11px;
+    }
+}
