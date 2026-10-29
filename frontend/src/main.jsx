@@ -8,6 +8,7 @@ import { FeedbackProvider } from "./context/FeedbackContext";
 
 import "./index.css";
 import "./styles/auth.css";
+import "./styles/team-theme.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
 
