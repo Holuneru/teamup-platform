@@ -36,7 +36,6 @@ class ChatServiceTest {
     private ConversationRepository conversationRepository;
     private ChatMessageRepository messageRepository;
     private UserRepository userRepository;
-    private NotificationService notificationService;
     private ChatService chatService;
     private Conversation conversation;
 
@@ -45,12 +44,10 @@ class ChatServiceTest {
         conversationRepository = mock(ConversationRepository.class);
         messageRepository = mock(ChatMessageRepository.class);
         userRepository = mock(UserRepository.class);
-        notificationService = mock(NotificationService.class);
         chatService = new ChatService(
                 conversationRepository,
                 messageRepository,
-                userRepository,
-                notificationService
+            userRepository
         );
         conversation = Conversation.builder()
                 .id(CONVERSATION_ID)
@@ -103,7 +100,6 @@ class ChatServiceTest {
         conversation.setParticipantOneDeletedAt(LocalDateTime.now().minusDays(1));
         conversation.setParticipantTwoDeletedAt(LocalDateTime.now().minusDays(1));
         authenticate(FIRST_USER_ID);
-        when(userRepository.findById(FIRST_USER_ID)).thenReturn(Optional.of(user(FIRST_USER_ID)));
         when(messageRepository.save(any(ChatMessage.class))).thenAnswer(invocation -> {
             ChatMessage message = invocation.getArgument(0);
             message.setId(100L);
@@ -118,14 +114,6 @@ class ChatServiceTest {
         assertNull(conversation.getParticipantOneDeletedAt());
         assertNull(conversation.getParticipantTwoDeletedAt());
         verify(conversationRepository).save(conversation);
-        verify(notificationService).create(
-                SECOND_USER_ID,
-                FIRST_USER_ID,
-                com.teamup.enums.NotificationType.NEW_MESSAGE,
-                "Новое сообщение",
-                "User 10: Привет",
-                "/messages/" + FIRST_USER_ID
-        );
     }
 
     @Test

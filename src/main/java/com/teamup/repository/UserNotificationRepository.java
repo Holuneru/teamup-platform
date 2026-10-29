@@ -1,6 +1,7 @@
 package com.teamup.repository;
 
 import com.teamup.entity.UserNotification;
+import com.teamup.enums.NotificationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,7 +14,14 @@ import java.util.List;
 public interface UserNotificationRepository extends JpaRepository<UserNotification, Long> {
     List<UserNotification> findTop100ByRecipientIdOrderByCreatedAtDesc(Long recipientId);
 
+        List<UserNotification> findTop100ByRecipientIdAndTypeNotOrderByCreatedAtDesc(
+            Long recipientId,
+            NotificationType type
+        );
+
     long countByRecipientIdAndReadAtIsNull(Long recipientId);
+
+        long countByRecipientIdAndReadAtIsNullAndTypeNot(Long recipientId, NotificationType type);
 
     @Modifying
     @Query("update UserNotification n set n.readAt = CURRENT_TIMESTAMP where n.id = :id and n.recipientId = :recipientId and n.readAt is null")

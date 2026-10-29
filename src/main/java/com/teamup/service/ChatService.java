@@ -7,7 +7,6 @@ import com.teamup.dto.response.UserShortResponse;
 import com.teamup.entity.ChatMessage;
 import com.teamup.entity.Conversation;
 import com.teamup.entity.User;
-import com.teamup.enums.NotificationType;
 import com.teamup.exception.ResourceNotFoundException;
 import com.teamup.repository.ChatMessageRepository;
 import com.teamup.repository.ConversationRepository;
@@ -28,7 +27,6 @@ public class ChatService {
     private final ConversationRepository conversationRepository;
     private final ChatMessageRepository messageRepository;
     private final UserRepository userRepository;
-    private final NotificationService notificationService;
 
     public List<ConversationResponse> getConversations() {
         Long userId = currentUserId();
@@ -95,10 +93,8 @@ public class ChatService {
     public ChatMessageResponse sendMessage(Long conversationId, SendMessageRequest request) {
         Conversation conversation = getAccessibleConversation(conversationId);
         Long senderId = currentUserId();
-        Long recipientId = conversation.getParticipantOneId().equals(senderId)
+        Long otherUserId = conversation.getParticipantOneId().equals(senderId)
                 ? conversation.getParticipantTwoId() : conversation.getParticipantOneId();
-        User sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         String content = request.getContent().trim();
         ChatMessage message = messageRepository.save(ChatMessage.builder()
                 .conversationId(conversationId)
@@ -106,12 +102,9 @@ public class ChatService {
                 .content(content)
                 .build());
         restoreFor(conversation, senderId);
-        restoreFor(conversation, recipientId);
+        restoreFor(conversation, otherUserId);
         conversation.setLastMessageAt(message.getCreatedAt());
         conversationRepository.save(conversation);
-        String senderName = sender.getFirstName() + " " + sender.getLastName();
-        notificationService.create(recipientId, senderId, NotificationType.NEW_MESSAGE,
-                "Новое сообщение", senderName + ": " + preview(content), "/messages/" + senderId);
         return toMessageResponse(message);
     }
 
@@ -155,10 +148,6 @@ public class ChatService {
     private ChatMessageResponse toMessageResponse(ChatMessage message) {
         return ChatMessageResponse.builder().id(message.getId()).senderId(message.getSenderId())
                 .content(message.getContent()).createdAt(message.getCreatedAt()).readAt(message.getReadAt()).build();
-    }
-
-    private String preview(String content) {
-        return content.length() <= 120 ? content : content.substring(0, 117) + "...";
     }
 
     private Long currentUserId() {

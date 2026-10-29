@@ -37,12 +37,18 @@ public class NotificationService {
 
     public List<NotificationResponse> getMine() {
         Long userId = currentUserId();
-        return notificationRepository.findTop100ByRecipientIdOrderByCreatedAtDesc(userId)
+        return notificationRepository.findTop100ByRecipientIdAndTypeNotOrderByCreatedAtDesc(
+                userId,
+                NotificationType.NEW_MESSAGE
+            )
                 .stream().map(this::toResponse).toList();
     }
 
     public long getUnreadCount() {
-        return notificationRepository.countByRecipientIdAndReadAtIsNull(currentUserId());
+        return notificationRepository.countByRecipientIdAndReadAtIsNullAndTypeNot(
+            currentUserId(),
+            NotificationType.NEW_MESSAGE
+        );
     }
 
     @Transactional
