@@ -5,12 +5,14 @@ import api from "../api/axios";
 
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
+import { useFeedback } from "../context/FeedbackContext";
 
 import "./project-details.css";
 
 export default function ProjectDetails() {
 
     const { id } = useParams();
+    const { notify } = useFeedback();
 
     const [project, setProject] = useState(null);
 
@@ -56,7 +58,7 @@ export default function ProjectDetails() {
 
             setApplied(true);
 
-            alert("Заявка отправлена!");
+            notify("Заявка отправлена", "success");
 
         } catch (err) {
 
@@ -64,11 +66,11 @@ export default function ProjectDetails() {
 
             if (err.response?.data?.message) {
 
-                alert(err.response.data.message);
+                notify(err.response.data.message);
 
             } else {
 
-                alert("Вы уже отправляли заявку.");
+                notify("Вы уже отправляли заявку.");
 
             }
 

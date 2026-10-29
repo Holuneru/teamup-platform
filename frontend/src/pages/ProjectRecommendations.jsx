@@ -5,6 +5,7 @@ import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
 
 import api from "../api/axios";
+import { useFeedback } from "../context/FeedbackContext";
 
 import "./project-recommendations.css";
 
@@ -13,6 +14,7 @@ export default function ProjectRecommendations() {
     const { id } = useParams();
 
     const navigate = useNavigate();
+    const { notify } = useFeedback();
 
     const [users, setUsers] = useState([]);
 
@@ -66,7 +68,7 @@ export default function ProjectRecommendations() {
 
             console.log(err);
 
-            alert(
+            notify(
                 err.response?.data?.message ||
                 "Не удалось отправить приглашение."
             );

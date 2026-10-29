@@ -6,6 +6,7 @@ import UserAvatar from "../components/UserAvatar";
 
 import api from "../api/axios";
 import { inviteUser } from "../api/invitationService";
+import { useFeedback } from "../context/FeedbackContext";
 
 import "./my-projects.css";
 
@@ -14,6 +15,7 @@ export default function InviteUser() {
     const { userId: id } = useParams();
 
     const navigate = useNavigate();
+    const { notify } = useFeedback();
 
     const [user, setUser] = useState(null);
 
@@ -78,7 +80,7 @@ export default function InviteUser() {
 
         } catch (err) {
 
-            alert(
+            notify(
                 err.response?.data?.message ||
                 "Не удалось отправить приглашение."
             );

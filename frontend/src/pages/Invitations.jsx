@@ -6,12 +6,14 @@ import Layout from "../components/Layout";
 import { useUser } from "../context/UserContext";
 
 import api from "../api/axios";
+import { useFeedback } from "../context/FeedbackContext";
 
 import "./invitations.css";
 
 export default function Invitations() {
 
     const navigate = useNavigate();
+    const { notify } = useFeedback();
 
     const {
         invitations,
@@ -36,7 +38,7 @@ export default function Invitations() {
 
             console.log(err);
 
-            alert("Не удалось принять приглашение.");
+            notify(err.response?.data?.message || "Не удалось принять приглашение.");
 
         }
 
@@ -54,7 +56,7 @@ export default function Invitations() {
 
             console.log(err);
 
-            alert("Не удалось отклонить приглашение.");
+            notify(err.response?.data?.message || "Не удалось отклонить приглашение.");
 
         }
 

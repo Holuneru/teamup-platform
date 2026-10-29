@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 import Layout from "../components/Layout";
 import api from "../api/axios";
+import { useFeedback } from "../context/FeedbackContext";
 
 import "./create-project.css";
 
 export default function CreateProject() {
 
     const navigate = useNavigate();
+    const { notify } = useFeedback();
 
     const [skills, setSkills] = useState([]);
 
@@ -52,7 +54,7 @@ export default function CreateProject() {
 
         if (!form.title.trim()) {
 
-            alert("Введите название проекта.");
+            notify("Введите название проекта.");
 
             return;
 
@@ -72,7 +74,7 @@ export default function CreateProject() {
 
             });
 
-            alert("Проект успешно создан!");
+            notify("Проект успешно создан", "success");
 
             navigate(`/projects/${res.data.id}`);
 
@@ -80,7 +82,7 @@ export default function CreateProject() {
 
             console.log(err);
 
-            alert("Не удалось создать проект.");
+            notify(err.response?.data?.message || "Не удалось создать проект.");
 
         } finally {
 

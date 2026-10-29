@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 import { login } from "../api/auth";
 import { useUser } from "../context/UserContext";
+import { useFeedback } from "../context/FeedbackContext";
 
 export default function Login() {
 
     const navigate = useNavigate();
 
     const { refreshUser } = useUser();
+    const { notify } = useFeedback();
 
     const [form, setForm] = useState({
         email: "",
@@ -40,13 +42,13 @@ export default function Login() {
             // обновляем пользователя в Context
             await refreshUser();
 
-            alert("Успешный вход");
+            notify("Успешный вход", "success");
 
             navigate("/dashboard");
 
         } catch {
 
-            alert("Неверный логин или пароль");
+            notify("Неверный логин или пароль");
 
         }
 

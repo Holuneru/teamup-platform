@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CalendarDays, Maximize2, Plus, Trash2 } from "lucide-react";
 import { useUser } from "../context/UserContext";
+import { useFeedback } from "../context/FeedbackContext";
 import api from "../api/axios";
 
 const columns = [
@@ -26,6 +27,7 @@ const initialForm = {
 
 export default function ProjectTaskBoard({ projectId, members }) {
     const { user } = useUser();
+    const { confirm } = useFeedback();
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
@@ -98,7 +100,10 @@ export default function ProjectTaskBoard({ projectId, members }) {
     };
 
     const deleteTask = async task => {
-        if (!window.confirm(`Удалить задачу «${task.title}»?`)) return;
+        if (!await confirm(`Задача «${task.title}» и ее данные будут удалены.`, {
+            title: "Удалить задачу?",
+            confirmLabel: "Удалить"
+        })) return;
         setDeletingTaskId(task.id);
         setError("");
         try {

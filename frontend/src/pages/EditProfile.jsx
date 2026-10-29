@@ -5,6 +5,7 @@ import { useUser } from "../context/UserContext";
 
 import api from "../api/axios";
 import Layout from "../components/Layout";
+import { useFeedback } from "../context/FeedbackContext";
 
 import "./edit-profile.css";
 
@@ -13,6 +14,7 @@ export default function EditProfile() {
     const navigate = useNavigate();
 
     const { refreshUser } = useUser();
+    const { notify } = useFeedback();
 
     const [skills, setSkills] = useState([]);
 
@@ -125,7 +127,7 @@ export default function EditProfile() {
 
             await refreshUser();
 
-            alert("Профиль успешно обновлён.");
+            notify("Профиль успешно обновлен", "success");
 
             navigate("/profile");
 
@@ -133,7 +135,7 @@ export default function EditProfile() {
 
             console.log(err);
 
-            alert("Не удалось сохранить изменения.");
+            notify(err.response?.data?.message || "Не удалось сохранить изменения.");
 
         }
 

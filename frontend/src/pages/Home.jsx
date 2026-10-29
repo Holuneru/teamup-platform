@@ -5,6 +5,7 @@ import api from "../api/axios";
 
 import Layout from "../components/Layout";
 import { useUser } from "../context/UserContext";
+import { useFeedback } from "../context/FeedbackContext";
 
 import "./profile.css";
 import "./catalog.css";
@@ -20,6 +21,7 @@ export default function Home() {
     const fileInputRef = useRef(null);
 
     const navigate = useNavigate();
+    const { notify } = useFeedback();
 
     const [myProjects, setMyProjects] = useState([]);
 
@@ -63,7 +65,7 @@ export default function Home() {
 
             console.log(err);
 
-            alert("Не удалось загрузить аватар.");
+            notify(err.response?.data?.message || "Не удалось загрузить аватар.");
 
         }
 

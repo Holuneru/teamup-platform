@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../api/auth";
+import { useFeedback } from "../context/FeedbackContext";
 import "../styles/auth.css";
 
 export default function Register() {
 
     const navigate = useNavigate();
+    const { notify } = useFeedback();
 
     const [form, setForm] = useState({
         firstName: "",
@@ -34,7 +36,7 @@ export default function Register() {
 
             await register(form);
 
-            alert("Registration successful!");
+            notify("Аккаунт успешно создан", "success");
 
             navigate("/login");
 
@@ -43,9 +45,9 @@ export default function Register() {
             console.error(error);
 
             if (error.response?.data?.message) {
-                alert(error.response.data.message);
+                notify(error.response.data.message);
             } else {
-                alert("Registration failed.");
+                notify("Не удалось создать аккаунт.");
             }
         }
     };

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { ArrowUpRight, BriefcaseBusiness, Trash2, Users } from "lucide-react";
+import { useFeedback } from "../context/FeedbackContext";
 
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
@@ -16,6 +17,7 @@ export default function ProjectManage() {
 
     const navigate = useNavigate();
     const { user } = useUser();
+    const { notify, confirm } = useFeedback();
 
     const [applications, setApplications] = useState([]);
     const [members, setMembers] = useState([]);
@@ -93,7 +95,10 @@ export default function ProjectManage() {
     };
 
     const removeMember = async member => {
-        if (!window.confirm(`Исключить ${member.firstName} ${member.lastName} из проекта?`)) {
+        if (!await confirm(`Исключить ${member.firstName} ${member.lastName} из проекта?`, {
+            title: "Исключить участника",
+            confirmLabel: "Исключить"
+        })) {
             return;
         }
 
@@ -102,7 +107,7 @@ export default function ProjectManage() {
             await api.delete(`/projects/${id}/members/${member.id}`);
             await loadData();
         } catch (error) {
-            window.alert(error.response?.data?.message || "Не удалось исключить участника.");
+            notify(error.response?.data?.message || "Не удалось исключить участника.");
         } finally {
             setRemovingMembers(current => ({ ...current, [member.id]: false }));
         }

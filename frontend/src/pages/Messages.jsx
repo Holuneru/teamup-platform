@@ -4,6 +4,7 @@ import { ArrowUp, MessageCircle, RefreshCw, Trash2 } from "lucide-react";
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
 import { useUser } from "../context/UserContext";
+import { useFeedback } from "../context/FeedbackContext";
 import {
     getConversations,
     deleteConversation,
@@ -19,6 +20,7 @@ export default function Messages() {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const { user } = useUser();
+    const { notify, confirm } = useFeedback();
     const [conversations, setConversations] = useState([]);
     const [activeId, setActiveId] = useState(searchParams.get("conversation"));
     const [messages, setMessages] = useState([]);
@@ -94,7 +96,10 @@ export default function Messages() {
     const activeConversation = conversations.find(item => String(item.id) === String(activeId));
 
     const handleDeleteConversation = async conversation => {
-        const confirmed = window.confirm("Удалить чат только у себя? Переписка останется у собеседника.");
+        const confirmed = await confirm("Переписка останется у собеседника.", {
+            title: "Удалить чат у себя?",
+            confirmLabel: "Удалить"
+        });
         if (!confirmed) return;
         try {
             await deleteConversation(conversation.id);
@@ -106,7 +111,7 @@ export default function Messages() {
             }
         } catch (error) {
             console.error(error);
-            window.alert("Не удалось удалить чат.");
+            notify(error.response?.data?.message || "Не удалось удалить чат.");
         }
     };
 

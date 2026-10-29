@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 
 import api from "../api/axios";
+import { useFeedback } from "../context/FeedbackContext";
 
 import "./my-projects.css";
 
@@ -12,6 +13,7 @@ export default function ParticipatingProjects() {
     const [projects, setProjects] = useState([]);
 
     const navigate = useNavigate();
+    const { notify, confirm } = useFeedback();
 
     const loadProjects = useCallback(() => {
         api.get("/projects/participating")
@@ -34,9 +36,10 @@ export default function ParticipatingProjects() {
 
     const leaveProject = async (projectId) => {
 
-        const confirmed = window.confirm(
-            "Are you sure you want to leave this project?"
-        );
+        const confirmed = await confirm("Покинуть этот проект?", {
+            title: "Покинуть проект",
+            confirmLabel: "Покинуть"
+        });
 
         if (!confirmed) return;
 
@@ -52,9 +55,9 @@ export default function ParticipatingProjects() {
 
             console.log(err);
 
-            alert(
+            notify(
                 err.response?.data?.message ??
-                "Failed to leave project."
+                "Не удалось покинуть проект."
             );
 
         }
