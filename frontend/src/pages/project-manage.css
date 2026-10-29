@@ -203,3 +203,194 @@
 .workspace-manage-button:hover {
     background: #f1f6f2;
 }
+
+.manage-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 8px 0 22px;
+    border-bottom: 1px solid #e3e9e5;
+}
+
+.manage-title-block h1 {
+    margin: 5px 0 4px;
+    color: #23352a;
+    font-size: 25px;
+    line-height: 1.2;
+}
+
+.manage-title-block p {
+    margin: 0;
+    color: #758179;
+    font-size: 12px;
+}
+
+.manage-eyebrow {
+    color: #688575;
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: .08em;
+}
+
+.manage-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.workspace-manage-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 39px;
+    padding: 0 12px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.manage-recommend-button {
+    min-height: 39px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #38664d;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.manage-recommend-button:hover { background: #f0f5f1; }
+
+.manage-sections {
+    display: flex;
+    gap: 5px;
+    margin: 18px 0 20px;
+    padding: 4px;
+    border: 1px solid #e2e8e4;
+    border-radius: 7px;
+    background: #f5f7f5;
+}
+
+.manage-sections button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 13px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: #69776f;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.manage-sections button.active {
+    background: #fff;
+    color: #285d41;
+    box-shadow: 0 1px 3px rgb(27 49 34 / 10%);
+}
+
+.manage-sections button span {
+    display: grid;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    place-items: center;
+    border-radius: 10px;
+    background: #e9efeb;
+    color: #66776c;
+    font-size: 10px;
+}
+
+.manage-content {
+    margin-bottom: 20px !important;
+}
+
+.manage-content-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 13px;
+}
+
+.manage-content-heading h2 {
+    margin: 4px 0 0;
+    color: #2e4035;
+    font-size: 17px;
+}
+
+.manage-count {
+    color: #7a8780;
+    font-size: 11px;
+}
+
+.manage-applicant-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.manage-applicant-actions .accept-button,
+.manage-applicant-actions .reject-button {
+    padding: 8px 13px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.manage-member-info {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.manage-member-info .member-role {
+    margin: 0;
+    color: #76847b;
+    font-size: 11px;
+}
+
+@media (max-width: 720px) {
+    .manage-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .manage-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .manage-card,
+    .member-card {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .manage-header-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .manage-header-actions button { justify-content: center; }
+
+    .manage-card {
+        align-items: flex-start;
+    }
+
+    .manage-applicant-actions {
+        width: 100%;
+    }
+
+    .manage-applicant-actions button { flex: 1; }
+}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser } from "../context/UserContext";
-import { Trash2 } from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, Trash2, Users } from "lucide-react";
 
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
@@ -19,13 +19,18 @@ export default function ProjectManage() {
 
     const [applications, setApplications] = useState([]);
     const [members, setMembers] = useState([]);
+    const [projectTitle, setProjectTitle] = useState("");
     const [projectOwnerId, setProjectOwnerId] = useState(null);
     const [removingMembers, setRemovingMembers] = useState({});
+    const [activeSection, setActiveSection] = useState("applications");
 
     const loadData = useCallback(async () => {
         const requests = [
             api.get(`/projects/${id}`)
-                .then(res => setProjectOwnerId(res.data.ownerId))
+                .then(res => {
+                    setProjectOwnerId(res.data.ownerId);
+                    setProjectTitle(res.data.title);
+                })
                 .catch(err => console.error(
                     "Ошибка загрузки проекта:",
                     err.response?.status,
@@ -108,189 +113,103 @@ export default function ProjectManage() {
         <Layout>
 
             <div className="project-manage">
-
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "30px"
-                    }}
-                >
-
-                    <div>
-
-                        <h1>Управление проектом</h1>
-
-                        <p className="page-subtitle">
-
-                            Просматривайте заявки и управляйте своей командой.
-
-                        </p>
-
+                <header className="manage-header">
+                    <div className="manage-title-block">
+                        <span className="manage-eyebrow">ПРОЕКТ / УПРАВЛЕНИЕ</span>
+                        <h1>{projectTitle || "Управление проектом"}</h1>
+                        <p>Заявки и состав команды проекта.</p>
                     </div>
+                    <div className="manage-header-actions">
+                        <button
+                            className="manage-recommend-button"
+                            onClick={() => navigate(`/projects/${id}/recommendations`)}
+                        >
+                            Подобрать участников
+                        </button>
+                        <button
+                            className="workspace-manage-button"
+                            onClick={() => navigate(`/projects/${id}/workspace`)}
+                        >
+                            <BriefcaseBusiness size={17} />
+                            Рабочее пространство
+                            <ArrowUpRight size={15} />
+                        </button>
+                    </div>
+                </header>
 
+                <nav className="manage-sections" aria-label="Разделы управления проектом">
                     <button
-                        className="workspace-manage-button"
-                        onClick={() => navigate(`/projects/${id}/workspace`)}
+                        className={activeSection === "applications" ? "active" : ""}
+                        onClick={() => setActiveSection("applications")}
+                        aria-pressed={activeSection === "applications"}
                     >
-
-                        Рабочее пространство
-
+                        Новые заявки <span>{applications.length}</span>
                     </button>
-
                     <button
-                        className="accept-button"
-                        onClick={() =>
-                            navigate(`/projects/${id}/recommendations`)
-                        }
+                        className={activeSection === "team" ? "active" : ""}
+                        onClick={() => setActiveSection("team")}
+                        aria-pressed={activeSection === "team"}
                     >
-
-                        Подобрать участников
-
+                        <Users size={16} /> Команда <span>{members.length}</span>
                     </button>
+                </nav>
 
-                </div>
-
-                <section>
-
-                    <h2>Новые заявки</h2>
-
-                    {
-
-                        applications.length === 0 ? (
-
-                            <div className="empty-state">
-
-                                Новых заявок пока нет.
-
+                {activeSection === "applications" ? (
+                    <section className="manage-content" aria-labelledby="manage-applications-title">
+                        <div className="manage-content-heading">
+                            <div>
+                                <span className="manage-eyebrow">ВХОДЯЩИЕ</span>
+                                <h2 id="manage-applications-title">Заявки на участие</h2>
                             </div>
-
-                        ) : (
-
-                            applications.map(app => (
-
-                                <div
-                                    key={app.id}
-                                    className="manage-card"
-                                >
-
-                                    <div>
-
-                                        <UserAvatar
-                                            user={app.applicant}
-                                        />
-
-                                        <p
-                                            className="status"
-                                            style={{
-                                                marginLeft: "58px",
-                                                marginTop: "6px"
-                                            }}
-                                        >
-
-                                            {app.status}
-
-                                        </p>
-
-                                    </div>
-
-                                    <div className="actions">
-
-                                        <button
-                                            className="reject-button"
-                                            onClick={() => reject(app.id)}
-                                        >
-
-                                            Отклонить
-
-                                        </button>
-
-                                        <button
-                                            className="accept-button"
-                                            onClick={() => accept(app.id)}
-                                        >
-
-                                            Принять
-
-                                        </button>
-
-                                    </div>
-
+                            <span className="manage-count">{applications.length} ожидают решения</span>
+                        </div>
+                        {applications.length === 0 ? (
+                            <div className="empty-state">Новых заявок пока нет.</div>
+                        ) : applications.map(app => (
+                            <article key={app.id} className="manage-card">
+                                <UserAvatar user={app.applicant} />
+                                <div className="manage-applicant-actions">
+                                    <button className="reject-button" onClick={() => reject(app.id)}>
+                                        Отклонить
+                                    </button>
+                                    <button className="accept-button" onClick={() => accept(app.id)}>
+                                        Принять в команду
+                                    </button>
                                 </div>
-
-                            ))
-
-                        )
-
-                    }
-
-                </section>
-
-                <section>
-
-                    <h2>Команда проекта</h2>
-
-                    {
-
-                        members.length === 0 ? (
-
-                            <div className="empty-state">
-
-                                В команде пока нет участников.
-
+                            </article>
+                        ))}
+                    </section>
+                ) : (
+                    <section className="manage-content" aria-labelledby="manage-team-title">
+                        <div className="manage-content-heading">
+                            <div>
+                                <span className="manage-eyebrow">СОСТАВ</span>
+                                <h2 id="manage-team-title">Команда проекта</h2>
                             </div>
-
-                        ) : (
-
-                            members.map(member => (
-
-                                <div
-                                    key={member.id}
-                                    className="member-card"
-                                >
-
-                                    <div>
-
-                                        <UserAvatar
-                                            user={member}
-                                        />
-
-                                        <p
-                                            className="member-role"
-                                            style={{
-                                                marginLeft: "58px",
-                                                marginTop: "6px"
-                                            }}
-                                        >
-
-                                            {member.role}
-
-                                        </p>
-
-                                    </div>
-
-                                    {user?.id === projectOwnerId && (
-                                        <button
-                                            className="member-remove-button"
-                                            disabled={removingMembers[member.id]}
-                                            onClick={() => removeMember(member)}
-                                        >
-                                            <Trash2 size={16} />
-                                            {removingMembers[member.id] ? "Удаление..." : "Исключить"}
-                                        </button>
-                                    )}
-
+                            <span className="manage-count">{members.length} участников</span>
+                        </div>
+                        {members.length === 0 ? (
+                            <div className="empty-state">В команде пока нет участников.</div>
+                        ) : members.map(member => (
+                            <article key={member.id} className="member-card">
+                                <div className="manage-member-info">
+                                    <UserAvatar user={member} />
+                                    <span className="member-role">{member.role}</span>
                                 </div>
-
-                            ))
-
-                        )
-
-                    }
-
-                </section>
-
+                                {user?.id === projectOwnerId && (
+                                    <button
+                                        className="member-remove-button"
+                                        disabled={removingMembers[member.id]}
+                                        onClick={() => removeMember(member)}
+                                    >
+                                        <Trash2 size={16} />
+                                        {removingMembers[member.id] ? "Удаление..." : "Исключить"}
+                                    </button>
+                                )}
+                            </article>
+                        ))}
+                    </section>
+                )}
             </div>
 
         </Layout>
