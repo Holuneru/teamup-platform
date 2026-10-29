@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpRight, ClipboardList, MessageCircle, Users } from "lu
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
 import ProjectDiscussion from "../components/ProjectDiscussion";
+import ProjectTaskBoard from "../components/ProjectTaskBoard";
 import { useUser } from "../context/UserContext";
 import api from "../api/axios";
 import "./project-workspace.css";
@@ -106,7 +107,6 @@ export default function ProjectWorkspace() {
                                         >
                                             <Icon size={17} />
                                             {section.label}
-                                            {section.id === "board" && <span className="workspace-soon">Скоро</span>}
                                         </button>
                                     );
                                 })}
@@ -137,7 +137,6 @@ export default function ProjectWorkspace() {
                                             <button onClick={() => setActiveSection("board")}>
                                                 <ClipboardList size={19} />
                                                 <span><strong>Доска задач</strong><small>Совместная работа команды</small></span>
-                                                <span className="workspace-soon">Скоро</span>
                                             </button>
                                         </div>
                                     </section>
@@ -165,6 +164,11 @@ export default function ProjectWorkspace() {
                                 </div>
                             ) : activeSection === "discussion" ? (
                                 <ProjectDiscussion projectId={id} />
+                            ) : activeSection === "board" ? (
+                                <ProjectTaskBoard
+                                    projectId={id}
+                                    members={team}
+                                />
                             ) : (
                                 <section className="workspace-state workspace-coming-soon">
                                     <ActiveIcon size={30} />

@@ -151,3 +151,41 @@ ManyToMany -> Skill
 | senderId | Long | Автор сообщения |
 | content | String | Текст сообщения, до 4000 символов |
 | createdAt | LocalDateTime | Время отправки |
+
+---
+
+# ProjectTask
+
+Карточка задачи общей доски проекта.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | Long | Уникальный идентификатор |
+| projectId | Long | Проект |
+| createdById | Long | Автор задачи |
+| assigneeId | Long | Исполнитель, необязательно |
+| title | String | Название, до 140 символов |
+| description | String | Описание, до 2000 символов |
+| status | Enum | TODO / IN_PROGRESS / REVIEW / DONE |
+| priority | Enum | LOW / MEDIUM / HIGH |
+| dueDate | LocalDate | Срок, необязательно |
+| createdAt | LocalDateTime | Дата создания |
+
+---
+
+# ProjectTask
+
+Карточка задачи общей доски проекта.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | Long | Уникальный идентификатор |
+| projectId | Long | Проект |
+| createdById | Long | Автор задачи |
+| assigneeId | Long | Исполнитель, необязательно |
+| title | String | Название, до 140 символов |
+| description | String | Описание, до 2000 символов |
+| status | Enum | TODO / IN_PROGRESS / REVIEW / DONE |
+| priority | Enum | LOW / MEDIUM / HIGH |
+| dueDate | LocalDate | Срок, необязательно |
+| createdAt | LocalDateTime | Дата создания |
