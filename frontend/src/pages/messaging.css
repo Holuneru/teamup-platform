@@ -83,6 +83,7 @@
     border: 0;
     border: 0;
     background: #fff;
+    color: #1b3025;
     text-align: left;
     cursor: pointer;
 }
@@ -108,7 +109,11 @@
 
 .conversation-copy,
 .notification-copy { min-width: 0; display: flex; flex: 1; flex-direction: column; }
-.conversation-copy strong { font-size: 14px; }
+.conversation-copy strong {
+    color: #1b3025;
+    font-size: 14px;
+    font-weight: 650;
+}
 .conversation-copy small { overflow: hidden; margin-top: 5px; color: #718079; text-overflow: ellipsis; white-space: nowrap; }
 .conversation-unread { display: grid; min-width: 21px; height: 21px; place-items: center; border-radius: 50%; background: #28735a; color: #fff; font-size: 11px; }
 
@@ -129,7 +134,10 @@
 .conversation-empty button { margin-top: 8px; border: 0; background: transparent; color: #236449; font-weight: 700; cursor: pointer; }
 .chat-panel { display: flex; min-width: 0; flex-direction: column; }
 .chat-header { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 0 20px; border-bottom: 1px solid #e5ebe7; }
-.chat-header strong { display: block; }
+.chat-header strong {
+    display: block;
+    color: #1b3025;
+}
 .chat-header button { margin-top: 4px; padding: 0; border: 0; background: transparent; color: #668078; font-size: 12px; cursor: pointer; }
 .chat-messages { display: flex; flex: 1; flex-direction: column; gap: 10px; overflow-y: auto; padding: 22px; background: #fbfcfb; }
 .chat-message { max-width: min(72%, 530px); padding: 10px 13px 7px; border-radius: 8px; }
