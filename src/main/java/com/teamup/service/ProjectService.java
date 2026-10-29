@@ -87,6 +87,23 @@ public class ProjectService {
         return projectMapper.toResponse(project);
     }
 
+        public ProjectResponse getWorkspaceProject(Long projectId) {
+                Project project = projectRepository.findByIdWithMembers(projectId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+
+                Long currentUserId = (Long) SecurityContextHolder.getContext()
+                                .getAuthentication()
+                                .getPrincipal();
+                boolean isOwner = project.getOwner().getId().equals(currentUserId);
+                boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, currentUserId);
+
+                if (!isOwner && !isMember) {
+                        throw new ForbiddenException("Рабочее пространство доступно только владельцу и участникам проекта");
+                }
+
+                return projectMapper.toResponse(project);
+        }
+
     public ProjectResponse updateProject(Long id, CreateProjectRequest request) {
         Project project = projectRepository.findByIdWithMembers(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));

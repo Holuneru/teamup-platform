@@ -4,6 +4,7 @@ import com.teamup.entity.Project;
 import com.teamup.entity.ProjectApplication;
 import com.teamup.entity.ProjectInvitation;
 import com.teamup.entity.User;
+import com.teamup.dto.response.ProjectResponse;
 import com.teamup.enums.ApplicationStatus;
 import com.teamup.enums.InvitationStatus;
 import com.teamup.exception.ForbiddenException;
@@ -115,6 +116,39 @@ class ProjectServiceMemberManagementTest {
 
         verify(projectMemberRepository, never()).deleteByProjectIdAndUserId(PROJECT_ID, OWNER_ID);
         verifyNoInteractions(projectApplicationRepository, projectInvitationRepository);
+    }
+
+    @Test
+    void ownerCanOpenWorkspace() {
+        when(projectRepository.findByIdWithMembers(PROJECT_ID)).thenReturn(Optional.of(project()));
+        when(projectMapper.toResponse(org.mockito.ArgumentMatchers.any(Project.class)))
+                .thenReturn(ProjectResponse.builder().id(PROJECT_ID).ownerId(OWNER_ID).build());
+
+        ProjectResponse response = service.getWorkspaceProject(PROJECT_ID);
+
+        assertEquals(PROJECT_ID, response.getId());
+    }
+
+    @Test
+    void projectMemberCanOpenWorkspace() {
+        authenticateAs(MEMBER_ID);
+        when(projectRepository.findByIdWithMembers(PROJECT_ID)).thenReturn(Optional.of(project()));
+        when(projectMemberRepository.existsByProjectIdAndUserId(PROJECT_ID, MEMBER_ID)).thenReturn(true);
+        when(projectMapper.toResponse(org.mockito.ArgumentMatchers.any(Project.class)))
+                .thenReturn(ProjectResponse.builder().id(PROJECT_ID).ownerId(OWNER_ID).build());
+
+        ProjectResponse response = service.getWorkspaceProject(PROJECT_ID);
+
+        assertEquals(PROJECT_ID, response.getId());
+    }
+
+    @Test
+    void unrelatedUserCannotOpenWorkspace() {
+        authenticateAs(99L);
+        when(projectRepository.findByIdWithMembers(PROJECT_ID)).thenReturn(Optional.of(project()));
+        when(projectMemberRepository.existsByProjectIdAndUserId(PROJECT_ID, 99L)).thenReturn(false);
+
+        assertThrows(ForbiddenException.class, () -> service.getWorkspaceProject(PROJECT_ID));
     }
 
     private static Project project() {

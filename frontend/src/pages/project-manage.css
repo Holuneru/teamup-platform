@@ -188,3 +188,18 @@
     opacity: .6;
     cursor: wait;
 }
+
+.workspace-manage-button {
+    border: 1px solid #cbd9d0;
+    padding: 10px 16px;
+    border-radius: 7px;
+    background: #fff;
+    color: #315b46;
+    cursor: pointer;
+    font-weight: 600;
+    transition: .2s;
+}
+
+.workspace-manage-button:hover {
+    background: #f1f6f2;
+}

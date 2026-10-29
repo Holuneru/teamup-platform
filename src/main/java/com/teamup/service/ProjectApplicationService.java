@@ -149,6 +149,8 @@ public class ProjectApplicationService {
 
     public List<ProjectMemberResponse> getMembers(Long projectId) {
 
+                ensureProjectAccess(projectId);
+
         return projectMemberRepository.findByProjectId(projectId)
                 .stream()
                 .map(member -> {
@@ -193,6 +195,20 @@ public class ProjectApplicationService {
                 if (!project.getOwner().getId().equals(currentUserId())) {
                         throw new org.springframework.security.access.AccessDeniedException(
                                         "Только владелец проекта может управлять заявками"
+                        );
+                }
+        }
+
+        private void ensureProjectAccess(Long projectId) {
+                Project project = projectRepository.findByIdWithOwner(projectId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+                Long userId = currentUserId();
+                boolean isOwner = project.getOwner().getId().equals(userId);
+                boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+
+                if (!isOwner && !isMember) {
+                        throw new org.springframework.security.access.AccessDeniedException(
+                                        "Доступ к команде проекта разрешен только владельцу и участникам"
                         );
                 }
         }

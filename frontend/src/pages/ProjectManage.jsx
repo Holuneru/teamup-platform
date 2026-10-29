@@ -131,6 +131,15 @@ export default function ProjectManage() {
                     </div>
 
                     <button
+                        className="workspace-manage-button"
+                        onClick={() => navigate(`/projects/${id}/workspace`)}
+                    >
+
+                        Рабочее пространство
+
+                    </button>
+
+                    <button
                         className="accept-button"
                         onClick={() =>
                             navigate(`/projects/${id}/recommendations`)

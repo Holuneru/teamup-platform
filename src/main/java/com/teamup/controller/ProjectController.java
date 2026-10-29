@@ -61,6 +61,11 @@ public class ProjectController {
         return projectService.getById(id);
     }
 
+    @GetMapping("/{id}/workspace")
+    public ProjectResponse getWorkspaceProject(@PathVariable Long id) {
+        return projectService.getWorkspaceProject(id);
+    }
+
     @GetMapping("/participating")
     public List<ProjectResponse> getMyParticipatingProjects() {
 

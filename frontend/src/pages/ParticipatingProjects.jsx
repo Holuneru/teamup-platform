@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Layout from "../components/Layout";
@@ -13,14 +13,7 @@ export default function ParticipatingProjects() {
 
     const navigate = useNavigate();
 
-    useEffect(() => {
-
-        loadProjects();
-
-    }, []);
-
-    const loadProjects = () => {
-
+    const loadProjects = useCallback(() => {
         api.get("/projects/participating")
             .then(res => {
 
@@ -33,7 +26,11 @@ export default function ParticipatingProjects() {
 
             });
 
-    };
+    }, []);
+
+    useEffect(() => {
+        loadProjects();
+    }, [loadProjects]);
 
     const leaveProject = async (projectId) => {
 
@@ -155,13 +152,13 @@ export default function ParticipatingProjects() {
                             <div className="project-actions">
 
                                 <button
-                                    className="secondary-button"
+                                    className="primary-button"
                                     onClick={() =>
-                                        navigate(`/projects/${project.id}`)
+                                        navigate(`/projects/${project.id}/workspace`)
                                     }
                                 >
 
-                                    Open
+                                    Open workspace
 
                                 </button>
 

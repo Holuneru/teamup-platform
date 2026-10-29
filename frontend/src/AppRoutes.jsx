@@ -19,6 +19,7 @@ import CreateProject from "./pages/CreateProject";
 
 import ProjectApplications from "./pages/ProjectApplications";
 import ProjectManage from "./pages/ProjectManage";
+import ProjectWorkspace from "./pages/ProjectWorkspace";
 import ProjectRecommendations from "./pages/ProjectRecommendations";
 
 import Invitations from "./pages/Invitations";
@@ -126,6 +127,11 @@ export default function AppRoutes() {
                 <Route
                     path="/projects/:id/manage"
                     element={<ProjectManage />}
+                />
+
+                <Route
+                    path="/projects/:id/workspace"
+                    element={<ProjectWorkspace />}
                 />
 
                 <Route
