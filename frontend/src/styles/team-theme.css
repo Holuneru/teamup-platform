@@ -133,11 +133,14 @@ button:hover {
 }
 
 .sidebar {
-    position: static;
-    top: auto;
+    position: sticky;
+    top: 66px;
     align-self: flex-start;
-    min-height: 0;
-    height: auto;
+    min-height: calc(100vh - 66px);
+    height: calc(100vh - 66px);
+    max-height: calc(100vh - 66px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     flex: 0 0 230px;
     border-right: 1px solid var(--team-line);
     background: rgb(255 255 255 / 88%);
