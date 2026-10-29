@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowUpRight, ClipboardList, MessageCircle, Users } from "lucide-react";
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
+import ProjectDiscussion from "../components/ProjectDiscussion";
 import { useUser } from "../context/UserContext";
 import api from "../api/axios";
 import "./project-workspace.css";
@@ -105,7 +106,7 @@ export default function ProjectWorkspace() {
                                         >
                                             <Icon size={17} />
                                             {section.label}
-                                            {section.id !== "overview" && <span className="workspace-soon">Скоро</span>}
+                                            {section.id === "board" && <span className="workspace-soon">Скоро</span>}
                                         </button>
                                     );
                                 })}
@@ -132,7 +133,6 @@ export default function ProjectWorkspace() {
                                             <button onClick={() => setActiveSection("discussion")}>
                                                 <MessageCircle size={19} />
                                                 <span><strong>Обсуждение</strong><small>Общий чат команды</small></span>
-                                                <span className="workspace-soon">Скоро</span>
                                             </button>
                                             <button onClick={() => setActiveSection("board")}>
                                                 <ClipboardList size={19} />
@@ -163,6 +163,8 @@ export default function ProjectWorkspace() {
                                         </div>
                                     </section>
                                 </div>
+                            ) : activeSection === "discussion" ? (
+                                <ProjectDiscussion projectId={id} />
                             ) : (
                                 <section className="workspace-state workspace-coming-soon">
                                     <ActiveIcon size={30} />
