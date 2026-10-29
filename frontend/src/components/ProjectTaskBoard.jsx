@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { CalendarDays, Plus, Trash2 } from "lucide-react";
+import { CalendarDays, Maximize2, Plus, Trash2 } from "lucide-react";
 import { useUser } from "../context/UserContext";
 import api from "../api/axios";
 
@@ -29,6 +29,7 @@ export default function ProjectTaskBoard({ projectId, members }) {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
+    const [selectedTask, setSelectedTask] = useState(null);
     const [saving, setSaving] = useState(false);
     const [updatingTaskId, setUpdatingTaskId] = useState(null);
     const [deletingTaskId, setDeletingTaskId] = useState(null);
@@ -88,6 +89,7 @@ export default function ProjectTaskBoard({ projectId, members }) {
         try {
             await api.patch(`/projects/${projectId}/tasks/${task.id}/status`, { status });
             setTasks(current => current.map(item => item.id === task.id ? { ...item, status } : item));
+            setSelectedTask(current => current?.id === task.id ? { ...current, status } : current);
         } catch (requestError) {
             setError(requestError.response?.data?.message || "Не удалось обновить статус задачи.");
         } finally {
@@ -179,6 +181,12 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                                     {columns.map(status => <option key={status.id} value={status.id}>{status.title}</option>)}
                                                 </select>
                                             </label>
+                                            <button
+                                                className="task-details-button"
+                                                onClick={() => setSelectedTask(task)}
+                                            >
+                                                <Maximize2 size={13} /> Подробнее
+                                            </button>
                                         </article>
                                     ))}
                                     {columnTasks.length === 0 && <p className="task-column-empty">Пока пусто</p>}
@@ -251,6 +259,59 @@ export default function ProjectTaskBoard({ projectId, members }) {
                             </button>
                         </div>
                     </form>
+                </div>
+            )}
+
+            {selectedTask && (
+                <div className="task-modal-backdrop" onMouseDown={event => {
+                    if (event.target === event.currentTarget) setSelectedTask(null);
+                }}>
+                    <section className="task-modal task-detail-modal" role="dialog" aria-modal="true" aria-labelledby="task-detail-title">
+                        <div className="task-modal-heading">
+                            <div>
+                                <span className="workspace-kicker">ЗАДАЧА</span>
+                                <h2 id="task-detail-title">{selectedTask.title}</h2>
+                            </div>
+                            <button type="button" className="task-modal-close" onClick={() => setSelectedTask(null)} aria-label="Закрыть">×</button>
+                        </div>
+                        <div className="task-detail-meta">
+                            <span className={`task-priority priority-${selectedTask.priority.toLowerCase()}`}>
+                                {priorities.find(priority => priority.id === selectedTask.priority)?.label} приоритет
+                            </span>
+                            <span className="task-detail-status">{columns.find(column => column.id === selectedTask.status)?.title}</span>
+                        </div>
+                        <div className="task-detail-description">
+                            <span className="workspace-kicker">ОПИСАНИЕ</span>
+                            <p>{selectedTask.description || "Описание не добавлено."}</p>
+                        </div>
+                        <dl className="task-detail-fields">
+                            <div>
+                                <dt>Исполнитель</dt>
+                                <dd>{selectedTask.assignee
+                                    ? `${selectedTask.assignee.firstName} ${selectedTask.assignee.lastName}`
+                                    : "Не назначен"}</dd>
+                            </div>
+                            <div>
+                                <dt>Срок</dt>
+                                <dd>{selectedTask.dueDate
+                                    ? new Date(`${selectedTask.dueDate}T00:00:00`).toLocaleDateString()
+                                    : "Не указан"}</dd>
+                            </div>
+                        </dl>
+                        <label className="task-detail-status-control">
+                            Статус
+                            <select
+                                value={selectedTask.status}
+                                disabled={updatingTaskId === selectedTask.id}
+                                onChange={event => updateStatus(selectedTask, event.target.value)}
+                            >
+                                {columns.map(status => <option key={status.id} value={status.id}>{status.title}</option>)}
+                            </select>
+                        </label>
+                        <div className="task-modal-actions">
+                            <button type="button" className="task-cancel-button" onClick={() => setSelectedTask(null)}>Закрыть</button>
+                        </div>
+                    </section>
                 </div>
             )}
         </section>
