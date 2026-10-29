@@ -38,9 +38,6 @@ public class ProjectApplicationService {
     public ApplicationResponse apply(Long projectId, CreateApplicationRequest request) {
 
         Long userId = currentUserId();
-        if (request != null && request.getUserId() != null) {
-            userId = request.getUserId();
-        }
 
         Project project = projectRepository.findByIdWithOwner(projectId)
                 .orElseThrow(
@@ -76,6 +73,8 @@ public class ProjectApplicationService {
 
     public List<ApplicationResponse> getByProject(Long projectId) {
 
+                ensureProjectOwner(projectId);
+
         return repository.findByProjectIdAndStatus(
                         projectId,
                         ApplicationStatus.PENDING
@@ -93,6 +92,8 @@ public class ProjectApplicationService {
 
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
+
+        ensureProjectOwner(app.getProjectId());
 
         if (app.getStatus() != ApplicationStatus.PENDING) {
             throw new RuntimeException("Заявка уже обработана");
@@ -118,6 +119,8 @@ public class ProjectApplicationService {
 
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
+
+        ensureProjectOwner(app.getProjectId());
 
         if (app.getStatus() != ApplicationStatus.PENDING) {
             throw new RuntimeException("Заявка уже обработана");
@@ -164,6 +167,12 @@ public class ProjectApplicationService {
     public void delete(Long id) {
         ProjectApplication app = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена"));
+
+                Long userId = currentUserId();
+                if (!app.getUserId().equals(userId)) {
+                        ensureProjectOwner(app.getProjectId());
+                }
+
         repository.delete(app);
     }
 
@@ -172,6 +181,16 @@ public class ProjectApplicationService {
                 .getAuthentication()
                 .getPrincipal();
     }
+
+        private void ensureProjectOwner(Long projectId) {
+                Project project = projectRepository.findByIdWithOwner(projectId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Проект не найден"));
+                if (!project.getOwner().getId().equals(currentUserId())) {
+                        throw new org.springframework.security.access.AccessDeniedException(
+                                        "Только владелец проекта может управлять заявками"
+                        );
+                }
+        }
 
     // ===========================
     // MAPPER

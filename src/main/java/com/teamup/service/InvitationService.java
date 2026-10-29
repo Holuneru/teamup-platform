@@ -33,8 +33,16 @@ public class InvitationService {
 
     public InvitationResponse invite(Long projectId, Long userId) {
 
+                Long currentUserId = currentUserId();
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
+
+                if (!project.getOwner().getId().equals(currentUserId)) {
+                        throw new org.springframework.security.access.AccessDeniedException(
+                                        "Только владелец проекта может приглашать участников"
+                        );
+                }
 
         // Нельзя пригласить владельца проекта
         if (project.getOwner().getId().equals(userId)) {
@@ -90,6 +98,12 @@ public class InvitationService {
 
     public List<InvitationResponse> getMyInvitations(Long userId) {
 
+                if (!currentUserId().equals(userId)) {
+                        throw new org.springframework.security.access.AccessDeniedException(
+                                        "Нельзя просматривать приглашения другого пользователя"
+                        );
+                }
+
         return invitationRepository.findByUserIdAndStatus(
                         userId,
                         InvitationStatus.PENDING
@@ -107,6 +121,12 @@ public class InvitationService {
 
         ProjectInvitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
+
+        if (!invitation.getUserId().equals(currentUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Это приглашение адресовано другому пользователю"
+            );
+        }
 
         if (invitation.getStatus() != InvitationStatus.PENDING) {
             throw new RuntimeException("Invitation already processed");
@@ -135,6 +155,12 @@ public class InvitationService {
 
         ProjectInvitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
+
+        if (!invitation.getUserId().equals(currentUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Это приглашение адресовано другому пользователю"
+            );
+        }
 
         if (invitation.getStatus() != InvitationStatus.PENDING) {
             throw new RuntimeException("Invitation already processed");
@@ -216,4 +242,10 @@ public class InvitationService {
                 .toList();
 
     }
+
+        private Long currentUserId() {
+                return (Long) SecurityContextHolder.getContext()
+                                .getAuthentication()
+                                .getPrincipal();
+        }
 }
