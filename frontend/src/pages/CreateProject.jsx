@@ -112,7 +112,10 @@ export default function CreateProject() {
 
                 </label>
 
+                <div className="project-title-field">
+
                 <input
+                    maxLength={120}
                     value={form.title}
                     onChange={(e) =>
                         setForm({
@@ -121,6 +124,10 @@ export default function CreateProject() {
                         })
                     }
                 />
+
+                <span className="project-title-counter">{form.title.length}/120</span>
+
+                </div>
 
                 <label>
 

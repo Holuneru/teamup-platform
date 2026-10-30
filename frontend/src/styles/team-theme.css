@@ -328,6 +328,36 @@ button:hover {
     color: #315e42;
 }
 
+.project-hero-left,
+.project-card,
+.project-info,
+.preview-item > div {
+    min-width: 0;
+}
+
+.project-hero h1,
+.project-card h2,
+.project-info h2,
+.project-feed-card h2,
+.feed-top h2,
+.preview-item h3,
+.workspace-title-row h1 {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    hyphens: auto;
+}
+
+.project-hero h1 {
+    font-size: clamp(26px, 3vw, 40px);
+    line-height: 1.12;
+}
+
+.workspace-title-row h1 {
+    font-size: clamp(24px, 2.8vw, 30px);
+}
+
 @media (max-width: 900px) {
     .topbar { padding: 0 18px; }
 }

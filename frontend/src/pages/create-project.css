@@ -120,3 +120,20 @@
     background:#1d4ed8;
 
 }
+
+.project-title-field {
+    position: relative;
+}
+
+.project-title-field input {
+    padding-right: 64px;
+}
+
+.project-title-counter {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    color: #78867e;
+    font-size: 10px;
+    transform: translateY(-50%);
+}
