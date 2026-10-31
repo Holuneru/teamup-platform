@@ -139,7 +139,7 @@ export default function Register() {
                 </h3>
 
                 <p style={{ textAlign: "left", color: "#888", fontSize: "13px" }}>
-                    Опйционально
+                    Опционально
                 </p>
 
                 <textarea
