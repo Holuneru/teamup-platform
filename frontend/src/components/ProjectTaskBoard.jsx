@@ -47,6 +47,7 @@ export default function ProjectTaskBoard({ projectId, members }) {
         assignee: "ALL",
         priority: "ALL"
     });
+    const [draggedTaskId, setDraggedTaskId] = useState(null);
     const [error, setError] = useState("");
     const isOwner = members.some(member => member.role === "Владелец" && member.id === user?.id);
 
@@ -223,6 +224,30 @@ export default function ProjectTaskBoard({ projectId, members }) {
         priority: "ALL"
     });
 
+    const getDueDateState = dueDate => {
+        if (!dueDate) return "none";
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const target = new Date(`${dueDate}T00:00:00`);
+        const diffDays = Math.ceil((target.getTime() - today.getTime()) / 86400000);
+
+        if (diffDays < 0) return "overdue";
+        if (diffDays <= 2) return "soon";
+        return "normal";
+    };
+
+    const handleDropOnColumn = async (columnId) => {
+        if (!draggedTaskId) return;
+        const taskToMove = tasks.find(task => task.id === draggedTaskId);
+        if (!taskToMove || taskToMove.status === columnId) {
+            setDraggedTaskId(null);
+            return;
+        }
+
+        await updateStatus(taskToMove, columnId);
+        setDraggedTaskId(null);
+    };
+
     return (
         <section className="task-board" aria-label="Доска задач проекта">
             <header className="task-board-header">
@@ -284,63 +309,77 @@ export default function ProjectTaskBoard({ projectId, members }) {
                     {columns.map(column => {
                         const columnTasks = filteredTasks.filter(task => task.status === column.id);
                         return (
-                            <section className="task-column" key={column.id}>
+                            <section
+                                className="task-column"
+                                key={column.id}
+                                onDragOver={event => event.preventDefault()}
+                                onDrop={() => handleDropOnColumn(column.id)}
+                            >
                                 <header className="task-column-heading">
                                     <h3>{column.title}</h3>
                                     <span>{columnTasks.length}</span>
                                 </header>
                                 <div className="task-column-cards">
-                                    {columnTasks.map(task => (
-                                        <article className="task-card" key={task.id}>
-                                            <div className="task-card-topline">
-                                                <span className={`task-priority priority-${task.priority.toLowerCase()}`}>
-                                                    {priorities.find(priority => priority.id === task.priority)?.label}
-                                                </span>
-                                                {(isOwner || task.createdById === user?.id) && (
-                                                    <button
-                                                        className="task-delete-button"
-                                                        onClick={() => deleteTask(task)}
-                                                        disabled={deletingTaskId === task.id}
-                                                        aria-label={`Удалить задачу ${task.title}`}
-                                                        title="Удалить задачу"
-                                                    >
-                                                        <Trash2 size={15} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <h4>{task.title}</h4>
-                                            {task.description && <p className="task-card-description">{task.description}</p>}
-                                            <div className="task-card-meta">
-                                                {task.assignee ? (
-                                                    <span className="task-assignee">
-                                                        {task.assignee.firstName} {task.assignee.lastName}
-                                                    </span>
-                                                ) : <span className="task-unassigned">Без исполнителя</span>}
-                                                {task.dueDate && (
-                                                    <span className="task-due-date">
-                                                        <CalendarDays size={13} />
-                                                        {new Date(`${task.dueDate}T00:00:00`).toLocaleDateString()}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <label className="task-status-control">
-                                                <span>Статус</span>
-                                                <select
-                                                    value={task.status}
-                                                    disabled={updatingTaskId === task.id}
-                                                    onChange={event => updateStatus(task, event.target.value)}
-                                                >
-                                                    {columns.map(status => <option key={status.id} value={status.id}>{status.title}</option>)}
-                                                </select>
-                                            </label>
-                                            <button
-                                                className="task-details-button"
-                                                onClick={() => openTaskDetails(task)}
+                                    {columnTasks.map(task => {
+                                        const dueState = getDueDateState(task.dueDate);
+                                        return (
+                                            <article
+                                                className="task-card"
+                                                key={task.id}
+                                                draggable
+                                                onDragStart={() => setDraggedTaskId(task.id)}
+                                                onDragEnd={() => setDraggedTaskId(null)}
                                             >
-                                                <Maximize2 size={13} /> Подробнее
-                                            </button>
-                                        </article>
-                                    ))}
+                                                <div className="task-card-topline">
+                                                    <span className={`task-priority priority-${task.priority.toLowerCase()}`}>
+                                                        {priorities.find(priority => priority.id === task.priority)?.label}
+                                                    </span>
+                                                    {(isOwner || task.createdById === user?.id) && (
+                                                        <button
+                                                            className="task-delete-button"
+                                                            onClick={() => deleteTask(task)}
+                                                            disabled={deletingTaskId === task.id}
+                                                            aria-label={`Удалить задачу ${task.title}`}
+                                                            title="Удалить задачу"
+                                                        >
+                                                            <Trash2 size={15} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <h4>{task.title}</h4>
+                                                {task.description && <p className="task-card-description">{task.description}</p>}
+                                                <div className="task-card-meta">
+                                                    {task.assignee ? (
+                                                        <span className="task-assignee">
+                                                            {task.assignee.firstName} {task.assignee.lastName}
+                                                        </span>
+                                                    ) : <span className="task-unassigned">Без исполнителя</span>}
+                                                    {task.dueDate && (
+                                                        <span className={`task-due-date task-due-date-${dueState}`}>
+                                                            <CalendarDays size={13} />
+                                                            {new Date(`${task.dueDate}T00:00:00`).toLocaleDateString()}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <label className="task-status-control">
+                                                    <span>Статус</span>
+                                                    <select
+                                                        value={task.status}
+                                                        disabled={updatingTaskId === task.id}
+                                                        onChange={event => updateStatus(task, event.target.value)}
+                                                    >
+                                                        {columns.map(status => <option key={status.id} value={status.id}>{status.title}</option>)}
+                                                    </select>
+                                                </label>
+                                                <button
+                                                    className="task-details-button"
+                                                    onClick={() => openTaskDetails(task)}
+                                                >
+                                                    <Maximize2 size={13} /> Подробнее
+                                                </button>
+                                            </article>
+                                        );
+                                    })}
                                     {columnTasks.length === 0 && <p className="task-column-empty">Пока пусто</p>}
                                 </div>
                             </section>

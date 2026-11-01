@@ -659,6 +659,20 @@
     gap: 4px;
 }
 
+.task-due-date-soon {
+    color: #9b6a1c;
+    background: #fff5df;
+    padding: 3px 5px;
+    border-radius: 3px;
+}
+
+.task-due-date-overdue {
+    color: #9d3a2d;
+    background: #fdeae8;
+    padding: 3px 5px;
+    border-radius: 3px;
+}
+
 .task-unassigned { color: #98a29c; }
 
 .task-status-control {
