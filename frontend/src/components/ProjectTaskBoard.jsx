@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Maximize2, Plus, Trash2 } from "lucide-react";
 import { useUser } from "../context/UserContext";
 import { useFeedback } from "../context/FeedbackContext";
@@ -41,6 +41,12 @@ export default function ProjectTaskBoard({ projectId, members }) {
     const [comments, setComments] = useState([]);
     const [commentDraft, setCommentDraft] = useState("");
     const [commentSending, setCommentSending] = useState(false);
+    const [filters, setFilters] = useState({
+        search: "",
+        status: "ALL",
+        assignee: "ALL",
+        priority: "ALL"
+    });
     const [error, setError] = useState("");
     const isOwner = members.some(member => member.role === "Владелец" && member.id === user?.id);
 
@@ -194,6 +200,29 @@ export default function ProjectTaskBoard({ projectId, members }) {
         }
     };
 
+    const filteredTasks = useMemo(() => {
+        const searchText = filters.search.trim().toLowerCase();
+
+        return tasks.filter(task => {
+            const matchesSearch = !searchText || task.title.toLowerCase().includes(searchText);
+            const matchesStatus = filters.status === "ALL" || task.status === filters.status;
+            const matchesPriority = filters.priority === "ALL" || task.priority === filters.priority;
+            const matchesAssignee =
+                filters.assignee === "ALL" ||
+                (filters.assignee === "UNASSIGNED" && !task.assignee) ||
+                (task.assignee && String(task.assignee.id) === String(filters.assignee));
+
+            return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
+        });
+    }, [tasks, filters]);
+
+    const clearFilters = () => setFilters({
+        search: "",
+        status: "ALL",
+        assignee: "ALL",
+        priority: "ALL"
+    });
+
     return (
         <section className="task-board" aria-label="Доска задач проекта">
             <header className="task-board-header">
@@ -208,12 +237,52 @@ export default function ProjectTaskBoard({ projectId, members }) {
 
             {error && <p className="task-board-error" role="alert">{error}</p>}
 
+            {!loading && (
+                <div className="task-filters">
+                    <input
+                        className="task-filter-input"
+                        type="text"
+                        placeholder="Поиск по названию"
+                        value={filters.search}
+                        onChange={event => setFilters(current => ({ ...current, search: event.target.value }))}
+                    />
+                    <select
+                        className="task-filter-select"
+                        value={filters.status}
+                        onChange={event => setFilters(current => ({ ...current, status: event.target.value }))}
+                    >
+                        <option value="ALL">Все статусы</option>
+                        {columns.map(column => <option key={column.id} value={column.id}>{column.title}</option>)}
+                    </select>
+                    <select
+                        className="task-filter-select"
+                        value={filters.assignee}
+                        onChange={event => setFilters(current => ({ ...current, assignee: event.target.value }))}
+                    >
+                        <option value="ALL">Все исполнители</option>
+                        <option value="UNASSIGNED">Без исполнителя</option>
+                        {members.map(member => (
+                            <option key={member.id} value={member.id}>{member.firstName} {member.lastName}</option>
+                        ))}
+                    </select>
+                    <select
+                        className="task-filter-select"
+                        value={filters.priority}
+                        onChange={event => setFilters(current => ({ ...current, priority: event.target.value }))}
+                    >
+                        <option value="ALL">Все приоритеты</option>
+                        {priorities.map(priority => <option key={priority.id} value={priority.id}>{priority.label}</option>)}
+                    </select>
+                    <button type="button" className="task-filter-clear" onClick={clearFilters}>Сброс</button>
+                </div>
+            )}
+
             {loading ? (
                 <div className="task-board-loading">Загружаем доску...</div>
             ) : (
                 <div className="task-columns">
                     {columns.map(column => {
-                        const columnTasks = tasks.filter(task => task.status === column.id);
+                        const columnTasks = filteredTasks.filter(task => task.status === column.id);
                         return (
                             <section className="task-column" key={column.id}>
                                 <header className="task-column-heading">

@@ -445,6 +445,37 @@
     font-weight: 500;
 }
 
+.task-filters {
+    display: grid;
+    grid-template-columns: minmax(180px, 1.4fr) repeat(3, minmax(120px, 1fr)) auto;
+    gap: 8px;
+    margin: 0 0 14px;
+}
+
+.task-filter-input,
+.task-filter-select {
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid #d8e2dc;
+    border-radius: 5px;
+    background: #fff;
+    color: #2f4036;
+    font: inherit;
+    font-size: 12px;
+}
+
+.task-filter-clear {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid #d8e2dc;
+    border-radius: 5px;
+    background: #f4f8f5;
+    color: #41614f;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
 .task-create-button {
     display: inline-flex;
     align-items: center;
