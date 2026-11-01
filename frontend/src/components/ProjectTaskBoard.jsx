@@ -32,6 +32,8 @@ export default function ProjectTaskBoard({ projectId, members }) {
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [editingTask, setEditingTask] = useState(false);
+    const [taskDraft, setTaskDraft] = useState(initialForm);
     const [saving, setSaving] = useState(false);
     const [updatingTaskId, setUpdatingTaskId] = useState(null);
     const [deletingTaskId, setDeletingTaskId] = useState(null);
@@ -94,6 +96,49 @@ export default function ProjectTaskBoard({ projectId, members }) {
             setSelectedTask(current => current?.id === task.id ? { ...current, status } : current);
         } catch (requestError) {
             setError(requestError.response?.data?.message || "Не удалось обновить статус задачи.");
+        } finally {
+            setUpdatingTaskId(null);
+        }
+    };
+
+    const openTaskDetails = task => {
+        setSelectedTask(task);
+        setEditingTask(false);
+        setTaskDraft({
+            title: task.title,
+            description: task.description || "",
+            assigneeId: task.assignee?.id ? String(task.assignee.id) : "",
+            priority: task.priority,
+            dueDate: task.dueDate || ""
+        });
+    };
+
+    const saveTask = async () => {
+        if (!taskDraft?.title.trim() || updatingTaskId !== null) return;
+
+        setUpdatingTaskId(selectedTask.id);
+        setError("");
+        try {
+            const payload = {
+                title: taskDraft.title.trim(),
+                description: taskDraft.description.trim(),
+                assigneeId: taskDraft.assigneeId ? Number(taskDraft.assigneeId) : null,
+                priority: taskDraft.priority,
+                dueDate: taskDraft.dueDate || null
+            };
+            const response = await api.put(`/projects/${projectId}/tasks/${selectedTask.id}`, payload);
+            setTasks(current => current.map(item => item.id === selectedTask.id ? { ...item, ...response.data } : item));
+            setSelectedTask(current => current ? { ...current, ...response.data } : current);
+            setTaskDraft({
+                title: response.data.title,
+                description: response.data.description || "",
+                assigneeId: response.data.assignee?.id ? String(response.data.assignee.id) : "",
+                priority: response.data.priority,
+                dueDate: response.data.dueDate || ""
+            });
+            setEditingTask(false);
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Не удалось сохранить изменения задачи.");
         } finally {
             setUpdatingTaskId(null);
         }
@@ -188,7 +233,7 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                             </label>
                                             <button
                                                 className="task-details-button"
-                                                onClick={() => setSelectedTask(task)}
+                                                onClick={() => openTaskDetails(task)}
                                             >
                                                 <Maximize2 size={13} /> Подробнее
                                             </button>
@@ -279,43 +324,113 @@ export default function ProjectTaskBoard({ projectId, members }) {
                             </div>
                             <button type="button" className="task-modal-close" onClick={() => setSelectedTask(null)} aria-label="Закрыть">×</button>
                         </div>
-                        <div className="task-detail-meta">
-                            <span className={`task-priority priority-${selectedTask.priority.toLowerCase()}`}>
-                                {priorities.find(priority => priority.id === selectedTask.priority)?.label} приоритет
-                            </span>
-                            <span className="task-detail-status">{columns.find(column => column.id === selectedTask.status)?.title}</span>
-                        </div>
-                        <div className="task-detail-description">
-                            <span className="workspace-kicker">ОПИСАНИЕ</span>
-                            <p>{selectedTask.description || "Описание не добавлено."}</p>
-                        </div>
-                        <dl className="task-detail-fields">
-                            <div>
-                                <dt>Исполнитель</dt>
-                                <dd>{selectedTask.assignee
-                                    ? `${selectedTask.assignee.firstName} ${selectedTask.assignee.lastName}`
-                                    : "Не назначен"}</dd>
-                            </div>
-                            <div>
-                                <dt>Срок</dt>
-                                <dd>{selectedTask.dueDate
-                                    ? new Date(`${selectedTask.dueDate}T00:00:00`).toLocaleDateString()
-                                    : "Не указан"}</dd>
-                            </div>
-                        </dl>
-                        <label className="task-detail-status-control">
-                            Статус
-                            <select
-                                value={selectedTask.status}
-                                disabled={updatingTaskId === selectedTask.id}
-                                onChange={event => updateStatus(selectedTask, event.target.value)}
-                            >
-                                {columns.map(status => <option key={status.id} value={status.id}>{status.title}</option>)}
-                            </select>
-                        </label>
-                        <div className="task-modal-actions">
-                            <button type="button" className="task-cancel-button" onClick={() => setSelectedTask(null)}>Закрыть</button>
-                        </div>
+                        {editingTask ? (
+                            <>
+                                <label>
+                                    Название
+                                    <input
+                                        value={taskDraft.title}
+                                        maxLength={140}
+                                        onChange={event => setTaskDraft(current => ({ ...current, title: event.target.value }))}
+                                    />
+                                </label>
+                                <label>
+                                    Описание
+                                    <textarea
+                                        value={taskDraft.description}
+                                        maxLength={2000}
+                                        onChange={event => setTaskDraft(current => ({ ...current, description: event.target.value }))}
+                                    />
+                                </label>
+                                <div className="task-form-grid">
+                                    <label>
+                                        Исполнитель
+                                        <select
+                                            value={taskDraft.assigneeId}
+                                            onChange={event => setTaskDraft(current => ({ ...current, assigneeId: event.target.value }))}
+                                        >
+                                            <option value="">Не назначен</option>
+                                            {members.map(member => (
+                                                <option key={member.id} value={member.id}>{member.firstName} {member.lastName}</option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                    <label>
+                                        Приоритет
+                                        <select
+                                            value={taskDraft.priority}
+                                            onChange={event => setTaskDraft(current => ({ ...current, priority: event.target.value }))}
+                                        >
+                                            {priorities.map(priority => <option key={priority.id} value={priority.id}>{priority.label}</option>)}
+                                        </select>
+                                    </label>
+                                </div>
+                                <label>
+                                    Срок
+                                    <input
+                                        type="date"
+                                        value={taskDraft.dueDate}
+                                        onChange={event => setTaskDraft(current => ({ ...current, dueDate: event.target.value }))}
+                                    />
+                                </label>
+                                <div className="task-modal-actions">
+                                    <button type="button" className="task-cancel-button" onClick={() => {
+                                        setEditingTask(false);
+                                        setTaskDraft({
+                                            title: selectedTask.title,
+                                            description: selectedTask.description || "",
+                                            assigneeId: selectedTask.assignee?.id ? String(selectedTask.assignee.id) : "",
+                                            priority: selectedTask.priority,
+                                            dueDate: selectedTask.dueDate || ""
+                                        });
+                                    }} disabled={updatingTaskId === selectedTask.id}>Отмена</button>
+                                    <button type="button" className="task-create-button" onClick={saveTask} disabled={!taskDraft.title.trim() || updatingTaskId === selectedTask.id}>
+                                        {updatingTaskId === selectedTask.id ? "Сохраняем..." : "Сохранить"}
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="task-detail-meta">
+                                    <span className={`task-priority priority-${selectedTask.priority.toLowerCase()}`}>
+                                        {priorities.find(priority => priority.id === selectedTask.priority)?.label} приоритет
+                                    </span>
+                                    <span className="task-detail-status">{columns.find(column => column.id === selectedTask.status)?.title}</span>
+                                </div>
+                                <div className="task-detail-description">
+                                    <span className="workspace-kicker">ОПИСАНИЕ</span>
+                                    <p>{selectedTask.description || "Описание не добавлено."}</p>
+                                </div>
+                                <dl className="task-detail-fields">
+                                    <div>
+                                        <dt>Исполнитель</dt>
+                                        <dd>{selectedTask.assignee
+                                            ? `${selectedTask.assignee.firstName} ${selectedTask.assignee.lastName}`
+                                            : "Не назначен"}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Срок</dt>
+                                        <dd>{selectedTask.dueDate
+                                            ? new Date(`${selectedTask.dueDate}T00:00:00`).toLocaleDateString()
+                                            : "Не указан"}</dd>
+                                    </div>
+                                </dl>
+                                <label className="task-detail-status-control">
+                                    Статус
+                                    <select
+                                        value={selectedTask.status}
+                                        disabled={updatingTaskId === selectedTask.id}
+                                        onChange={event => updateStatus(selectedTask, event.target.value)}
+                                    >
+                                        {columns.map(status => <option key={status.id} value={status.id}>{status.title}</option>)}
+                                    </select>
+                                </label>
+                                <div className="task-modal-actions">
+                                    <button type="button" className="task-cancel-button" onClick={() => setEditingTask(true)}>Редактировать</button>
+                                    <button type="button" className="task-create-button" onClick={() => setSelectedTask(null)}>Закрыть</button>
+                                </div>
+                            </>
+                        )}
                     </section>
                 </div>
             )}

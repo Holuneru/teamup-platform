@@ -1,6 +1,7 @@
 package com.teamup.service;
 
 import com.teamup.dto.request.CreateProjectTaskRequest;
+import com.teamup.dto.request.UpdateProjectTaskRequest;
 import com.teamup.dto.request.UpdateProjectTaskStatusRequest;
 import com.teamup.entity.Project;
 import com.teamup.entity.ProjectMember;
@@ -119,6 +120,27 @@ class ProjectTaskServiceTest {
 
         assertEquals(ProjectTaskStatus.IN_PROGRESS, response.getStatus());
         verify(taskRepository).save(task);
+    }
+
+    @Test
+    void memberCanEditTaskFields() {
+        when(memberRepository.existsByProjectIdAndUserId(PROJECT_ID, MEMBER_ID)).thenReturn(true);
+        when(memberRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of(member(MEMBER_ID)));
+        ProjectTask task = task();
+        when(taskRepository.findByIdAndProjectId(TASK_ID, PROJECT_ID)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(task);
+        when(userRepository.findById(MEMBER_ID)).thenReturn(Optional.of(user(MEMBER_ID)));
+
+        UpdateProjectTaskRequest request = new UpdateProjectTaskRequest();
+        request.setTitle("  New title  ");
+        request.setDescription("Detailed plan");
+        request.setAssigneeId(MEMBER_ID);
+
+        var response = service.updateTask(PROJECT_ID, TASK_ID, request);
+
+        assertEquals("New title", response.getTitle());
+        assertEquals("Detailed plan", response.getDescription());
+        assertEquals(MEMBER_ID, response.getAssignee().getId());
     }
 
     @Test

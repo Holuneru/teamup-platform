@@ -1,6 +1,7 @@
 package com.teamup.service;
 
 import com.teamup.dto.request.CreateProjectTaskRequest;
+import com.teamup.dto.request.UpdateProjectTaskRequest;
 import com.teamup.dto.request.UpdateProjectTaskStatusRequest;
 import com.teamup.dto.response.ProjectTaskResponse;
 import com.teamup.dto.response.UserShortResponse;
@@ -80,6 +81,27 @@ public class ProjectTaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Задача не найдена"));
         task.setStatus(request.getStatus());
         return toResponse(taskRepository.save(task), getActiveMemberIds(projectId, project.getOwner().getId()));
+    }
+
+    @Transactional
+    public ProjectTaskResponse updateTask(Long projectId, Long taskId, UpdateProjectTaskRequest request) {
+        Project project = getAccessibleProject(projectId);
+        ProjectTask task = taskRepository.findByIdAndProjectId(taskId, projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Задача не найдена"));
+
+        Long assigneeId = request.getAssigneeId();
+        Set<Long> activeMemberIds = getActiveMemberIds(projectId, project.getOwner().getId());
+        if (assigneeId != null && !activeMemberIds.contains(assigneeId)) {
+            throw new ForbiddenException("Назначить задачу можно только участнику проекта");
+        }
+
+        task.setTitle(request.getTitle().trim());
+        task.setDescription(request.getDescription() == null ? null : request.getDescription().trim());
+        task.setAssigneeId(assigneeId);
+        task.setPriority(request.getPriority() == null ? task.getPriority() : request.getPriority());
+        task.setDueDate(request.getDueDate());
+
+        return toResponse(taskRepository.save(task), activeMemberIds);
     }
 
     @Transactional

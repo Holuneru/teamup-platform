@@ -1,6 +1,7 @@
 package com.teamup.controller;
 
 import com.teamup.dto.request.CreateProjectTaskRequest;
+import com.teamup.dto.request.UpdateProjectTaskRequest;
 import com.teamup.dto.request.UpdateProjectTaskStatusRequest;
 import com.teamup.dto.response.ProjectTaskResponse;
 import com.teamup.service.ProjectTaskService;
@@ -30,6 +31,15 @@ public class ProjectTaskController {
             @Valid @RequestBody CreateProjectTaskRequest request
     ) {
         return taskService.createTask(projectId, request);
+    }
+
+    @PutMapping("/{taskId}")
+    public ProjectTaskResponse updateTask(
+            @PathVariable Long projectId,
+            @PathVariable Long taskId,
+            @Valid @RequestBody UpdateProjectTaskRequest request
+    ) {
+        return taskService.updateTask(projectId, taskId, request);
     }
 
     @PatchMapping("/{taskId}/status")
