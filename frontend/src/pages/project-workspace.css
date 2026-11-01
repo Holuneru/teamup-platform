@@ -799,6 +799,82 @@
     font: inherit;
 }
 
+.task-comments-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #edf1ee;
+}
+
+.task-comments-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: #51625c;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.task-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.task-comment {
+    padding: 10px 12px;
+    border: 1px solid #e3e9e5;
+    border-radius: 6px;
+    background: #f7faf8;
+}
+
+.task-comment-user {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: #2d4036;
+    font-size: 11px;
+}
+
+.task-comment-user time {
+    color: #7b8a82;
+    font-size: 10px;
+}
+
+.task-comment p {
+    margin: 7px 0 0;
+    color: #425a4c;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.task-comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.task-comment-form textarea {
+    min-height: 72px;
+    resize: vertical;
+}
+
+.task-comments-empty {
+    margin: 0;
+    color: #7c887f;
+    font-size: 12px;
+}
+
 .task-cancel-button {
     min-height: 38px;
     padding: 0 13px;

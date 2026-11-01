@@ -1,9 +1,11 @@
 package com.teamup.controller;
 
 import com.teamup.dto.request.CreateProjectTaskRequest;
+import com.teamup.dto.request.CreateTaskCommentRequest;
 import com.teamup.dto.request.UpdateProjectTaskRequest;
 import com.teamup.dto.request.UpdateProjectTaskStatusRequest;
 import com.teamup.dto.response.ProjectTaskResponse;
+import com.teamup.dto.response.TaskCommentResponse;
 import com.teamup.service.ProjectTaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,24 @@ public class ProjectTaskController {
             @Valid @RequestBody UpdateProjectTaskRequest request
     ) {
         return taskService.updateTask(projectId, taskId, request);
+    }
+
+    @GetMapping("/{taskId}/comments")
+    public List<TaskCommentResponse> getComments(
+            @PathVariable Long projectId,
+            @PathVariable Long taskId
+    ) {
+        return taskService.getComments(projectId, taskId);
+    }
+
+    @PostMapping("/{taskId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TaskCommentResponse addComment(
+            @PathVariable Long projectId,
+            @PathVariable Long taskId,
+            @Valid @RequestBody CreateTaskCommentRequest request
+    ) {
+        return taskService.addComment(projectId, taskId, request);
     }
 
     @PatchMapping("/{taskId}/status")

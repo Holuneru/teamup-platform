@@ -1,6 +1,7 @@
 package com.teamup.service;
 
 import com.teamup.dto.request.CreateProjectTaskRequest;
+import com.teamup.dto.request.CreateTaskCommentRequest;
 import com.teamup.dto.request.UpdateProjectTaskRequest;
 import com.teamup.dto.request.UpdateProjectTaskStatusRequest;
 import com.teamup.entity.Project;
@@ -12,6 +13,7 @@ import com.teamup.exception.ForbiddenException;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
 import com.teamup.repository.ProjectTaskRepository;
+import com.teamup.repository.TaskCommentRepository;
 import com.teamup.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +46,8 @@ class ProjectTaskServiceTest {
 
     @Mock
     private ProjectTaskRepository taskRepository;
+    @Mock
+    private TaskCommentRepository commentRepository;
     @Mock
     private ProjectRepository projectRepository;
     @Mock
@@ -141,6 +145,29 @@ class ProjectTaskServiceTest {
         assertEquals("New title", response.getTitle());
         assertEquals("Detailed plan", response.getDescription());
         assertEquals(MEMBER_ID, response.getAssignee().getId());
+    }
+
+    @Test
+    void memberCanAddCommentToTask() {
+        when(memberRepository.existsByProjectIdAndUserId(PROJECT_ID, MEMBER_ID)).thenReturn(true);
+        ProjectTask task = task();
+        when(taskRepository.findByIdAndProjectId(TASK_ID, PROJECT_ID)).thenReturn(Optional.of(task));
+        when(userRepository.findById(MEMBER_ID)).thenReturn(Optional.of(user(MEMBER_ID)));
+        when(commentRepository.save(any())).thenAnswer(invocation -> {
+            var comment = invocation.getArgument(0);
+            var field = comment.getClass().getDeclaredField("id");
+            field.setAccessible(true);
+            field.set(comment, 77L);
+            return comment;
+        });
+
+        CreateTaskCommentRequest request = new CreateTaskCommentRequest();
+        request.setContent("  Need review  ");
+
+        var response = service.addComment(PROJECT_ID, TASK_ID, request);
+
+        assertEquals("Need review", response.getContent());
+        assertEquals(MEMBER_ID, response.getAuthor().getId());
     }
 
     @Test

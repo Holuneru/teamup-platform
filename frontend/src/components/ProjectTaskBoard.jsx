@@ -38,6 +38,9 @@ export default function ProjectTaskBoard({ projectId, members }) {
     const [updatingTaskId, setUpdatingTaskId] = useState(null);
     const [deletingTaskId, setDeletingTaskId] = useState(null);
     const [form, setForm] = useState(initialForm);
+    const [comments, setComments] = useState([]);
+    const [commentDraft, setCommentDraft] = useState("");
+    const [commentSending, setCommentSending] = useState(false);
     const [error, setError] = useState("");
     const isOwner = members.some(member => member.role === "Владелец" && member.id === user?.id);
 
@@ -101,7 +104,17 @@ export default function ProjectTaskBoard({ projectId, members }) {
         }
     };
 
-    const openTaskDetails = task => {
+    const loadComments = useCallback(async taskId => {
+        if (!taskId) return;
+        try {
+            const response = await api.get(`/projects/${projectId}/tasks/${taskId}/comments`);
+            setComments(response.data);
+        } catch (requestError) {
+            setComments([]);
+        }
+    }, [projectId]);
+
+    const openTaskDetails = async task => {
         setSelectedTask(task);
         setEditingTask(false);
         setTaskDraft({
@@ -111,6 +124,9 @@ export default function ProjectTaskBoard({ projectId, members }) {
             priority: task.priority,
             dueDate: task.dueDate || ""
         });
+        setCommentDraft("");
+        setComments([]);
+        await loadComments(task.id);
     };
 
     const saveTask = async () => {
@@ -158,6 +174,23 @@ export default function ProjectTaskBoard({ projectId, members }) {
             setError(requestError.response?.data?.message || "Не удалось удалить задачу.");
         } finally {
             setDeletingTaskId(null);
+        }
+    };
+
+    const addComment = async () => {
+        const content = commentDraft.trim();
+        if (!selectedTask || !content || commentSending) return;
+
+        setCommentSending(true);
+        setError("");
+        try {
+            const response = await api.post(`/projects/${projectId}/tasks/${selectedTask.id}/comments`, { content });
+            setComments(current => [...current, response.data]);
+            setCommentDraft("");
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Не удалось отправить комментарий.");
+        } finally {
+            setCommentSending(false);
         }
     };
 
@@ -425,6 +458,37 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                         {columns.map(status => <option key={status.id} value={status.id}>{status.title}</option>)}
                                     </select>
                                 </label>
+                                <div className="task-comments-block">
+                                    <div className="task-comments-header">
+                                        <span className="workspace-kicker">КОММЕНТАРИИ</span>
+                                        <span>{comments.length}</span>
+                                    </div>
+                                    <div className="task-comments-list">
+                                        {comments.length === 0 ? (
+                                            <p className="task-comments-empty">Пока комментариев нет.</p>
+                                        ) : comments.map(comment => (
+                                            <div className="task-comment" key={comment.id}>
+                                                <div className="task-comment-user">
+                                                    <strong>{comment.author?.firstName || "Участник"} {comment.author?.lastName || ""}</strong>
+                                                    <time>{new Date(comment.createdAt).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</time>
+                                                </div>
+                                                <p>{comment.content}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="task-comment-form">
+                                        <textarea
+                                            value={commentDraft}
+                                            rows={3}
+                                            maxLength={2000}
+                                            placeholder="Добавьте комментарий..."
+                                            onChange={event => setCommentDraft(event.target.value)}
+                                        />
+                                        <button type="button" className="task-create-button" onClick={addComment} disabled={!commentDraft.trim() || commentSending}>
+                                            {commentSending ? "Отправляем..." : "Отправить"}
+                                        </button>
+                                    </div>
+                                </div>
                                 <div className="task-modal-actions">
                                     <button type="button" className="task-cancel-button" onClick={() => setEditingTask(true)}>Редактировать</button>
                                     <button type="button" className="task-create-button" onClick={() => setSelectedTask(null)}>Закрыть</button>
