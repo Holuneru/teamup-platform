@@ -566,12 +566,12 @@ Frontend построен на React и разделён на страницы, 
 
 | Технология | Версия / назначение |
 |---|---|
-| React | \`^18.2.0\` в \`package.json\` |
-| React DOM | \`^18.2.0\` в \`package.json\` |
-| Vite | \`^8.1.1\` в \`package.json\` |
-| React Router DOM | \`^6.22.0\` в \`package.json\` |
-| Axios | \`^1.6.0\` в \`package.json\` |
-| Lucide React | \`^1.23.0\` в \`package.json\`, иконки |
+| React | `^18.2.0` в `package.json` |
+| React DOM | `^18.2.0` в `package.json` |
+| Vite | `^8.1.1` в `package.json` |
+| React Router DOM | `^6.22.0` в `package.json` |
+| Axios | `^1.6.0` в `package.json` |
+| Lucide React | `^1.23.0` в `package.json`, иконки |
 | Context API | Общее состояние frontend |
 | CSS | Стили интерфейса |
 
