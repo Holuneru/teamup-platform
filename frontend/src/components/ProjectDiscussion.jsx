@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUp, MessageCircle } from "lucide-react";
+import { AtSign, ArrowUp, MessageCircle } from "lucide-react";
 import UserAvatar from "./UserAvatar";
 import { useUser } from "../context/UserContext";
 import api from "../api/axios";
 
-export default function ProjectDiscussion({ projectId }) {
+export default function ProjectDiscussion({ projectId, members }) {
     const { user } = useUser();
     const [messages, setMessages] = useState([]);
     const [draft, setDraft] = useState("");
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState("");
+    const [mentionPickerOpen, setMentionPickerOpen] = useState(false);
+    const [mentionedMembers, setMentionedMembers] = useState([]);
     const endRef = useRef(null);
 
     const loadMessages = useCallback(async () => {
@@ -46,14 +48,29 @@ export default function ProjectDiscussion({ projectId }) {
         setSending(true);
         setError("");
         try {
-            await api.post(`/projects/${projectId}/messages`, { content });
+            await api.post(`/projects/${projectId}/messages`, {
+                content,
+                mentionedUserIds: mentionedMembers.map(member => member.id)
+            });
             setDraft("");
+            setMentionedMembers([]);
+            setMentionPickerOpen(false);
+            setMentionPickerOpen(false);
             await loadMessages();
         } catch (requestError) {
             setError(requestError.response?.data?.message || "Не удалось отправить сообщение.");
         } finally {
             setSending(false);
         }
+    };
+
+    const addMention = member => {
+        const token = `@${member.firstName} ${member.lastName}`;
+        setDraft(current => `${current.trimEnd()}${current.trim() ? " " : ""}${token} `);
+        setMentionedMembers(current => current.some(item => item.id === member.id)
+            ? current
+            : [...current, { id: member.id, token }]);
+        setMentionPickerOpen(false);
     };
 
     return (
@@ -104,7 +121,11 @@ export default function ProjectDiscussion({ projectId }) {
             <form className="project-chat-composer" onSubmit={sendMessage}>
                 <textarea
                     value={draft}
-                    onChange={event => setDraft(event.target.value)}
+                    onChange={event => {
+                        const nextDraft = event.target.value;
+                        setDraft(nextDraft);
+                        setMentionedMembers(current => current.filter(member => nextDraft.includes(member.token)));
+                    }}
                     onKeyDown={event => {
                         if (event.key === "Enter" && !event.shiftKey) {
                             event.preventDefault();
@@ -115,6 +136,31 @@ export default function ProjectDiscussion({ projectId }) {
                     placeholder="Напишите сообщение команде..."
                     aria-label="Сообщение команде"
                 />
+                <div className="project-chat-mention-control">
+                    <button
+                        type="button"
+                        className="project-chat-mention-button"
+                        aria-label="Упомянуть участника"
+                        aria-expanded={mentionPickerOpen}
+                        onClick={() => setMentionPickerOpen(open => !open)}
+                    >
+                        <AtSign size={17} />
+                    </button>
+                    {mentionPickerOpen && (
+                        <div className="project-chat-mention-menu" role="listbox" aria-label="Участники проекта">
+                            {members.filter(member => member.id !== user?.id).map(member => (
+                                <button type="button" key={member.id} onClick={() => addMention(member)}>
+                                    <UserAvatar user={member} size={30} showName={false} />
+                                    <span>{member.firstName} {member.lastName}</span>
+                                    {member.role === "Владелец" && <small>Владелец</small>}
+                                </button>
+                            ))}
+                            {members.filter(member => member.id !== user?.id).length === 0 && (
+                                <p>Других участников пока нет.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
                 <button type="submit" disabled={!draft.trim() || sending} title="Отправить сообщение">
                     <ArrowUp size={18} />
                 </button>

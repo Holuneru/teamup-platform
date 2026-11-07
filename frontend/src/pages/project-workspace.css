@@ -420,6 +420,62 @@
 
 .project-chat-composer button:disabled { opacity: .45; cursor: default; }
 
+.project-chat-mention-control {
+    position: relative;
+    flex: 0 0 42px;
+}
+
+.project-chat-composer .project-chat-mention-button {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #d5dfda;
+    background: #fff;
+    color: #426650;
+}
+
+.project-chat-composer .project-chat-mention-button:hover,
+.project-chat-composer .project-chat-mention-button[aria-expanded="true"] {
+    background: #edf4ee;
+}
+
+.project-chat-mention-menu {
+    position: absolute;
+    z-index: 20;
+    bottom: calc(100% + 8px);
+    left: 0;
+    width: 250px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 5px;
+    border: 1px solid #dce5de;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 8px 26px rgb(27 55 38 / 14%);
+}
+
+.project-chat-composer .project-chat-mention-menu button {
+    display: flex;
+    width: 100%;
+    height: 42px;
+    justify-content: flex-start;
+    gap: 9px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background: #fff;
+    color: #283b30;
+    font: inherit;
+    font-size: 11px;
+    text-align: left;
+}
+
+.project-chat-composer .project-chat-mention-menu button:hover {
+    background: #f0f5f0;
+}
+
+.project-chat-mention-menu button span { flex: 1; }
+.project-chat-mention-menu button small { color: #718078; font-size: 9px; }
+.project-chat-mention-menu p { margin: 8px; color: #77847c; font-size: 11px; }
+
 .task-board {
     margin: 20px 0 42px;
 }

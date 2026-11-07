@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { CalendarDays, Maximize2, Plus, Trash2 } from "lucide-react";
 import { useUser } from "../context/UserContext";
 import { useFeedback } from "../context/FeedbackContext";
@@ -28,6 +29,9 @@ const initialForm = {
 export default function ProjectTaskBoard({ projectId, members }) {
     const { user } = useUser();
     const { confirm } = useFeedback();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const notificationTaskId = searchParams.get("taskId");
+
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
@@ -49,7 +53,11 @@ export default function ProjectTaskBoard({ projectId, members }) {
     });
     const [draggedTaskId, setDraggedTaskId] = useState(null);
     const [error, setError] = useState("");
-    const isOwner = members.some(member => member.role === "Владелец" && member.id === user?.id);
+    const openedNotificationTaskId = useRef(null);
+
+    const isOwner = members.some(
+        member => member.role === "Владелец" && member.id === user?.id
+    );
 
     const loadTasks = useCallback(async () => {
         try {
@@ -102,8 +110,12 @@ export default function ProjectTaskBoard({ projectId, members }) {
         setError("");
         try {
             await api.patch(`/projects/${projectId}/tasks/${task.id}/status`, { status });
-            setTasks(current => current.map(item => item.id === task.id ? { ...item, status } : item));
-            setSelectedTask(current => current?.id === task.id ? { ...current, status } : current);
+            setTasks(current =>
+                current.map(item => (item.id === task.id ? { ...item, status } : item))
+            );
+            setSelectedTask(current =>
+                current?.id === task.id ? { ...current, status } : current
+            );
         } catch (requestError) {
             setError(requestError.response?.data?.message || "Не удалось обновить статус задачи.");
         } finally {
@@ -114,14 +126,16 @@ export default function ProjectTaskBoard({ projectId, members }) {
     const loadComments = useCallback(async taskId => {
         if (!taskId) return;
         try {
-            const response = await api.get(`/projects/${projectId}/tasks/${taskId}/comments`);
+            const response = await api.get(
+                `/projects/${projectId}/tasks/${taskId}/comments`
+            );
             setComments(response.data);
-        } catch (requestError) {
+        } catch {
             setComments([]);
         }
     }, [projectId]);
 
-    const openTaskDetails = async task => {
+    const openTaskDetails = useCallback(async task => {
         setSelectedTask(task);
         setEditingTask(false);
         setTaskDraft({
@@ -134,10 +148,32 @@ export default function ProjectTaskBoard({ projectId, members }) {
         setCommentDraft("");
         setComments([]);
         await loadComments(task.id);
-    };
+    }, [loadComments]);
+
+    useEffect(() => {
+        if (!notificationTaskId || loading) return undefined;
+        if (openedNotificationTaskId.current === notificationTaskId) return undefined;
+
+        const task = tasks.find(item => String(item.id) === notificationTaskId);
+        if (!task) return undefined;
+
+        openedNotificationTaskId.current = notificationTaskId;
+        const timer = window.setTimeout(() => openTaskDetails(task), 0);
+        return () => window.clearTimeout(timer);
+    }, [notificationTaskId, loading, tasks, openTaskDetails]);
+
+    const closeTaskDetails = useCallback(() => {
+        setSelectedTask(null);
+        setEditingTask(false);
+        setSearchParams(previous => {
+            const next = new URLSearchParams(previous);
+            next.delete("taskId");
+            return next;
+        }, { replace: true });
+    }, [setSearchParams]);
 
     const saveTask = async () => {
-        if (!taskDraft?.title.trim() || updatingTaskId !== null) return;
+        if (!taskDraft?.title.trim() || updatingTaskId !== null || !selectedTask) return;
 
         setUpdatingTaskId(selectedTask.id);
         setError("");
@@ -149,9 +185,16 @@ export default function ProjectTaskBoard({ projectId, members }) {
                 priority: taskDraft.priority,
                 dueDate: taskDraft.dueDate || null
             };
-            const response = await api.put(`/projects/${projectId}/tasks/${selectedTask.id}`, payload);
-            setTasks(current => current.map(item => item.id === selectedTask.id ? { ...item, ...response.data } : item));
-            setSelectedTask(current => current ? { ...current, ...response.data } : current);
+            const response = await api.put(
+                `/projects/${projectId}/tasks/${selectedTask.id}`,
+                payload
+            );
+            setTasks(current =>
+                current.map(item =>
+                    item.id === selectedTask.id ? { ...item, ...response.data } : item
+                )
+            );
+            setSelectedTask(current => (current ? { ...current, ...response.data } : current));
             setTaskDraft({
                 title: response.data.title,
                 description: response.data.description || "",
@@ -168,15 +211,20 @@ export default function ProjectTaskBoard({ projectId, members }) {
     };
 
     const deleteTask = async task => {
-        if (!await confirm(`Задача «${task.title}» и ее данные будут удалены.`, {
+        const confirmed = await confirm(`Задача «${task.title}» и ее данные будут удалены.`, {
             title: "Удалить задачу?",
             confirmLabel: "Удалить"
-        })) return;
+        });
+        if (!confirmed) return;
+
         setDeletingTaskId(task.id);
         setError("");
         try {
             await api.delete(`/projects/${projectId}/tasks/${task.id}`);
             setTasks(current => current.filter(item => item.id !== task.id));
+            if (selectedTask?.id === task.id) {
+                closeTaskDetails();
+            }
         } catch (requestError) {
             setError(requestError.response?.data?.message || "Не удалось удалить задачу.");
         } finally {
@@ -191,7 +239,10 @@ export default function ProjectTaskBoard({ projectId, members }) {
         setCommentSending(true);
         setError("");
         try {
-            const response = await api.post(`/projects/${projectId}/tasks/${selectedTask.id}/comments`, { content });
+            const response = await api.post(
+                `/projects/${projectId}/tasks/${selectedTask.id}/comments`,
+                { content }
+            );
             setComments(current => [...current, response.data]);
             setCommentDraft("");
         } catch (requestError) {
@@ -236,7 +287,7 @@ export default function ProjectTaskBoard({ projectId, members }) {
         return "normal";
     };
 
-    const handleDropOnColumn = async (columnId) => {
+    const handleDropOnColumn = async columnId => {
         if (!draggedTaskId) return;
         const taskToMove = tasks.find(task => task.id === draggedTaskId);
         if (!taskToMove || taskToMove.status === columnId) {
@@ -277,7 +328,9 @@ export default function ProjectTaskBoard({ projectId, members }) {
                         onChange={event => setFilters(current => ({ ...current, status: event.target.value }))}
                     >
                         <option value="ALL">Все статусы</option>
-                        {columns.map(column => <option key={column.id} value={column.id}>{column.title}</option>)}
+                        {columns.map(column => (
+                            <option key={column.id} value={column.id}>{column.title}</option>
+                        ))}
                     </select>
                     <select
                         className="task-filter-select"
@@ -287,7 +340,9 @@ export default function ProjectTaskBoard({ projectId, members }) {
                         <option value="ALL">Все исполнители</option>
                         <option value="UNASSIGNED">Без исполнителя</option>
                         {members.map(member => (
-                            <option key={member.id} value={member.id}>{member.firstName} {member.lastName}</option>
+                            <option key={member.id} value={member.id}>
+                                {member.firstName} {member.lastName}
+                            </option>
                         ))}
                     </select>
                     <select
@@ -296,9 +351,13 @@ export default function ProjectTaskBoard({ projectId, members }) {
                         onChange={event => setFilters(current => ({ ...current, priority: event.target.value }))}
                     >
                         <option value="ALL">Все приоритеты</option>
-                        {priorities.map(priority => <option key={priority.id} value={priority.id}>{priority.label}</option>)}
+                        {priorities.map(priority => (
+                            <option key={priority.id} value={priority.id}>{priority.label}</option>
+                        ))}
                     </select>
-                    <button type="button" className="task-filter-clear" onClick={clearFilters}>Сброс</button>
+                    <button type="button" className="task-filter-clear" onClick={clearFilters}>
+                        Сброс
+                    </button>
                 </div>
             )}
 
@@ -332,7 +391,7 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                             >
                                                 <div className="task-card-topline">
                                                     <span className={`task-priority priority-${task.priority.toLowerCase()}`}>
-                                                        {priorities.find(priority => priority.id === task.priority)?.label}
+                                                        {priorities.find(p => p.id === task.priority)?.label}
                                                     </span>
                                                     {(isOwner || task.createdById === user?.id) && (
                                                         <button
@@ -347,13 +406,17 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                                     )}
                                                 </div>
                                                 <h4>{task.title}</h4>
-                                                {task.description && <p className="task-card-description">{task.description}</p>}
+                                                {task.description && (
+                                                    <p className="task-card-description">{task.description}</p>
+                                                )}
                                                 <div className="task-card-meta">
                                                     {task.assignee ? (
                                                         <span className="task-assignee">
                                                             {task.assignee.firstName} {task.assignee.lastName}
                                                         </span>
-                                                    ) : <span className="task-unassigned">Без исполнителя</span>}
+                                                    ) : (
+                                                        <span className="task-unassigned">Без исполнителя</span>
+                                                    )}
                                                     {task.dueDate && (
                                                         <span className={`task-due-date task-due-date-${dueState}`}>
                                                             <CalendarDays size={13} />
@@ -368,7 +431,9 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                                         disabled={updatingTaskId === task.id}
                                                         onChange={event => updateStatus(task, event.target.value)}
                                                     >
-                                                        {columns.map(status => <option key={status.id} value={status.id}>{status.title}</option>)}
+                                                        {columns.map(status => (
+                                                            <option key={status.id} value={status.id}>{status.title}</option>
+                                                        ))}
                                                     </select>
                                                 </label>
                                                 <button
@@ -389,16 +454,24 @@ export default function ProjectTaskBoard({ projectId, members }) {
             )}
 
             {creating && (
-                <div className="task-modal-backdrop" onMouseDown={event => {
-                    if (event.target === event.currentTarget && !saving) setCreating(false);
-                }}>
+                <div
+                    className="task-modal-backdrop"
+                    onMouseDown={event => {
+                        if (event.target === event.currentTarget && !saving) setCreating(false);
+                    }}
+                >
                     <form className="task-modal" onSubmit={createTask}>
                         <div className="task-modal-heading">
                             <div>
                                 <span className="workspace-kicker">НОВАЯ КАРТОЧКА</span>
                                 <h2>Создать задачу</h2>
                             </div>
-                            <button type="button" className="task-modal-close" onClick={() => setCreating(false)} aria-label="Закрыть">×</button>
+                            <button
+                                type="button"
+                                className="task-modal-close"
+                                onClick={() => setCreating(false)}
+                                aria-label="Закрыть"
+                            >×</button>
                         </div>
                         <label>
                             Название
@@ -423,7 +496,10 @@ export default function ProjectTaskBoard({ projectId, members }) {
                         <div className="task-form-grid">
                             <label>
                                 Исполнитель
-                                <select value={form.assigneeId} onChange={event => setForm(current => ({ ...current, assigneeId: event.target.value }))}>
+                                <select
+                                    value={form.assigneeId}
+                                    onChange={event => setForm(current => ({ ...current, assigneeId: event.target.value }))}
+                                >
                                     <option value="">Не назначен</option>
                                     {members.map(member => (
                                         <option key={member.id} value={member.id}>
@@ -434,18 +510,36 @@ export default function ProjectTaskBoard({ projectId, members }) {
                             </label>
                             <label>
                                 Приоритет
-                                <select value={form.priority} onChange={event => setForm(current => ({ ...current, priority: event.target.value }))}>
-                                    {priorities.map(priority => <option key={priority.id} value={priority.id}>{priority.label}</option>)}
+                                <select
+                                    value={form.priority}
+                                    onChange={event => setForm(current => ({ ...current, priority: event.target.value }))}
+                                >
+                                    {priorities.map(priority => (
+                                        <option key={priority.id} value={priority.id}>{priority.label}</option>
+                                    ))}
                                 </select>
                             </label>
                         </div>
                         <label>
                             Срок
-                            <input type="date" value={form.dueDate} onChange={event => setForm(current => ({ ...current, dueDate: event.target.value }))} />
+                            <input
+                                type="date"
+                                value={form.dueDate}
+                                onChange={event => setForm(current => ({ ...current, dueDate: event.target.value }))}
+                            />
                         </label>
                         <div className="task-modal-actions">
-                            <button type="button" className="task-cancel-button" onClick={() => setCreating(false)} disabled={saving}>Отмена</button>
-                            <button type="submit" className="task-create-button" disabled={!form.title.trim() || saving}>
+                            <button
+                                type="button"
+                                className="task-cancel-button"
+                                onClick={() => setCreating(false)}
+                                disabled={saving}
+                            >Отмена</button>
+                            <button
+                                type="submit"
+                                className="task-create-button"
+                                disabled={!form.title.trim() || saving}
+                            >
                                 {saving ? "Создаем..." : "Создать задачу"}
                             </button>
                         </div>
@@ -454,16 +548,29 @@ export default function ProjectTaskBoard({ projectId, members }) {
             )}
 
             {selectedTask && (
-                <div className="task-modal-backdrop" onMouseDown={event => {
-                    if (event.target === event.currentTarget) setSelectedTask(null);
-                }}>
-                    <section className="task-modal task-detail-modal" role="dialog" aria-modal="true" aria-labelledby="task-detail-title">
+                <div
+                    className="task-modal-backdrop"
+                    onMouseDown={event => {
+                        if (event.target === event.currentTarget) closeTaskDetails();
+                    }}
+                >
+                    <section
+                        className="task-modal task-detail-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="task-detail-title"
+                    >
                         <div className="task-modal-heading">
                             <div>
                                 <span className="workspace-kicker">ЗАДАЧА</span>
                                 <h2 id="task-detail-title">{selectedTask.title}</h2>
                             </div>
-                            <button type="button" className="task-modal-close" onClick={() => setSelectedTask(null)} aria-label="Закрыть">×</button>
+                            <button
+                                type="button"
+                                className="task-modal-close"
+                                onClick={closeTaskDetails}
+                                aria-label="Закрыть"
+                            >×</button>
                         </div>
                         {editingTask ? (
                             <>
@@ -492,7 +599,9 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                         >
                                             <option value="">Не назначен</option>
                                             {members.map(member => (
-                                                <option key={member.id} value={member.id}>{member.firstName} {member.lastName}</option>
+                                                <option key={member.id} value={member.id}>
+                                                    {member.firstName} {member.lastName}
+                                                </option>
                                             ))}
                                         </select>
                                     </label>
@@ -502,7 +611,9 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                             value={taskDraft.priority}
                                             onChange={event => setTaskDraft(current => ({ ...current, priority: event.target.value }))}
                                         >
-                                            {priorities.map(priority => <option key={priority.id} value={priority.id}>{priority.label}</option>)}
+                                            {priorities.map(priority => (
+                                                <option key={priority.id} value={priority.id}>{priority.label}</option>
+                                            ))}
                                         </select>
                                     </label>
                                 </div>
@@ -515,17 +626,27 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                     />
                                 </label>
                                 <div className="task-modal-actions">
-                                    <button type="button" className="task-cancel-button" onClick={() => {
-                                        setEditingTask(false);
-                                        setTaskDraft({
-                                            title: selectedTask.title,
-                                            description: selectedTask.description || "",
-                                            assigneeId: selectedTask.assignee?.id ? String(selectedTask.assignee.id) : "",
-                                            priority: selectedTask.priority,
-                                            dueDate: selectedTask.dueDate || ""
-                                        });
-                                    }} disabled={updatingTaskId === selectedTask.id}>Отмена</button>
-                                    <button type="button" className="task-create-button" onClick={saveTask} disabled={!taskDraft.title.trim() || updatingTaskId === selectedTask.id}>
+                                    <button
+                                        type="button"
+                                        className="task-cancel-button"
+                                        onClick={() => {
+                                            setEditingTask(false);
+                                            setTaskDraft({
+                                                title: selectedTask.title,
+                                                description: selectedTask.description || "",
+                                                assigneeId: selectedTask.assignee?.id ? String(selectedTask.assignee.id) : "",
+                                                priority: selectedTask.priority,
+                                                dueDate: selectedTask.dueDate || ""
+                                            });
+                                        }}
+                                        disabled={updatingTaskId === selectedTask.id}
+                                    >Отмена</button>
+                                    <button
+                                        type="button"
+                                        className="task-create-button"
+                                        onClick={saveTask}
+                                        disabled={!taskDraft.title.trim() || updatingTaskId === selectedTask.id}
+                                    >
                                         {updatingTaskId === selectedTask.id ? "Сохраняем..." : "Сохранить"}
                                     </button>
                                 </div>
@@ -534,9 +655,11 @@ export default function ProjectTaskBoard({ projectId, members }) {
                             <>
                                 <div className="task-detail-meta">
                                     <span className={`task-priority priority-${selectedTask.priority.toLowerCase()}`}>
-                                        {priorities.find(priority => priority.id === selectedTask.priority)?.label} приоритет
+                                        {priorities.find(p => p.id === selectedTask.priority)?.label} приоритет
                                     </span>
-                                    <span className="task-detail-status">{columns.find(column => column.id === selectedTask.status)?.title}</span>
+                                    <span className="task-detail-status">
+                                        {columns.find(c => c.id === selectedTask.status)?.title}
+                                    </span>
                                 </div>
                                 <div className="task-detail-description">
                                     <span className="workspace-kicker">ОПИСАНИЕ</span>
@@ -545,15 +668,19 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                 <dl className="task-detail-fields">
                                     <div>
                                         <dt>Исполнитель</dt>
-                                        <dd>{selectedTask.assignee
-                                            ? `${selectedTask.assignee.firstName} ${selectedTask.assignee.lastName}`
-                                            : "Не назначен"}</dd>
+                                        <dd>
+                                            {selectedTask.assignee
+                                                ? `${selectedTask.assignee.firstName} ${selectedTask.assignee.lastName}`
+                                                : "Не назначен"}
+                                        </dd>
                                     </div>
                                     <div>
                                         <dt>Срок</dt>
-                                        <dd>{selectedTask.dueDate
-                                            ? new Date(`${selectedTask.dueDate}T00:00:00`).toLocaleDateString()
-                                            : "Не указан"}</dd>
+                                        <dd>
+                                            {selectedTask.dueDate
+                                                ? new Date(`${selectedTask.dueDate}T00:00:00`).toLocaleDateString()
+                                                : "Не указан"}
+                                        </dd>
                                     </div>
                                 </dl>
                                 <label className="task-detail-status-control">
@@ -563,7 +690,9 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                         disabled={updatingTaskId === selectedTask.id}
                                         onChange={event => updateStatus(selectedTask, event.target.value)}
                                     >
-                                        {columns.map(status => <option key={status.id} value={status.id}>{status.title}</option>)}
+                                        {columns.map(status => (
+                                            <option key={status.id} value={status.id}>{status.title}</option>
+                                        ))}
                                     </select>
                                 </label>
                                 <div className="task-comments-block">
@@ -574,15 +703,27 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                     <div className="task-comments-list">
                                         {comments.length === 0 ? (
                                             <p className="task-comments-empty">Пока комментариев нет.</p>
-                                        ) : comments.map(comment => (
-                                            <div className="task-comment" key={comment.id}>
-                                                <div className="task-comment-user">
-                                                    <strong>{comment.author?.firstName || "Участник"} {comment.author?.lastName || ""}</strong>
-                                                    <time>{new Date(comment.createdAt).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</time>
+                                        ) : (
+                                            comments.map(comment => (
+                                                <div className="task-comment" key={comment.id}>
+                                                    <div className="task-comment-user">
+                                                        <strong>
+                                                            {comment.author?.firstName || "Участник"}{" "}
+                                                            {comment.author?.lastName || ""}
+                                                        </strong>
+                                                        <time>
+                                                            {new Date(comment.createdAt).toLocaleString([], {
+                                                                day: "2-digit",
+                                                                month: "short",
+                                                                hour: "2-digit",
+                                                                minute: "2-digit"
+                                                            })}
+                                                        </time>
+                                                    </div>
+                                                    <p>{comment.content}</p>
                                                 </div>
-                                                <p>{comment.content}</p>
-                                            </div>
-                                        ))}
+                                            ))
+                                        )}
                                     </div>
                                     <div className="task-comment-form">
                                         <textarea
@@ -592,14 +733,27 @@ export default function ProjectTaskBoard({ projectId, members }) {
                                             placeholder="Добавьте комментарий..."
                                             onChange={event => setCommentDraft(event.target.value)}
                                         />
-                                        <button type="button" className="task-create-button" onClick={addComment} disabled={!commentDraft.trim() || commentSending}>
+                                        <button
+                                            type="button"
+                                            className="task-create-button"
+                                            onClick={addComment}
+                                            disabled={!commentDraft.trim() || commentSending}
+                                        >
                                             {commentSending ? "Отправляем..." : "Отправить"}
                                         </button>
                                     </div>
                                 </div>
                                 <div className="task-modal-actions">
-                                    <button type="button" className="task-cancel-button" onClick={() => setEditingTask(true)}>Редактировать</button>
-                                    <button type="button" className="task-create-button" onClick={() => setSelectedTask(null)}>Закрыть</button>
+                                    <button
+                                        type="button"
+                                        className="task-cancel-button"
+                                        onClick={() => setEditingTask(true)}
+                                    >Редактировать</button>
+                                    <button
+                                        type="button"
+                                        className="task-create-button"
+                                        onClick={closeTaskDetails}
+                                    >Закрыть</button>
                                 </div>
                             </>
                         )}
@@ -609,3 +763,4 @@ export default function ProjectTaskBoard({ projectId, members }) {
         </section>
     );
 }
+//TODO @Github Copilot проверь ProjectTaskBoard,jsx на коректность логики

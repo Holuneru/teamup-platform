@@ -14,6 +14,7 @@ import com.teamup.entity.TaskComment;
 import com.teamup.entity.User;
 import com.teamup.enums.ProjectTaskPriority;
 import com.teamup.enums.ProjectTaskStatus;
+import com.teamup.enums.NotificationType;
 import com.teamup.exception.ForbiddenException;
 import com.teamup.exception.ResourceNotFoundException;
 import com.teamup.repository.ProjectMemberRepository;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,6 +41,7 @@ public class ProjectTaskService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository memberRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<ProjectTaskResponse> getTasks(Long projectId) {
@@ -72,6 +75,17 @@ public class ProjectTaskService {
                 .dueDate(request.getDueDate())
                 .build());
 
+            if (assigneeId != null && !assigneeId.equals(currentUserId)) {
+                notificationService.create(
+                    assigneeId,
+                    currentUserId,
+                    NotificationType.TASK_ASSIGNED,
+                    "Вам назначена задача",
+                    "В проекте «" + project.getTitle() + "» вам назначили задачу «" + task.getTitle() + "»",
+                    "/projects/" + projectId + "/workspace?section=board"
+                );
+            }
+
         return toResponse(task, activeMemberIds);
     }
 
@@ -84,8 +98,25 @@ public class ProjectTaskService {
         Project project = getAccessibleProject(projectId);
         ProjectTask task = taskRepository.findByIdAndProjectId(taskId, projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Задача не найдена"));
+        ProjectTaskStatus previousStatus = task.getStatus();
         task.setStatus(request.getStatus());
-        return toResponse(taskRepository.save(task), getActiveMemberIds(projectId, project.getOwner().getId()));
+        ProjectTask savedTask = taskRepository.save(task);
+        Long currentUserId = currentUserId();
+        Set<Long> activeMemberIds = getActiveMemberIds(projectId, project.getOwner().getId());
+        if (previousStatus != savedTask.getStatus()
+            && savedTask.getAssigneeId() != null
+            && activeMemberIds.contains(savedTask.getAssigneeId())
+            && !savedTask.getAssigneeId().equals(currentUserId)) {
+            notificationService.create(
+                savedTask.getAssigneeId(),
+                currentUserId,
+                NotificationType.TASK_STATUS_CHANGED,
+                "Изменен статус задачи",
+                "Задача «" + savedTask.getTitle() + "» перемещена в «" + savedTask.getStatus() + "»",
+                "/projects/" + projectId + "/workspace?section=board"
+            );
+        }
+        return toResponse(savedTask, activeMemberIds);
     }
 
     @Transactional
@@ -95,6 +126,7 @@ public class ProjectTaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Задача не найдена"));
 
         Long assigneeId = request.getAssigneeId();
+        Long previousAssigneeId = task.getAssigneeId();
         Set<Long> activeMemberIds = getActiveMemberIds(projectId, project.getOwner().getId());
         if (assigneeId != null && !activeMemberIds.contains(assigneeId)) {
             throw new ForbiddenException("Назначить задачу можно только участнику проекта");
@@ -106,7 +138,21 @@ public class ProjectTaskService {
         task.setPriority(request.getPriority() == null ? task.getPriority() : request.getPriority());
         task.setDueDate(request.getDueDate());
 
-        return toResponse(taskRepository.save(task), activeMemberIds);
+        ProjectTask savedTask = taskRepository.save(task);
+        if (assigneeId != null
+            && !assigneeId.equals(previousAssigneeId)
+            && !assigneeId.equals(currentUserId())) {
+            notificationService.create(
+                assigneeId,
+                currentUserId(),
+                NotificationType.TASK_ASSIGNED,
+                "Вам назначена задача",
+                "В проекте «" + project.getTitle() + "» вам назначили задачу «" + savedTask.getTitle() + "»",
+                "/projects/" + projectId + "/workspace?section=board"
+            );
+        }
+
+        return toResponse(savedTask, activeMemberIds);
     }
 
     @Transactional(readOnly = true)
@@ -123,7 +169,8 @@ public class ProjectTaskService {
 
     @Transactional
     public TaskCommentResponse addComment(Long projectId, Long taskId, CreateTaskCommentRequest request) {
-        getAccessibleProject(projectId);
+        Project project = getAccessibleProject(projectId);
+        Set<Long> activeMemberIds = getActiveMemberIds(projectId, project.getOwner().getId());
         ProjectTask task = taskRepository.findByIdAndProjectId(taskId, projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Задача не найдена"));
         Long authorId = currentUserId();
@@ -134,6 +181,28 @@ public class ProjectTaskService {
                 .authorId(authorId)
                 .content(request.getContent().trim())
                 .build());
+
+            Set<Long> recipientIds = new LinkedHashSet<>();
+            recipientIds.add(task.getCreatedById());
+            if (task.getAssigneeId() != null) {
+                recipientIds.add(task.getAssigneeId());
+            }
+            String authorName = userRepository.findById(authorId)
+                .map(user -> user.getFirstName() + " " + user.getLastName())
+                .orElse("Участник команды");
+            for (Long recipientId : recipientIds) {
+                if (recipientId.equals(authorId) || !activeMemberIds.contains(recipientId)) {
+                    continue;
+                }
+                notificationService.create(
+                    recipientId,
+                    authorId,
+                    NotificationType.TASK_COMMENT,
+                    "Новый комментарий к задаче",
+                    authorName + " прокомментировал задачу «" + task.getTitle() + "»",
+                    "/projects/" + projectId + "/workspace?section=board&taskId=" + taskId
+                );
+            }
 
         return toCommentResponse(comment);
     }

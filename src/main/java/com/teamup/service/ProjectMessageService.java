@@ -6,6 +6,7 @@ import com.teamup.entity.Project;
 import com.teamup.entity.ProjectMember;
 import com.teamup.entity.ProjectMessage;
 import com.teamup.entity.User;
+import com.teamup.enums.NotificationType;
 import com.teamup.exception.ForbiddenException;
 import com.teamup.exception.ResourceNotFoundException;
 import com.teamup.repository.ProjectMemberRepository;
@@ -30,6 +31,7 @@ public class ProjectMessageService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository memberRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<ProjectMessageResponse> getMessages(Long projectId) {
@@ -47,13 +49,36 @@ public class ProjectMessageService {
     public ProjectMessageResponse sendMessage(Long projectId, SendProjectMessageRequest request) {
         Project project = getAccessibleProject(projectId);
         Long senderId = currentUserId();
+        Set<Long> activeMemberIds = getActiveMemberIds(projectId, project.getOwner().getId());
+        Set<Long> mentionedUserIds = request.getMentionedUserIds() == null
+            ? Set.of()
+            : new HashSet<>(request.getMentionedUserIds());
+
+        if (!activeMemberIds.containsAll(mentionedUserIds)) {
+            throw new ForbiddenException("Упоминать можно только текущих участников проекта");
+        }
+
         ProjectMessage message = messageRepository.save(ProjectMessage.builder()
                 .projectId(projectId)
                 .senderId(senderId)
                 .content(request.getContent().trim())
                 .build());
 
-        Set<Long> activeMemberIds = getActiveMemberIds(projectId, project.getOwner().getId());
+            if (!mentionedUserIds.isEmpty()) {
+                User sender = userRepository.findById(senderId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
+                String senderName = sender.getFirstName() + " " + sender.getLastName();
+                for (Long mentionedUserId : mentionedUserIds) {
+                notificationService.create(
+                    mentionedUserId,
+                    senderId,
+                    NotificationType.PROJECT_MENTION,
+                    "Вас упомянули в чате проекта",
+                    senderName + " упомянул вас в проекте «" + project.getTitle() + "»",
+                    "/projects/" + projectId + "/workspace?section=discussion"
+                );
+                }
+            }
         return toResponse(message, activeMemberIds);
     }
 

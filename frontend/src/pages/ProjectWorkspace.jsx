@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowUpRight, ClipboardList, MessageCircle, Users } from "lucide-react";
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
@@ -17,11 +17,15 @@ const sections = [
 
 export default function ProjectWorkspace() {
     const { id } = useParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const { user } = useUser();
     const [project, setProject] = useState(null);
     const [members, setMembers] = useState([]);
-    const [activeSection, setActiveSection] = useState("overview");
+    const requestedSection = searchParams.get("section");
+    const activeSection = sections.some(section => section.id === requestedSection)
+        ? requestedSection
+        : "overview";
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -57,6 +61,13 @@ export default function ProjectWorkspace() {
         : members;
     const activeTab = sections.find(section => section.id === activeSection);
     const ActiveIcon = activeTab?.icon ?? Users;
+    const setActiveSection = sectionId => {
+        setSearchParams(previous => {
+            const next = new URLSearchParams(previous);
+            next.set("section", sectionId);
+            return next;
+        });
+    };
 
     return (
         <Layout>
@@ -163,7 +174,7 @@ export default function ProjectWorkspace() {
                                     </section>
                                 </div>
                             ) : activeSection === "discussion" ? (
-                                <ProjectDiscussion projectId={id} />
+                                <ProjectDiscussion projectId={id} members={team} />
                             ) : activeSection === "board" ? (
                                 <ProjectTaskBoard
                                     projectId={id}

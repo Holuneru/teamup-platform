@@ -8,6 +8,7 @@ import com.teamup.entity.Project;
 import com.teamup.entity.ProjectMember;
 import com.teamup.entity.ProjectTask;
 import com.teamup.entity.User;
+import com.teamup.enums.NotificationType;
 import com.teamup.enums.ProjectTaskStatus;
 import com.teamup.exception.ForbiddenException;
 import com.teamup.repository.ProjectMemberRepository;
@@ -54,6 +55,8 @@ class ProjectTaskServiceTest {
     private ProjectMemberRepository memberRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private ProjectTaskService service;
@@ -79,16 +82,24 @@ class ProjectTaskServiceTest {
             task.setCreatedAt(LocalDateTime.now());
             return task;
         });
-        when(userRepository.findById(MEMBER_ID)).thenReturn(Optional.of(user(MEMBER_ID)));
+        when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(user(OWNER_ID)));
         CreateProjectTaskRequest request = new CreateProjectTaskRequest();
         request.setTitle("  Implement board  ");
-        request.setAssigneeId(MEMBER_ID);
+        request.setAssigneeId(OWNER_ID);
 
         var response = service.createTask(PROJECT_ID, request);
 
         assertEquals("Implement board", response.getTitle());
-        assertEquals(MEMBER_ID, response.getAssignee().getId());
+        assertEquals(OWNER_ID, response.getAssignee().getId());
         assertEquals(ProjectTaskStatus.TODO, response.getStatus());
+        verify(notificationService).create(
+            OWNER_ID,
+            MEMBER_ID,
+            NotificationType.TASK_ASSIGNED,
+            "Вам назначена задача",
+            "В проекте «Test project» вам назначили задачу «Implement board»",
+            "/projects/" + PROJECT_ID + "/workspace?section=board"
+        );
     }
 
     @Test
@@ -114,9 +125,11 @@ class ProjectTaskServiceTest {
     void memberCanMoveTaskBetweenColumns() {
         when(memberRepository.existsByProjectIdAndUserId(PROJECT_ID, MEMBER_ID)).thenReturn(true);
         ProjectTask task = task();
+        task.setAssigneeId(OWNER_ID);
         when(taskRepository.findByIdAndProjectId(TASK_ID, PROJECT_ID)).thenReturn(Optional.of(task));
         when(memberRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of(member(MEMBER_ID)));
         when(taskRepository.save(task)).thenReturn(task);
+        when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(user(OWNER_ID)));
         UpdateProjectTaskStatusRequest request = new UpdateProjectTaskStatusRequest();
         request.setStatus(ProjectTaskStatus.IN_PROGRESS);
 
@@ -124,6 +137,14 @@ class ProjectTaskServiceTest {
 
         assertEquals(ProjectTaskStatus.IN_PROGRESS, response.getStatus());
         verify(taskRepository).save(task);
+        verify(notificationService).create(
+            OWNER_ID,
+            MEMBER_ID,
+            NotificationType.TASK_STATUS_CHANGED,
+            "Изменен статус задачи",
+            "Задача «Task» перемещена в «IN_PROGRESS»",
+            "/projects/" + PROJECT_ID + "/workspace?section=board"
+        );
     }
 
     @Test
@@ -151,6 +172,8 @@ class ProjectTaskServiceTest {
     void memberCanAddCommentToTask() {
         when(memberRepository.existsByProjectIdAndUserId(PROJECT_ID, MEMBER_ID)).thenReturn(true);
         ProjectTask task = task();
+        task.setCreatedById(OWNER_ID);
+        task.setAssigneeId(OWNER_ID);
         when(taskRepository.findByIdAndProjectId(TASK_ID, PROJECT_ID)).thenReturn(Optional.of(task));
         when(userRepository.findById(MEMBER_ID)).thenReturn(Optional.of(user(MEMBER_ID)));
         when(commentRepository.save(any())).thenAnswer(invocation -> {
@@ -168,6 +191,14 @@ class ProjectTaskServiceTest {
 
         assertEquals("Need review", response.getContent());
         assertEquals(MEMBER_ID, response.getAuthor().getId());
+        verify(notificationService).create(
+            OWNER_ID,
+            MEMBER_ID,
+            NotificationType.TASK_COMMENT,
+            "Новый комментарий к задаче",
+            "User 2 прокомментировал задачу «Task»",
+            "/projects/" + PROJECT_ID + "/workspace?section=board&taskId=" + TASK_ID
+        );
     }
 
     @Test
@@ -193,7 +224,7 @@ class ProjectTaskServiceTest {
     }
 
     private static Project project() {
-        return Project.builder().id(PROJECT_ID).owner(user(OWNER_ID)).build();
+        return Project.builder().id(PROJECT_ID).title("Test project").owner(user(OWNER_ID)).build();
     }
 
     private static ProjectMember member(Long userId) {

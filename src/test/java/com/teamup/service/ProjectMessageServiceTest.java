@@ -6,6 +6,7 @@ import com.teamup.entity.Project;
 import com.teamup.entity.ProjectMember;
 import com.teamup.entity.ProjectMessage;
 import com.teamup.entity.User;
+import com.teamup.enums.NotificationType;
 import com.teamup.exception.ForbiddenException;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectMessageRepository;
@@ -49,6 +50,8 @@ class ProjectMessageServiceTest {
     private ProjectMemberRepository memberRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private ProjectMessageService service;
@@ -102,6 +105,48 @@ class ProjectMessageServiceTest {
         assertEquals("Привет команде", result.getContent());
         assertTrue(result.isSenderIsCurrentMember());
         verify(messageRepository).save(any(ProjectMessage.class));
+        org.mockito.Mockito.verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void formerMemberCannotBeMentioned() {
+        authenticateAs(MEMBER_ID);
+        when(memberRepository.existsByProjectIdAndUserId(PROJECT_ID, MEMBER_ID)).thenReturn(true);
+        when(memberRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of(member(MEMBER_ID)));
+        SendProjectMessageRequest request = new SendProjectMessageRequest();
+        request.setContent("Возвращайся в проект");
+        request.setMentionedUserIds(List.of(FORMER_MEMBER_ID));
+
+        assertThrows(ForbiddenException.class, () -> service.sendMessage(PROJECT_ID, request));
+        org.mockito.Mockito.verifyNoInteractions(messageRepository, notificationService);
+    }
+
+    @Test
+    void selectedCurrentMemberMentionCreatesNotification() {
+        authenticateAs(MEMBER_ID);
+        when(memberRepository.existsByProjectIdAndUserId(PROJECT_ID, MEMBER_ID)).thenReturn(true);
+        when(memberRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of(member(MEMBER_ID)));
+        when(messageRepository.save(any(ProjectMessage.class))).thenAnswer(invocation -> {
+            ProjectMessage message = invocation.getArgument(0);
+            message.setId(51L);
+            message.setCreatedAt(LocalDateTime.now());
+            return message;
+        });
+        when(userRepository.findById(MEMBER_ID)).thenReturn(Optional.of(user(MEMBER_ID)));
+        SendProjectMessageRequest request = new SendProjectMessageRequest();
+        request.setContent("Нужен взгляд на макет");
+        request.setMentionedUserIds(List.of(OWNER_ID));
+
+        service.sendMessage(PROJECT_ID, request);
+
+        verify(notificationService).create(
+                OWNER_ID,
+                MEMBER_ID,
+                NotificationType.PROJECT_MENTION,
+                "Вас упомянули в чате проекта",
+                "User 2 упомянул вас в проекте «Test project»",
+                "/projects/" + PROJECT_ID + "/workspace?section=discussion"
+        );
     }
 
     @Test
@@ -119,6 +164,7 @@ class ProjectMessageServiceTest {
     private static Project project() {
         return Project.builder()
                 .id(PROJECT_ID)
+                .title("Test project")
                 .owner(user(OWNER_ID))
                 .build();
     }
