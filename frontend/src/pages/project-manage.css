@@ -358,6 +358,63 @@
     font-size: 11px;
 }
 
+.manage-danger-zone {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 36px;
+    padding: 20px 22px;
+    border: 1px solid #f3c9c9;
+    border-radius: 14px;
+    background: #fdf6f6;
+}
+
+.manage-danger-zone h2 {
+    margin: 5px 0 6px;
+    color: #7f1d1d;
+    font-size: 16px;
+}
+
+.manage-danger-zone p {
+    margin: 0;
+    color: #96706f;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.manage-danger-zone .manage-eyebrow {
+    color: #b91c1c;
+}
+
+.manage-delete-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 7px;
+    background: #dc2626;
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background .2s;
+}
+
+.manage-delete-button:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+.manage-delete-button:disabled {
+    background: #e7a3a3;
+    cursor: not-allowed;
+}
+
 @media (max-width: 720px) {
     .manage-header {
         align-items: flex-start;
@@ -373,6 +430,12 @@
     .manage-card,
     .member-card {
         padding: 15px;
+    }
+
+    .manage-danger-zone {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
     }
 }
 
@@ -393,4 +456,12 @@
     }
 
     .manage-applicant-actions button { flex: 1; }
+
+    .manage-danger-zone {
+        padding: 16px;
+    }
+
+    .manage-delete-button {
+        width: 100%;
+    }
 }

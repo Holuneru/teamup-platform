@@ -25,6 +25,7 @@ export default function ProjectManage() {
     const [projectOwnerId, setProjectOwnerId] = useState(null);
     const [removingMembers, setRemovingMembers] = useState({});
     const [activeSection, setActiveSection] = useState("applications");
+    const [deleting, setDeleting] = useState(false);
 
     const loadData = useCallback(async () => {
         const requests = [
@@ -110,6 +111,25 @@ export default function ProjectManage() {
             notify(error.response?.data?.message || "Не удалось исключить участника.");
         } finally {
             setRemovingMembers(current => ({ ...current, [member.id]: false }));
+        }
+    };
+
+    const deleteProject = async () => {
+        if (!await confirm(`Удалить проект «${projectTitle || "без названия"}»? Это действие необратимо.`, {
+            title: "Удаление проекта",
+            confirmLabel: "Удалить"
+        })) {
+            return;
+        }
+
+        setDeleting(true);
+        try {
+            await api.delete(`/projects/${id}`);
+            notify("Проект удалён", "success");
+            navigate("/projects/my");
+        } catch (error) {
+            notify(error.response?.data?.message || "Не удалось удалить проект.");
+            setDeleting(false);
         }
     };
 
@@ -213,6 +233,25 @@ export default function ProjectManage() {
                                 )}
                             </article>
                         ))}
+                    </section>
+                )}
+
+                {user?.id === projectOwnerId && (
+                    <section className="manage-danger-zone" aria-labelledby="manage-danger-title">
+                        <div>
+                            <span className="manage-eyebrow">ОПАСНАЯ ЗОНА</span>
+                            <h2 id="manage-danger-title">Удаление проекта</h2>
+                            <p>Проект, задачи, комментарии, сообщения и состав команды будут удалены безвозвратно.</p>
+                        </div>
+                        <button
+                            type="button"
+                            className="manage-delete-button"
+                            disabled={deleting}
+                            onClick={deleteProject}
+                        >
+                            <Trash2 size={16} />
+                            {deleting ? "Удаление..." : "Удалить проект"}
+                        </button>
                     </section>
                 )}
             </div>

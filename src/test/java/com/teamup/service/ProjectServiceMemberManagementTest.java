@@ -134,10 +134,29 @@ class ProjectServiceMemberManagementTest {
 
         service.deleteProject(PROJECT_ID);
 
+        verify(projectApplicationRepository).deleteByProjectId(PROJECT_ID);
+        verify(projectInvitationRepository).deleteByProjectId(PROJECT_ID);
+        verify(projectMemberRepository).deleteByProjectId(PROJECT_ID);
+        verify(projectMessageRepository).deleteByProjectId(PROJECT_ID);
         verify(taskCommentRepository).deleteByProjectId(PROJECT_ID);
         verify(projectTaskRepository).deleteByProjectId(PROJECT_ID);
-        verify(projectMessageRepository).deleteByProjectId(PROJECT_ID);
         verify(projectRepository).delete(project);
+    }
+
+    @Test
+    void nonOwnerCannotDeleteProject() {
+        authenticateAs(MEMBER_ID);
+        when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(project()));
+
+        assertThrows(ForbiddenException.class, () -> service.deleteProject(PROJECT_ID));
+
+        verify(projectApplicationRepository, never()).deleteByProjectId(PROJECT_ID);
+        verify(projectInvitationRepository, never()).deleteByProjectId(PROJECT_ID);
+        verify(projectMemberRepository, never()).deleteByProjectId(PROJECT_ID);
+        verify(projectMessageRepository, never()).deleteByProjectId(PROJECT_ID);
+        verify(taskCommentRepository, never()).deleteByProjectId(PROJECT_ID);
+        verify(projectTaskRepository, never()).deleteByProjectId(PROJECT_ID);
+        verify(projectRepository, never()).delete(org.mockito.ArgumentMatchers.any(Project.class));
     }
 
     @Test
