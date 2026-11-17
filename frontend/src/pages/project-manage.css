@@ -358,6 +358,113 @@
     font-size: 11px;
 }
 
+.manage-settings-form {
+    padding: 22px;
+    border: 1px solid #e2e8e4;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.manage-settings-form label {
+    display: block;
+    margin: 18px 0 8px;
+    color: #3a4a41;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.manage-settings-form label:first-child {
+    margin-top: 0;
+}
+
+.manage-settings-form input,
+.manage-settings-form textarea {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid #d7ded9;
+    border-radius: 9px;
+    background: #fcfdfc;
+    color: #26332b;
+    font: inherit;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.manage-settings-form input:focus,
+.manage-settings-form textarea:focus {
+    border-color: #4f8b68;
+    outline: 2px solid #dfeee5;
+}
+
+.manage-title-field {
+    position: relative;
+}
+
+.manage-title-field input {
+    padding-right: 64px;
+}
+
+.manage-title-counter {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    color: #8a978f;
+    font-size: 10px;
+    transform: translateY(-50%);
+}
+
+.manage-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.manage-skill {
+    padding: 7px 14px;
+    border: 1px solid #d7ded9;
+    border-radius: 999px;
+    background: #fff;
+    color: #4b5a52;
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.manage-skill:hover {
+    background: #f0f5f1;
+}
+
+.manage-skill.selected {
+    border-color: #2f6b4a;
+    background: #2f6b4a;
+    color: #fff;
+}
+
+.manage-save-button {
+    margin-top: 24px;
+    min-height: 40px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 8px;
+    background: #2f6b4a;
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background .2s;
+}
+
+.manage-save-button:hover:not(:disabled) {
+    background: #25573c;
+}
+
+.manage-save-button:disabled {
+    background: #9dbcaa;
+    cursor: not-allowed;
+}
+
 .manage-danger-zone {
     display: flex;
     align-items: center;
@@ -436,6 +543,10 @@
         align-items: flex-start;
         flex-direction: column;
         gap: 14px;
+    }
+
+    .manage-settings-form {
+        padding: 16px;
     }
 }
 

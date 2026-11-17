@@ -3,7 +3,9 @@ package com.teamup.service;
 import com.teamup.entity.Project;
 import com.teamup.entity.ProjectApplication;
 import com.teamup.entity.ProjectInvitation;
+import com.teamup.entity.Skill;
 import com.teamup.entity.User;
+import com.teamup.dto.request.CreateProjectRequest;
 import com.teamup.dto.response.ProjectResponse;
 import com.teamup.enums.ApplicationStatus;
 import com.teamup.enums.InvitationStatus;
@@ -30,6 +32,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -128,6 +131,41 @@ class ProjectServiceMemberManagementTest {
     }
 
     @Test
+    void ownerCanUpdateProject() {
+        Project project = project();
+        Skill java = Skill.builder().id(5L).name("Java").build();
+        when(projectRepository.findByIdWithMembers(PROJECT_ID)).thenReturn(Optional.of(project));
+        when(skillRepository.findAllById(Set.of(5L))).thenReturn(List.of(java));
+        when(projectRepository.save(project)).thenReturn(project);
+        when(projectMapper.toResponse(project)).thenReturn(
+                ProjectResponse.builder().id(PROJECT_ID).title("Новое название").build()
+        );
+
+        CreateProjectRequest request = updateRequest("Новое название", "Новое описание", Set.of(5L));
+
+        ProjectResponse response = service.updateProject(PROJECT_ID, request);
+
+        assertEquals("Новое название", response.getTitle());
+        assertEquals("Новое название", project.getTitle());
+        assertEquals("Новое описание", project.getDescription());
+        assertEquals(Set.of(java), project.getRequiredSkills());
+        verify(projectRepository).save(project);
+    }
+
+    @Test
+    void nonOwnerCannotUpdateProject() {
+        authenticateAs(MEMBER_ID);
+        when(projectRepository.findByIdWithMembers(PROJECT_ID)).thenReturn(Optional.of(project()));
+
+        CreateProjectRequest request = updateRequest("Чужое название", "Чужое описание", Set.of());
+
+        assertThrows(ForbiddenException.class, () -> service.updateProject(PROJECT_ID, request));
+
+        verify(projectRepository, never()).save(org.mockito.ArgumentMatchers.any(Project.class));
+        verifyNoInteractions(skillRepository);
+    }
+
+    @Test
     void deletingProjectRemovesTasksAndTheirComments() {
         Project project = project();
         when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(project));
@@ -197,6 +235,14 @@ class ProjectServiceMemberManagementTest {
                 .id(PROJECT_ID)
                 .owner(User.builder().id(OWNER_ID).build())
                 .build();
+    }
+
+    private static CreateProjectRequest updateRequest(String title, String description, Set<Long> skillIds) {
+        CreateProjectRequest request = new CreateProjectRequest();
+        request.setTitle(title);
+        request.setDescription(description);
+        request.setRequiredSkillIds(skillIds);
+        return request;
     }
 
     private static void authenticateAs(Long userId) {
