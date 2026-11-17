@@ -126,7 +126,7 @@ export default function ProjectManage() {
         try {
             await api.delete(`/projects/${id}`);
             notify("Проект удалён", "success");
-            navigate("/projects/my");
+            navigate("/my-projects");
         } catch (error) {
             notify(error.response?.data?.message || "Не удалось удалить проект.");
             setDeleting(false);

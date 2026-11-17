@@ -172,15 +172,7 @@ export default function ProjectDetails() {
 
                     <div className="skills">
 
-                        {project.requiredSkills?.length === 0 ? (
-
-                            <span className="empty-text">
-
-                                Навыки не указаны
-
-                            </span>
-
-                        ) : (
+                        {project.requiredSkills?.length ? (
 
                             project.requiredSkills.map(skill => (
 
@@ -194,6 +186,14 @@ export default function ProjectDetails() {
                                 </span>
 
                             ))
+
+                        ) : (
+
+                            <span className="empty-text">
+
+                                Навыки не указаны
+
+                            </span>
 
                         )}
 
