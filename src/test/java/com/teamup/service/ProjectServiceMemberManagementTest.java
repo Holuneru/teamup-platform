@@ -11,8 +11,11 @@ import com.teamup.exception.ForbiddenException;
 import com.teamup.repository.ProjectApplicationRepository;
 import com.teamup.repository.ProjectInvitationRepository;
 import com.teamup.repository.ProjectMemberRepository;
+import com.teamup.repository.ProjectMessageRepository;
 import com.teamup.repository.ProjectRepository;
+import com.teamup.repository.ProjectTaskRepository;
 import com.teamup.repository.SkillRepository;
+import com.teamup.repository.TaskCommentRepository;
 import com.teamup.repository.UserRepository;
 import com.teamup.mapper.ProjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -48,6 +51,12 @@ class ProjectServiceMemberManagementTest {
     private ProjectInvitationRepository projectInvitationRepository;
     @Mock
     private ProjectApplicationRepository projectApplicationRepository;
+    @Mock
+    private ProjectMessageRepository projectMessageRepository;
+    @Mock
+    private ProjectTaskRepository projectTaskRepository;
+    @Mock
+    private TaskCommentRepository taskCommentRepository;
     @Mock
     private ProjectRepository projectRepository;
     @Mock
@@ -116,6 +125,19 @@ class ProjectServiceMemberManagementTest {
 
         verify(projectMemberRepository, never()).deleteByProjectIdAndUserId(PROJECT_ID, OWNER_ID);
         verifyNoInteractions(projectApplicationRepository, projectInvitationRepository);
+    }
+
+    @Test
+    void deletingProjectRemovesTasksAndTheirComments() {
+        Project project = project();
+        when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(project));
+
+        service.deleteProject(PROJECT_ID);
+
+        verify(taskCommentRepository).deleteByProjectId(PROJECT_ID);
+        verify(projectTaskRepository).deleteByProjectId(PROJECT_ID);
+        verify(projectMessageRepository).deleteByProjectId(PROJECT_ID);
+        verify(projectRepository).delete(project);
     }
 
     @Test

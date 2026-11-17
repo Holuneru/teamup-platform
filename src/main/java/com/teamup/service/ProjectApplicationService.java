@@ -8,7 +8,9 @@ import com.teamup.entity.Project;
 import com.teamup.entity.ProjectApplication;
 import com.teamup.entity.User;
 import com.teamup.enums.ApplicationStatus;
+import com.teamup.enums.InvitationStatus;
 import com.teamup.repository.ProjectApplicationRepository;
+import com.teamup.repository.ProjectInvitationRepository;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
 import com.teamup.exception.ResourceNotFoundException;
@@ -26,6 +28,7 @@ import java.util.Objects;
 public class ProjectApplicationService {
 
     private final ProjectApplicationRepository repository;
+    private final ProjectInvitationRepository invitationRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
     private final ProjectMemberService memberService;
@@ -93,6 +96,7 @@ public class ProjectApplicationService {
     // ACCEPT
     // ===========================
 
+    @Transactional
     public ApplicationResponse accept(Long id) {
 
         ProjectApplication app = repository.findById(id)
@@ -108,10 +112,19 @@ public class ProjectApplicationService {
 
         repository.save(app);
 
-        memberService.addMember(
-                app.getProjectId(),
-                app.getUserId()
-        );
+        if (!projectMemberRepository.existsByProjectIdAndUserId(app.getProjectId(), app.getUserId())) {
+            memberService.addMember(
+                    app.getProjectId(),
+                    app.getUserId()
+            );
+        }
+
+        invitationRepository.findByProjectIdAndUserId(app.getProjectId(), app.getUserId())
+                .filter(invitation -> invitation.getStatus() == InvitationStatus.PENDING)
+                .ifPresent(invitation -> {
+                    invitation.setStatus(InvitationStatus.ACCEPTED);
+                    invitationRepository.save(invitation);
+                });
 
         return toResponse(app);
     }
@@ -120,6 +133,7 @@ public class ProjectApplicationService {
     // REJECT
     // ===========================
 
+    @Transactional
     public ApplicationResponse reject(Long id) {
 
         ProjectApplication app = repository.findById(id)
@@ -134,11 +148,6 @@ public class ProjectApplicationService {
         app.setStatus(ApplicationStatus.REJECTED);
 
         repository.save(app);
-
-        memberService.removeMember(
-                app.getProjectId(),
-                app.getUserId()
-        );
 
         return toResponse(app);
     }

@@ -1,0 +1,17 @@
+# Optional local overrides. The main application.yaml already contains
+# local development values, so this file is only needed to override them.
+#
+# Copy this file to application-local.yaml, fill in your values and run with:
+#   SPRING_PROFILES_ACTIVE=local
+#
+# application-local.yaml is ignored by Git and must not be committed.
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/
+    username: postgres
+    password: your-local-postgres-password
+
+app:
+  jwt:
+    secret: replace-with-a-random-string-of-at-least-32-bytes

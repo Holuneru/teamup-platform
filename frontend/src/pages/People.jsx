@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Layout from "../components/Layout";
@@ -31,12 +31,7 @@ export default function People() {
         api.get("/skills").then(res => setSkills(res.data)).catch(console.log);
     }, []);
 
-    useEffect(() => {
-        const timer = setTimeout(() => loadUsers(), 250);
-        return () => clearTimeout(timer);
-    }, [query, skill, format, currentUser]);
-
-    const loadUsers = () => {
+    const loadUsers = useCallback(() => {
         const request = query
             ? api.get("/users/search", { params: { query } })
             : api.get("/users", {
@@ -67,7 +62,12 @@ export default function People() {
             })
             .catch(console.log)
             .finally(() => setLoading(false));
-    };
+    }, [query, skill, format, currentUser]);
+
+    useEffect(() => {
+        const timer = setTimeout(loadUsers, 250);
+        return () => clearTimeout(timer);
+    }, [loadUsers]);
 
     return (
         <Layout>

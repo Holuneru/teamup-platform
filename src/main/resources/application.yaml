@@ -28,5 +28,9 @@ spring:
 server:
   port: 8080
 
+app:
+  jwt:
+    secret: super-secret-key-super-secret-key-123456
+
 file:
   upload-dir: uploads

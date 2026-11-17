@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Bell, CheckCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -14,7 +14,7 @@ export default function Notifications() {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const loadNotifications = async () => {
+    const loadNotifications = useCallback(async () => {
         try {
             const response = await getNotifications();
             setNotifications(response.data);
@@ -23,13 +23,16 @@ export default function Notifications() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        loadNotifications();
+        const initialLoad = window.setTimeout(loadNotifications, 0);
         const timer = window.setInterval(loadNotifications, 15000);
-        return () => window.clearInterval(timer);
-    }, []);
+        return () => {
+            window.clearTimeout(initialLoad);
+            window.clearInterval(timer);
+        };
+    }, [loadNotifications]);
 
     const openNotification = async notification => {
         if (!notification.readAt) {

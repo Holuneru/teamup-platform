@@ -6,6 +6,9 @@ target/
 
 uploads/avatars
 
+### Local configuration with secrets ###
+application-local.yaml
+
 ### STS ###
 .apt_generated
 .classpath

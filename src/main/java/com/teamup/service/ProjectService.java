@@ -24,6 +24,7 @@ import com.teamup.repository.ProjectInvitationRepository;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectMessageRepository;
 import com.teamup.repository.ProjectTaskRepository;
+import com.teamup.repository.TaskCommentRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
@@ -39,6 +40,7 @@ public class ProjectService {
     private final ProjectApplicationRepository projectApplicationRepository;
         private final ProjectMessageRepository projectMessageRepository;
         private final ProjectTaskRepository projectTaskRepository;
+        private final TaskCommentRepository taskCommentRepository;
 
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
@@ -132,6 +134,7 @@ public class ProjectService {
         projectInvitationRepository.deleteByProjectId(id);
         projectMemberRepository.deleteByProjectId(id);
         projectMessageRepository.deleteByProjectId(id);
+        taskCommentRepository.deleteByProjectId(id);
         projectTaskRepository.deleteByProjectId(id);
         projectRepository.delete(project);
     }

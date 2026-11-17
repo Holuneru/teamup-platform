@@ -209,6 +209,7 @@ class ProjectTaskServiceTest {
 
         service.deleteTask(PROJECT_ID, TASK_ID);
 
+        verify(commentRepository).deleteByTaskId(TASK_ID);
         verify(taskRepository).delete(task);
     }
 
@@ -220,6 +221,7 @@ class ProjectTaskServiceTest {
 
         service.deleteTask(PROJECT_ID, TASK_ID);
 
+        verify(commentRepository).deleteByTaskId(TASK_ID);
         verify(taskRepository).delete(task);
     }
 

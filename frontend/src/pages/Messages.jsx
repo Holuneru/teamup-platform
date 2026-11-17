@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowUp, MessageCircle, RefreshCw, Trash2 } from "lucide-react";
 import Layout from "../components/Layout";
@@ -22,14 +22,14 @@ export default function Messages() {
     const { user } = useUser();
     const { notify, confirm } = useFeedback();
     const [conversations, setConversations] = useState([]);
-    const [activeId, setActiveId] = useState(searchParams.get("conversation"));
+    const activeId = searchParams.get("conversation");
     const [messages, setMessages] = useState([]);
     const [draft, setDraft] = useState("");
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const endRef = useRef(null);
 
-    const loadConversations = async () => {
+    const loadConversations = useCallback(async () => {
         try {
             const response = await getConversations();
             setConversations(response.data);
@@ -38,37 +38,34 @@ export default function Messages() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        if (!userId) return;
+        if (!userId) return undefined;
         let cancelled = false;
         openConversation(userId)
             .then(({ data }) => {
                 if (cancelled) return;
-                setActiveId(String(data.id));
                 setSearchParams({ conversation: data.id }, { replace: true });
                 loadConversations();
             })
             .catch(error => console.error(error));
         return () => { cancelled = true; };
-    }, [userId]);
+    }, [userId, setSearchParams, loadConversations]);
 
     useEffect(() => {
-        loadConversations();
+        const initialLoad = window.setTimeout(loadConversations, 0);
         const timer = window.setInterval(loadConversations, 10000);
-        return () => window.clearInterval(timer);
-    }, []);
-
-    useEffect(() => {
-        const selected = searchParams.get("conversation");
-        if (selected !== activeId) setActiveId(selected);
-    }, [searchParams]);
+        return () => {
+            window.clearTimeout(initialLoad);
+            window.clearInterval(timer);
+        };
+    }, [loadConversations]);
 
     useEffect(() => {
         if (!activeId) {
-            setMessages([]);
-            return undefined;
+            const clearMessages = window.setTimeout(() => setMessages([]), 0);
+            return () => window.clearTimeout(clearMessages);
         }
         let cancelled = false;
         const loadMessages = async () => {
@@ -81,10 +78,11 @@ export default function Messages() {
                 console.error(error);
             }
         };
-        loadMessages();
+        const initialLoad = window.setTimeout(loadMessages, 0);
         const timer = window.setInterval(loadMessages, 2500);
         return () => {
             cancelled = true;
+            window.clearTimeout(initialLoad);
             window.clearInterval(timer);
         };
     }, [activeId]);
@@ -105,7 +103,6 @@ export default function Messages() {
             await deleteConversation(conversation.id);
             setConversations(current => current.filter(item => item.id !== conversation.id));
             if (String(activeId) === String(conversation.id)) {
-                setActiveId(null);
                 setMessages([]);
                 setSearchParams({}, { replace: true });
             }
@@ -162,7 +159,6 @@ export default function Messages() {
                                 <button
                                     className="conversation-row"
                                     onClick={() => {
-                                        setActiveId(String(conversation.id));
                                         setSearchParams({ conversation: conversation.id });
                                     }}
                                 >

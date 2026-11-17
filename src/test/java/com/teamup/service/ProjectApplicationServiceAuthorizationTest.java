@@ -3,9 +3,12 @@ package com.teamup.service;
 import com.teamup.dto.request.CreateApplicationRequest;
 import com.teamup.entity.Project;
 import com.teamup.entity.ProjectApplication;
+import com.teamup.entity.ProjectInvitation;
 import com.teamup.entity.User;
 import com.teamup.enums.ApplicationStatus;
+import com.teamup.enums.InvitationStatus;
 import com.teamup.repository.ProjectApplicationRepository;
+import com.teamup.repository.ProjectInvitationRepository;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
 import com.teamup.repository.UserRepository;
@@ -27,6 +30,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -43,6 +47,8 @@ class ProjectApplicationServiceAuthorizationTest {
 
     @Mock
     private ProjectApplicationRepository applicationRepository;
+    @Mock
+    private ProjectInvitationRepository invitationRepository;
     @Mock
     private ProjectMemberRepository projectMemberRepository;
     @Mock
@@ -170,6 +176,56 @@ class ProjectApplicationServiceAuthorizationTest {
         verify(applicationRepository).save(captor.capture());
         assertEquals(ApplicationStatus.PENDING, captor.getValue().getStatus());
         assertEquals(ApplicationStatus.REMOVED, removedApplication.getStatus());
+    }
+
+    @Test
+    void acceptingApplicationAddsMemberAndClosesPendingInvitation() {
+        authenticateAs(OWNER_ID);
+        ProjectApplication application = application(APPLICATION_ID, PROJECT_ID, APPLICANT_ID);
+        ProjectInvitation invitation = ProjectInvitation.builder()
+                .projectId(PROJECT_ID)
+                .userId(APPLICANT_ID)
+                .status(InvitationStatus.PENDING)
+                .build();
+        when(applicationRepository.findById(APPLICATION_ID)).thenReturn(Optional.of(application));
+        when(projectRepository.findByIdWithOwner(PROJECT_ID))
+                .thenReturn(Optional.of(project(PROJECT_ID, OWNER_ID)));
+        when(projectMemberRepository.existsByProjectIdAndUserId(PROJECT_ID, APPLICANT_ID))
+                .thenReturn(false);
+        when(invitationRepository.findByProjectIdAndUserId(PROJECT_ID, APPLICANT_ID))
+                .thenReturn(Optional.of(invitation));
+        when(userRepository.findById(APPLICANT_ID))
+                .thenReturn(Optional.of(User.builder()
+                        .id(APPLICANT_ID)
+                        .firstName("Applicant")
+                        .lastName("User")
+                        .build()));
+
+        service.accept(APPLICATION_ID);
+
+        verify(memberService).addMember(PROJECT_ID, APPLICANT_ID);
+        assertEquals(ApplicationStatus.ACCEPTED, application.getStatus());
+        assertEquals(InvitationStatus.ACCEPTED, invitation.getStatus());
+    }
+
+    @Test
+    void rejectingApplicationDoesNotRemoveExistingMember() {
+        authenticateAs(OWNER_ID);
+        ProjectApplication application = application(APPLICATION_ID, PROJECT_ID, APPLICANT_ID);
+        when(applicationRepository.findById(APPLICATION_ID)).thenReturn(Optional.of(application));
+        when(projectRepository.findByIdWithOwner(PROJECT_ID))
+                .thenReturn(Optional.of(project(PROJECT_ID, OWNER_ID)));
+        when(userRepository.findById(APPLICANT_ID))
+                .thenReturn(Optional.of(User.builder()
+                        .id(APPLICANT_ID)
+                        .firstName("Applicant")
+                        .lastName("User")
+                        .build()));
+
+        service.reject(APPLICATION_ID);
+
+        assertEquals(ApplicationStatus.REJECTED, application.getStatus());
+        verify(memberService, never()).removeMember(anyLong(), anyLong());
     }
 
     @Test

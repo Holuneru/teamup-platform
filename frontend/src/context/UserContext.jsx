@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
 
 const UserContext = createContext();
@@ -14,7 +14,7 @@ export function UserProvider({ children }) {
     // Пользователи, которым уже отправили приглашение
     const [sentInvitations, setSentInvitations] = useState([]);
 
-    const refreshUser = async () => {
+    const refreshUser = useCallback(async () => {
 
         try {
 
@@ -45,9 +45,9 @@ export function UserProvider({ children }) {
 
         }
 
-    };
+    }, []);
 
-    const refreshInvitations = async () => {
+    const refreshInvitations = useCallback(async () => {
 
         try {
 
@@ -61,7 +61,7 @@ export function UserProvider({ children }) {
 
         }
 
-    };
+    }, []);
 
     // Добавить пользователя в список уже приглашённых
     const addSentInvitation = (userId) => {
@@ -80,9 +80,11 @@ export function UserProvider({ children }) {
 
     useEffect(() => {
 
-        refreshUser();
+        const timer = window.setTimeout(refreshUser, 0);
 
-    }, []);
+        return () => window.clearTimeout(timer);
+
+    }, [refreshUser]);
 
     return (
 

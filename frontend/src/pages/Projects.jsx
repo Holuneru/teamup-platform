@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { getAllProjects } from "../api/projects";
@@ -65,7 +65,7 @@ export default function Projects() {
 
     };
 
-    const getMatchedSkillsCount = (project) => {
+    const getMatchedSkillsCount = useCallback((project) => {
 
         if (selectedSkills.length === 0) {
 
@@ -81,7 +81,7 @@ export default function Projects() {
 
         }).length;
 
-    };
+    }, [selectedSkills, skills]);
 
     const filteredProjects = useMemo(() => {
 
@@ -139,7 +139,7 @@ export default function Projects() {
 
             });
 
-    }, [projects, search, selectedSkills, skills]);
+    }, [projects, search, selectedSkills, getMatchedSkillsCount]);
 
     return (
 

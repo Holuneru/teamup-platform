@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Layout from "../components/Layout";
@@ -22,7 +22,7 @@ export default function ProjectRecommendations() {
 
     const [sending, setSending] = useState({});
 
-    const loadRecommendations = async () => {
+    const loadRecommendations = useCallback(async () => {
 
         try {
 
@@ -42,13 +42,15 @@ export default function ProjectRecommendations() {
 
         }
 
-    };
+    }, [id]);
 
     useEffect(() => {
 
-        loadRecommendations();
+        const timer = window.setTimeout(loadRecommendations, 0);
 
-    }, [id]);
+        return () => window.clearTimeout(timer);
+
+    }, [loadRecommendations]);
 
     const handleInvite = async (userId) => {
 

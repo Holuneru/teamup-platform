@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import Layout from "../components/Layout";
 import UserAvatar from "../components/UserAvatar";
@@ -14,7 +14,6 @@ export default function InviteUser() {
 
     const { userId: id } = useParams();
 
-    const navigate = useNavigate();
     const { notify } = useFeedback();
 
     const [user, setUser] = useState(null);

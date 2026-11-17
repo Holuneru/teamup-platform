@@ -4,9 +4,10 @@ import com.teamup.dto.response.InvitationResponse;
 import com.teamup.dto.response.UserShortResponse;
 import com.teamup.entity.Project;
 import com.teamup.entity.ProjectInvitation;
-import com.teamup.entity.ProjectMember;
 import com.teamup.entity.User;
+import com.teamup.enums.ApplicationStatus;
 import com.teamup.enums.InvitationStatus;
+import com.teamup.repository.ProjectApplicationRepository;
 import com.teamup.repository.ProjectInvitationRepository;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
@@ -14,6 +15,7 @@ import com.teamup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,8 @@ public class InvitationService {
     private final ProjectInvitationRepository invitationRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository memberRepository;
+    private final ProjectMemberService memberService;
+    private final ProjectApplicationRepository applicationRepository;
     private final UserRepository userRepository;
 
     // ==========================
@@ -117,6 +121,7 @@ public class InvitationService {
     // Принять приглашение
     // ==========================
 
+    @Transactional
     public InvitationResponse accept(Long invitationId) {
 
         ProjectInvitation invitation = invitationRepository.findById(invitationId)
@@ -136,13 +141,19 @@ public class InvitationService {
 
         invitationRepository.save(invitation);
 
-        ProjectMember member = ProjectMember.builder()
-                .projectId(invitation.getProjectId())
-                .userId(invitation.getUserId())
-                .role("MEMBER")
-                .build();
+        Long projectId = invitation.getProjectId();
+        Long userId = invitation.getUserId();
 
-        memberRepository.save(member);
+        if (!memberRepository.existsByProjectIdAndUserId(projectId, userId)) {
+            memberService.addMember(projectId, userId);
+        }
+
+        applicationRepository.findTopByProjectIdAndUserIdOrderByCreatedAtDesc(projectId, userId)
+                .filter(application -> application.getStatus() == ApplicationStatus.PENDING)
+                .ifPresent(application -> {
+                    application.setStatus(ApplicationStatus.ACCEPTED);
+                    applicationRepository.save(application);
+                });
 
         return toResponse(invitation);
     }
@@ -151,6 +162,7 @@ public class InvitationService {
     // Отклонить приглашение
     // ==========================
 
+    @Transactional
     public InvitationResponse reject(Long invitationId) {
 
         ProjectInvitation invitation = invitationRepository.findById(invitationId)

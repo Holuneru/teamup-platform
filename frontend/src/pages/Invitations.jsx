@@ -22,9 +22,11 @@ export default function Invitations() {
 
     useEffect(() => {
 
-        refreshInvitations();
+        const timer = window.setTimeout(refreshInvitations, 0);
 
-    }, []);
+        return () => window.clearTimeout(timer);
+
+    }, [refreshInvitations]);
 
     async function accept(id) {
 

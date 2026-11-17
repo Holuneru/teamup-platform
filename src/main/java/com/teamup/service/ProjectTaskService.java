@@ -219,6 +219,7 @@ public class ProjectTaskService {
         if (!isOwner && !task.getCreatedById().equals(userId)) {
             throw new ForbiddenException("Удалить задачу может ее автор или владелец проекта");
         }
+        commentRepository.deleteByTaskId(taskId);
         taskRepository.delete(task);
     }
 

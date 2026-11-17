@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useUser } from "../context/UserContext";
@@ -34,13 +34,7 @@ export default function EditProfile() {
         participationFormat: "BOTH"
     });
 
-    useEffect(() => {
-
-        loadData();
-
-    }, []);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
 
         try {
 
@@ -79,7 +73,15 @@ export default function EditProfile() {
 
         }
 
-    };
+    }, []);
+
+    useEffect(() => {
+
+        const timer = window.setTimeout(loadData, 0);
+
+        return () => window.clearTimeout(timer);
+
+    }, [loadData]);
 
     const handleChange = (e) => {
 

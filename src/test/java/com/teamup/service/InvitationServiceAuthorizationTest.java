@@ -1,9 +1,12 @@
 package com.teamup.service;
 
 import com.teamup.entity.Project;
+import com.teamup.entity.ProjectApplication;
 import com.teamup.entity.ProjectInvitation;
 import com.teamup.entity.User;
+import com.teamup.enums.ApplicationStatus;
 import com.teamup.enums.InvitationStatus;
+import com.teamup.repository.ProjectApplicationRepository;
 import com.teamup.repository.ProjectInvitationRepository;
 import com.teamup.repository.ProjectMemberRepository;
 import com.teamup.repository.ProjectRepository;
@@ -22,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -40,9 +44,13 @@ class InvitationServiceAuthorizationTest {
     @Mock
     private ProjectInvitationRepository invitationRepository;
     @Mock
+    private ProjectApplicationRepository applicationRepository;
+    @Mock
     private ProjectRepository projectRepository;
     @Mock
     private ProjectMemberRepository memberRepository;
+    @Mock
+    private ProjectMemberService memberService;
     @Mock
     private UserRepository userRepository;
 
@@ -103,6 +111,63 @@ class InvitationServiceAuthorizationTest {
                 () -> service.getMyInvitations(INVITED_USER_ID));
 
         verifyNoInteractions(invitationRepository);
+    }
+
+    @Test
+    void acceptingInvitationAddsMemberAndClosesPendingApplication() {
+        authenticateAs(INVITED_USER_ID);
+        ProjectInvitation invitation = invitation(INVITED_USER_ID);
+        ProjectApplication application = ProjectApplication.builder()
+                .projectId(PROJECT_ID)
+                .userId(INVITED_USER_ID)
+                .status(ApplicationStatus.PENDING)
+                .build();
+        when(invitationRepository.findById(INVITATION_ID)).thenReturn(Optional.of(invitation));
+        when(memberRepository.existsByProjectIdAndUserId(PROJECT_ID, INVITED_USER_ID)).thenReturn(false);
+        when(applicationRepository.findTopByProjectIdAndUserIdOrderByCreatedAtDesc(PROJECT_ID, INVITED_USER_ID))
+                .thenReturn(Optional.of(application));
+        stubProjectOwner();
+
+        service.accept(INVITATION_ID);
+
+        verify(memberService).addMember(PROJECT_ID, INVITED_USER_ID);
+        assertEquals(InvitationStatus.ACCEPTED, invitation.getStatus());
+        assertEquals(ApplicationStatus.ACCEPTED, application.getStatus());
+    }
+
+    @Test
+    void acceptingInvitationDoesNotCreateDuplicateMembership() {
+        authenticateAs(INVITED_USER_ID);
+        ProjectInvitation invitation = invitation(INVITED_USER_ID);
+        when(invitationRepository.findById(INVITATION_ID)).thenReturn(Optional.of(invitation));
+        when(memberRepository.existsByProjectIdAndUserId(PROJECT_ID, INVITED_USER_ID)).thenReturn(true);
+        when(applicationRepository.findTopByProjectIdAndUserIdOrderByCreatedAtDesc(PROJECT_ID, INVITED_USER_ID))
+                .thenReturn(Optional.empty());
+        stubProjectOwner();
+
+        service.accept(INVITATION_ID);
+
+        verify(memberService, never()).addMember(PROJECT_ID, INVITED_USER_ID);
+        assertEquals(InvitationStatus.ACCEPTED, invitation.getStatus());
+    }
+
+    private void stubProjectOwner() {
+        when(projectRepository.findById(PROJECT_ID))
+                .thenReturn(Optional.of(Project.builder()
+                        .id(PROJECT_ID)
+                        .title("Test project")
+                        .owner(User.builder()
+                                .id(OWNER_ID)
+                                .firstName("Owner")
+                                .lastName("User")
+                                .build())
+                        .build()));
+        when(userRepository.findById(OWNER_ID))
+                .thenReturn(Optional.of(User.builder()
+                        .id(OWNER_ID)
+                        .firstName("Owner")
+                        .lastName("User")
+                        .build()));
     }
 
     private static ProjectInvitation invitation(Long invitedUserId) {
