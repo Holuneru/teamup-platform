@@ -26,6 +26,18 @@ const initialForm = {
     dueDate: ""
 };
 
+const getDueDateState = dueDate => {
+    if (!dueDate) return "none";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(`${dueDate}T00:00:00`);
+    const diffDays = Math.ceil((target.getTime() - today.getTime()) / 86400000);
+
+    if (diffDays < 0) return "overdue";
+    if (diffDays <= 2) return "soon";
+    return "normal";
+};
+
 export default function ProjectTaskBoard({ projectId, members }) {
     const { user } = useUser();
     const { confirm } = useFeedback();
@@ -49,7 +61,8 @@ export default function ProjectTaskBoard({ projectId, members }) {
         search: "",
         status: "ALL",
         assignee: "ALL",
-        priority: "ALL"
+        priority: "ALL",
+        due: "ALL"
     });
     const [draggedTaskId, setDraggedTaskId] = useState(null);
     const [error, setError] = useState("");
@@ -256,6 +269,7 @@ export default function ProjectTaskBoard({ projectId, members }) {
         const searchText = filters.search.trim().toLowerCase();
 
         return tasks.filter(task => {
+            const dueState = getDueDateState(task.dueDate);
             const matchesSearch = !searchText || task.title.toLowerCase().includes(searchText);
             const matchesStatus = filters.status === "ALL" || task.status === filters.status;
             const matchesPriority = filters.priority === "ALL" || task.priority === filters.priority;
@@ -263,8 +277,13 @@ export default function ProjectTaskBoard({ projectId, members }) {
                 filters.assignee === "ALL" ||
                 (filters.assignee === "UNASSIGNED" && !task.assignee) ||
                 (task.assignee && String(task.assignee.id) === String(filters.assignee));
+            const matchesDue =
+                filters.due === "ALL" ||
+                (filters.due === "OVERDUE" && dueState === "overdue") ||
+                (filters.due === "SOON" && dueState === "soon") ||
+                (filters.due === "NONE" && dueState === "none");
 
-            return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
+            return matchesSearch && matchesStatus && matchesPriority && matchesAssignee && matchesDue;
         });
     }, [tasks, filters]);
 
@@ -272,20 +291,9 @@ export default function ProjectTaskBoard({ projectId, members }) {
         search: "",
         status: "ALL",
         assignee: "ALL",
-        priority: "ALL"
+        priority: "ALL",
+        due: "ALL"
     });
-
-    const getDueDateState = dueDate => {
-        if (!dueDate) return "none";
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const target = new Date(`${dueDate}T00:00:00`);
-        const diffDays = Math.ceil((target.getTime() - today.getTime()) / 86400000);
-
-        if (diffDays < 0) return "overdue";
-        if (diffDays <= 2) return "soon";
-        return "normal";
-    };
 
     const handleDropOnColumn = async columnId => {
         if (!draggedTaskId) return;
@@ -354,6 +362,16 @@ export default function ProjectTaskBoard({ projectId, members }) {
                         {priorities.map(priority => (
                             <option key={priority.id} value={priority.id}>{priority.label}</option>
                         ))}
+                    </select>
+                    <select
+                        className="task-filter-select"
+                        value={filters.due}
+                        onChange={event => setFilters(current => ({ ...current, due: event.target.value }))}
+                    >
+                        <option value="ALL">Все сроки</option>
+                        <option value="OVERDUE">Просроченные</option>
+                        <option value="SOON">Ближайшие 2 дня</option>
+                        <option value="NONE">Без срока</option>
                     </select>
                     <button type="button" className="task-filter-clear" onClick={clearFilters}>
                         Сброс
