@@ -183,4 +183,5 @@ npm run lint
 - [Roadmap](ROADMAP.md)
 - [Список задач](TASKS.md)
 - [Ближайшие задачи](plans/NEAR_TERM_WORK.md)
+- [Резюме, вакансии и роли](plans/RESUME_VACANCIES_ROLES.md)
 - [Технический долг](TECH_DEBT.md)
